@@ -22,8 +22,9 @@ def configure_styles():
     style.configure('photo.TFrame', background='#b56d26')
     style.configure('title_login.TFrame', background='maroon')
     style.configure('tables.TFrame', background='#b56d26')
-    style.configure('TButton', font=('Kanit', 12), padding=10)
-    
+    style.configure('TButton', font=(12), padding=10)
+    style.configure('tablesHeader.TFrame', background='maroon')
+
 class Login:
     def __init__(self, root):
         self.db = None
@@ -119,9 +120,9 @@ class InventoryApp:
         
         configure_styles()
 
-        header_frame = tk.Frame(self.root)
+        header_frame = ttk.Frame(self.root, style='tablesHeader.TFrame')
         header_frame.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
-        header = tk.Label(header_frame, text="Inventory Management", font=("Orbitron Black", 38), anchor='center')
+        header = ttk.Label(header_frame, text="Inventory Management", font=("Orbitron Black", 38), background='maroon', foreground='white', anchor='center')
         header.grid(row=0, column=1, padx=10, pady=10)
         logout_button = ttk.Button(header_frame, text="Logout", command=self.logout)
         logout_button.grid(row=0, column=0, padx=10, pady=10)
