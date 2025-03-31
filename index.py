@@ -17,12 +17,13 @@ from convert_functions import *
 
 
 def configure_styles():
-    sv_ttk.set_theme("light")
+    sv_ttk.use_light_theme()
     style = ttk.Style()
     style.configure('photo.TFrame', background='#b56d26')
     style.configure('title_login.TFrame', background='maroon')
-
-
+    style.configure('tables.TFrame', background='#b56d26')
+    style.configure('TButton', font=('Kanit', 12), padding=10)
+    
 class Login:
     def __init__(self, root):
         self.db = None
@@ -120,7 +121,7 @@ class InventoryApp:
 
         header_frame = tk.Frame(self.root)
         header_frame.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
-        header = tk.Label(header_frame, text="Inventory Management", font=("Kanit Light", 46), anchor='center')
+        header = tk.Label(header_frame, text="Inventory Management", font=("Orbitron Black", 38), anchor='center')
         header.grid(row=0, column=1, padx=10, pady=10)
         logout_button = ttk.Button(header_frame, text="Logout", command=self.logout)
         logout_button.grid(row=0, column=0, padx=10, pady=10)
@@ -129,23 +130,17 @@ class InventoryApp:
 
         tables = self.fetch_tables()
         if tables:
-            frame = ttk.Frame(self.root)
-            frame.place(relx=0.5, rely=0.5, anchor='center')
-
-            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL)
-            listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, font=("Kanit Light", 20), justify='center')
-            scrollbar.config(command=listbox.yview)
-
-            for table in tables:
-                listbox.insert(tk.END, table)
-
-            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            frame = ttk.Frame(self.root, style='tables.TFrame')
+            frame.place(relx=0.5, rely=0.5, relheight=0.5, relwidth=0.5, anchor='center')
 
             accessedTable = AccessedTable(self.db, self.account_type, self.root)
-            access_button = ttk.Button(self.root, text="Access Table",
-                                       command=lambda: accessedTable.access_table(listbox.get(tk.ACTIVE)))
-            access_button.grid(row=3, column=0, columnspan=2, padx=20, pady=10)
+
+            frame.grid_columnconfigure(0, weight=1)
+            for i in range(len(tables) + 1):  # Add extra rows for vertical centering
+                frame.grid_rowconfigure(i, weight=1)
+            for i, table in enumerate(tables):
+                table_button = ttk.Button(frame, text=table, command=lambda t=table: accessedTable.access_table(t))
+                table_button.grid(row=i, column=0, padx=10, pady=5)
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=0)
@@ -371,7 +366,7 @@ class AccessedTable:
             item_values = tree.item(selected_item, "values")
             if table == 'employees':
                 employee_id = item_values[0]
-                confirm = messagebox.askyesno("Confirm Delete", "Deleting this employee will set the employee column of all associated items to NULL. Do you want to proceed?")
+                confirm = messagebox.askyesno("Confirm Delete", "Deleting this employee will set the employee column of all associated items to NONE. Do you want to proceed?")
                 if confirm:
                     try:
                         # Set the employee column to NULL for associated items
@@ -412,7 +407,6 @@ class AccessedTable:
 
 
         try:
-
             if table == 'items':
                 query = f"""
                 SELECT items.item_id, serial_number AS 'Serial Number', items.item_name AS 'Item Name', 
@@ -439,9 +433,9 @@ class AccessedTable:
             cursor.execute(query)
 
             rows = cursor.fetchall()
-
             
-            configure_styles()
+            
+
             table_window = tk.Toplevel()
             table_window.state('zoomed')
             table_window.title(f"Table: {table}")
@@ -451,6 +445,9 @@ class AccessedTable:
 
 
             table_window.title(f"Table: {table}")
+            tree = ttk.Treeview(table_window, columns=columns, show='headings')
+            for row in rows:
+                tree.insert("", tk.END, values=row)
 
             # Create a frame for the search bar
             search_frame = ttk.Frame(table_window)
@@ -484,7 +481,6 @@ class AccessedTable:
 
             
             # Create a Treeview to display the rows
-            tree = ttk.Treeview(table_window, columns=columns, show='headings')
             for col in columns:
                 tree.heading(col, text=col, command=lambda _col=col: sort_column(tree, _col, False))
                 tree.column(col, width=100, anchor='center')
@@ -544,7 +540,10 @@ class AccessedTable:
             for row in rows:
                 # Generate QR code for the row
                 # Include item_id, serial_number, item_name, assigned_to, department in the QR code
-                qr_data = f"{row[0]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}, {row[6]}"
+                if table == 'items':
+                    qr_data = f"{row[0]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}, {row[6]}"
+                else:
+                    continue
                 qr = qrcode.QRCode(
                     version=1,
                     error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -571,7 +570,7 @@ class AccessedTable:
                 img.save(qr_file)
                 qr_image = ImageTk.PhotoImage(img)
                 qr_images[row[0]] = qr_image  # Store the image reference to prevent garbage collection
-                tree.insert("", tk.END, values=row)
+
 
             if self.accountType == "Admin":
                 button_frame = ttk.Frame(table_window)
@@ -603,6 +602,7 @@ class AccessedTable:
 
             back_button = ttk.Button(convertbtn_frame, text="Back", command=lambda: back_to_main(table_window))
             back_button.grid(row=1, column=0, columnspan=3, pady=10)
+            configure_styles()
 
             table_window.protocol("WM_DELETE_WINDOW", lambda: close_application(table_window))
             
