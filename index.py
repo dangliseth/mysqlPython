@@ -56,15 +56,16 @@ class Login:
         title_frame = ttk.Frame(self.root, style='title_login.TFrame')
         title_frame.place(relx=0.2, rely=0.5, relheight=1, anchor='center')
 
-        ttk.Label(title_frame, text="Inventory \nManagement", font=('Orbitron Black', 25), justify="center", foreground='white', background='maroon').pack(expand=True, fill='both', padx=10, pady=10)
+        ttk.Label(title_frame, text="Inventory\nManagement", font=('Orbitron Black', 25), justify="center", foreground='white', 
+                  background='maroon').pack(expand=True, fill='both', padx=10)
 
-        ttk.Label(center_frame, text="Username:", font=('Kanit Light', 15)).grid(row=2, column=1, padx=10, pady=10)
+        ttk.Label(center_frame, text="Username:", font=('Kanit Light', 16)).grid(row=2, column=1, padx=20)
         self.username_var = StringVar()
         username_entry = ttk.Entry(center_frame, textvariable=self.username_var, font=('Kanit Light', 15))
         username_entry.grid(row=2, column=2, padx=10, pady=10)
         username_entry.focus_set()
 
-        ttk.Label(center_frame, text="Password:", font=('Kanit Light', 15)).grid(row=3, column=1, padx=10, pady=10)
+        ttk.Label(center_frame, text="Password:", font=('Kanit Light', 16)).grid(row=3, column=1, padx=10, pady=10)
         self.password_var = StringVar()
         ttk.Entry(center_frame, textvariable=self.password_var, font=('Kanit Light', 15), show="*").grid(row=3, column=2, padx=10, pady=10)
 
@@ -96,7 +97,6 @@ class Login:
                 InventoryApp(self.db, self.accountType).init()
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", "Invalid username or password")
-
             
 
 
@@ -112,18 +112,26 @@ class InventoryApp:
         configure_styles()
 
         header_frame = ttk.Frame(self.root, style='tablesHeader.TFrame')
-        header_frame.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
-        header = ttk.Label(header_frame, text="Inventory Management", font=("Orbitron Black", 38), background='maroon', foreground='white', anchor='center')
-        header.grid(row=0, column=1, padx=10, pady=10)
-        logout_button = ttk.Button(header_frame, text="Logout", command=self.logout)
-        logout_button.grid(row=0, column=0, padx=10, pady=10)
+        header_frame.place(relx=0.5, rely=0.1, relwidth=1, relheight=0.13, anchor='center')
+        header = ttk.Label(header_frame, text="Inventory Management", font=("Orbitron Black", 40), background='maroon', foreground='white', anchor='center')
+        header.grid(row=0, column=1, pady=10)
+        try:
+            img = Image.open("photos/icons/logout.png")
+            max_width, max_height = 25, 25  # Set the maximum width and height
+            img.thumbnail((max_width, max_height), Image.LANCZOS)
+            image = ImageTk.PhotoImage(img)
+            logout_button = ttk.Button(header_frame, text="Logout", image=image, compound='left', command=self.logout)
+            logout_button.grid(row=0, column=0, padx=10, pady=10)
+        except FileNotFoundError:
+            logout_button = ttk.Button(header_frame, text="Logout", command=self.logout)
+            logout_button.grid(row=0, column=0, padx=10, pady=10)
         header_frame.grid_columnconfigure(0, weight=0)
         header_frame.grid_columnconfigure(1, weight=1)
 
         tables = self.fetch_tables()
         if tables:
             frame = ttk.Frame(self.root, style='tables.TFrame')
-            frame.place(relx=0.5, rely=0.55, relheight=0.65, relwidth=0.7, anchor='center')
+            frame.place(relx=0.5, rely=0.55, relheight=0.3, relwidth=1, anchor='center')
 
             accessedTable = AccessedTable(self.db, self.account_type, self.root)
 
@@ -132,7 +140,7 @@ class InventoryApp:
                 frame.grid_rowconfigure(i, weight=1)
             for i, table in enumerate(tables):
                 table_button = ttk.Button(frame, text=table, style='tables.TButton', command=lambda t=table: accessedTable.access_table(t))
-                table_button.place(relx=0.5, rely=(i + 0.5) / len(tables), relwidth=0.6, relheight=0.7 / len(tables), anchor='center')
+                table_button.place(relx=0.5, rely=(i + 0.5) / len(tables), relwidth=0.3, relheight=0.6 / len(tables), anchor='center')
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=0)
