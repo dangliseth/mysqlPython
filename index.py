@@ -7,23 +7,14 @@ from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter import StringVar
-import sv_ttk
 import datetime
 import qrcode
 from PIL import ImageTk, Image
 
 from autocomplete import AutocompleteCombobox
 from convert_functions import *
+from css import configure_styles
 
-
-def configure_styles():
-    sv_ttk.use_light_theme()
-    style = ttk.Style()
-    style.configure('photo.TFrame', background='#b56d26')
-    style.configure('title_login.TFrame', background='maroon')
-    style.configure('tables.TFrame', background='#b56d26')
-    style.configure('TButton', font=(12), padding=10)
-    style.configure('tablesHeader.TFrame', background='maroon')
 
 class Login:
     def __init__(self, root):
@@ -132,7 +123,7 @@ class InventoryApp:
         tables = self.fetch_tables()
         if tables:
             frame = ttk.Frame(self.root, style='tables.TFrame')
-            frame.place(relx=0.5, rely=0.5, relheight=0.5, relwidth=0.5, anchor='center')
+            frame.place(relx=0.5, rely=0.55, relheight=0.65, relwidth=0.7, anchor='center')
 
             accessedTable = AccessedTable(self.db, self.account_type, self.root)
 
@@ -140,8 +131,8 @@ class InventoryApp:
             for i in range(len(tables) + 1):  # Add extra rows for vertical centering
                 frame.grid_rowconfigure(i, weight=1)
             for i, table in enumerate(tables):
-                table_button = ttk.Button(frame, text=table, command=lambda t=table: accessedTable.access_table(t))
-                table_button.grid(row=i, column=0, padx=10, pady=5)
+                table_button = ttk.Button(frame, text=table, style='tables.TButton', command=lambda t=table: accessedTable.access_table(t))
+                table_button.place(relx=0.5, rely=(i + 0.5) / len(tables), relwidth=0.6, relheight=0.7 / len(tables), anchor='center')
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=0)
