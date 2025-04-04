@@ -67,7 +67,8 @@ class Login:
 
         ttk.Label(center_frame, text="Password:", font=('Kanit Light', 16)).grid(row=3, column=1, padx=10, pady=10)
         self.password_var = StringVar()
-        ttk.Entry(center_frame, textvariable=self.password_var, font=('Kanit Light', 15), show="*").grid(row=3, column=2, padx=10, pady=10)
+        ttk.Entry(center_frame, textvariable=self.password_var, 
+                  font=('Kanit Light', 15), show="*").grid(row=3, column=2, padx=10, pady=10)
 
         ttk.Button(center_frame, text="Login", command=self.attempt_login).grid(row=4, column=1, columnspan=2, pady=10)
         self.root.bind('<Return>', self.attempt_login)
@@ -113,7 +114,8 @@ class InventoryApp:
 
         header_frame = ttk.Frame(self.root, style='tablesHeader.TFrame')
         header_frame.place(relx=0.5, rely=0.1, relwidth=1, relheight=0.13, anchor='center')
-        header = ttk.Label(header_frame, text="Inventory Management", font=("Orbitron Black", 40), background='maroon', foreground='white', anchor='center')
+        header = ttk.Label(header_frame, text="Inventory Management", 
+                           font=("Orbitron Black", 40), background='maroon', foreground='white', anchor='center')
         header.grid(row=0, column=1, pady=10)
         try:
             img = Image.open("photos/icons/logout.png")
@@ -135,12 +137,25 @@ class InventoryApp:
 
             accessedTable = AccessedTable(self.db, self.account_type, self.root)
 
+            table_images = {}
+
             frame.grid_columnconfigure(0, weight=1)
             for i in range(len(tables) + 1):  # Add extra rows for vertical centering
                 frame.grid_rowconfigure(i, weight=1)
             for i, table in enumerate(tables):
-                table_button = ttk.Button(frame, text=table, style='tables.TButton', command=lambda t=table: accessedTable.access_table(t))
-                table_button.place(relx=0.5, rely=(i + 0.5) / len(tables), relwidth=0.3, relheight=0.6 / len(tables), anchor='center')
+                icon_path = f"photos/icons/{table}.png"
+                try:
+                    img = Image.open(icon_path)
+                    max_width, max_height = 25, 25  # Set the maximum width and height
+                    img.thumbnail((max_width, max_height), Image.LANCZOS)
+                    table_images[table] = ImageTk.PhotoImage(img)
+                except FileNotFoundError:
+                    table_images[table] = None
+                table_button = ttk.Button(frame, text=table, 
+                                          image=table_images[table] if table_images[table] else None, 
+                                          style='tables.TButton', compound='left', command=lambda t=table: accessedTable.access_table(t))
+                table_button.place(relx=0.5, rely=(i + 0.5) / len(tables), 
+                                   relwidth=0.3, relheight=0.6 / len(tables), anchor='center')
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=0)
@@ -451,7 +466,6 @@ class AccessedTable:
 
             # Create a frame for the search bar
             search_frame = ttk.Frame(table_window)
-            search_frame.pack(fill='x', padx=10, pady=10)
 
             # Add a search bar
             search_label = ttk.Label(search_frame, text="Search:")
@@ -463,7 +477,14 @@ class AccessedTable:
 
 
             # Add a clear button to the search bar
-            clear_button = ttk.Button(search_frame, text='X', command=lambda: clear_search())
+            try:
+                clear_icon = Image.open("photos/icons/clear_search.png")
+                max_width, max_height = 100, 100  # Set the maximum width and height
+                clear_icon.thumbnail((max_width, max_height), Image.LANCZOS)
+                clear_image = ImageTk.PhotoImage(clear_icon)
+                clear_button = ttk.Button(search_frame, image=clear_image, compound='image', command=lambda: clear_search())
+            except FileNotFoundError:
+                clear_button = ttk.Button(search_frame, text='X', command=lambda: clear_search())
             clear_button.place(in_=search_entry, relx=1.0, rely=0.5, anchor="e")
             clear_button.place_forget()
 

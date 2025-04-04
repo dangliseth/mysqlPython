@@ -10,7 +10,7 @@ def configure_styles():
     style.configure('title_login.TFrame', background='maroon')
     style.configure('tables.TFrame', background='#b56d26')
     style.configure('TButton', font=('Kanit Light', 16), padding=10)
-    style.configure('tables.TButton', font=('Kanit', 17), background='maroon', foreground='maroon')
+    style.configure('tables.TButton', font=('Kanit', 17))
     style.configure('tablesHeader.TFrame', background='maroon')
 
 if __name__ == '__main__':
