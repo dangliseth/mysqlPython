@@ -105,18 +105,21 @@ class InventoryApp:
     def __init__(self, db, account_type):
         self.db = db
         self.account_type = account_type
-    def init(self):
+
         self.root = tk.Tk()
         self.root.title("Inventory Database App")
         self.root.state('zoomed')
-        
+
         configure_styles()
 
+        design_frame = ttk.Frame(self.root, style='design.TFrame')
+        design_frame.place(relx=0.3, rely=0, relwidth=0.2, relheight=1)
         header_frame = ttk.Frame(self.root, style='tablesHeader.TFrame')
-        header_frame.place(relx=0.5, rely=0.1, relwidth=1, relheight=0.13, anchor='center')
+        header_frame.place(relx=0.5, rely=0.055, relwidth=1, relheight=0.13, anchor='center')
         header = ttk.Label(header_frame, text="Inventory Management", 
-                           font=("Orbitron Black", 40), background='maroon', foreground='white', anchor='center')
+                           font=("Orbitron Black", 40), foreground='white', anchor='center')
         header.grid(row=0, column=1, pady=10)
+
         try:
             img = Image.open("photos/icons/logout.png")
             max_width, max_height = 25, 25  # Set the maximum width and height
@@ -129,6 +132,8 @@ class InventoryApp:
             logout_button.grid(row=0, column=0, padx=10, pady=10)
         header_frame.grid_columnconfigure(0, weight=0)
         header_frame.grid_columnconfigure(1, weight=1)
+    def init(self):
+        #self.root.configure(bg='#880000')
 
         tables = self.fetch_tables()
         if tables:
@@ -480,13 +485,13 @@ class AccessedTable:
             # Add a clear button to the search bar
             try:
                 clear_icon = Image.open("photos/icons/clear_search.png")
-                max_width, max_height = 100, 100  # Set the maximum width and height
+                max_width, max_height = 20, 20  # Set the maximum width and height
                 clear_icon.thumbnail((max_width, max_height), Image.LANCZOS)
-                clear_image = ImageTk.PhotoImage(clear_icon)
-                clear_button = ttk.Button(search_frame, image=clear_image, compound='image', command=lambda: clear_search())
+                self.clear_image = ImageTk.PhotoImage(clear_icon)
+                clear_button = ttk.Button(search_frame, image=self.clear_image, compound='image', command=lambda: clear_search())
             except FileNotFoundError:
                 clear_button = ttk.Button(search_frame, text='X', command=lambda: clear_search())
-            clear_button.place(in_=search_entry, relx=1.0, rely=0.5, anchor="e")
+            clear_button.place(in_=search_entry, relx=0.7, rely=0.5, anchor="e")
             clear_button.place_forget()
 
             def clear_search():
