@@ -466,6 +466,7 @@ class AccessedTable:
 
             # Create a frame for the search bar
             search_frame = ttk.Frame(table_window)
+            search_frame.pack(fill='x', padx=10, pady=10)
 
             # Add a search bar
             search_label = ttk.Label(search_frame, text="Search:")
