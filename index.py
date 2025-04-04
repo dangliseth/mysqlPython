@@ -7,20 +7,13 @@ from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter import StringVar
-import sv_ttk
 import datetime
 import qrcode
 from PIL import ImageTk, Image
 
 from autocomplete import AutocompleteCombobox
 from convert_functions import *
-
-
-def configure_styles():
-    sv_ttk.set_theme("light")
-    style = ttk.Style()
-    style.configure('photo.TFrame', background='#b56d26')
-    style.configure('title_login.TFrame', background='maroon')
+from css import configure_styles
 
 
 class Login:
@@ -63,17 +56,19 @@ class Login:
         title_frame = ttk.Frame(self.root, style='title_login.TFrame')
         title_frame.place(relx=0.2, rely=0.5, relheight=1, anchor='center')
 
-        ttk.Label(title_frame, text="Inventory \nManagement", font=('Orbitron Black', 25), justify="center", foreground='white', background='maroon').pack(expand=True, fill='both', padx=10, pady=10)
+        ttk.Label(title_frame, text="Inventory\nManagement", font=('Orbitron Black', 25), justify="center", foreground='white', 
+                  background='maroon').pack(expand=True, fill='both', padx=10)
 
-        ttk.Label(center_frame, text="Username:", font=('Kanit Light', 15)).grid(row=2, column=1, padx=10, pady=10)
+        ttk.Label(center_frame, text="Username:", font=('Kanit Light', 16)).grid(row=2, column=1, padx=20)
         self.username_var = StringVar()
         username_entry = ttk.Entry(center_frame, textvariable=self.username_var, font=('Kanit Light', 15))
         username_entry.grid(row=2, column=2, padx=10, pady=10)
         username_entry.focus_set()
 
-        ttk.Label(center_frame, text="Password:", font=('Kanit Light', 15)).grid(row=3, column=1, padx=10, pady=10)
+        ttk.Label(center_frame, text="Password:", font=('Kanit Light', 16)).grid(row=3, column=1, padx=10, pady=10)
         self.password_var = StringVar()
-        ttk.Entry(center_frame, textvariable=self.password_var, font=('Kanit Light', 15), show="*").grid(row=3, column=2, padx=10, pady=10)
+        ttk.Entry(center_frame, textvariable=self.password_var, 
+                  font=('Kanit Light', 15), show="*").grid(row=3, column=2, padx=10, pady=10)
 
         ttk.Button(center_frame, text="Login", command=self.attempt_login).grid(row=4, column=1, columnspan=2, pady=10)
         self.root.bind('<Return>', self.attempt_login)
@@ -103,7 +98,6 @@ class Login:
                 InventoryApp(self.db, self.accountType).init()
             except mysql.connector.Error as err:
                 messagebox.showerror("Error", "Invalid username or password")
-
             
 
 
@@ -111,41 +105,62 @@ class InventoryApp:
     def __init__(self, db, account_type):
         self.db = db
         self.account_type = account_type
-    def init(self):
+
         self.root = tk.Tk()
         self.root.title("Inventory Database App")
         self.root.state('zoomed')
-        
+
         configure_styles()
 
-        header_frame = tk.Frame(self.root)
-        header_frame.grid(row=0, column=0, padx=20, pady=10, sticky="ew")
-        header = tk.Label(header_frame, text="Inventory Management", font=("Kanit Light", 46), anchor='center')
-        header.grid(row=0, column=1, padx=10, pady=10)
-        logout_button = ttk.Button(header_frame, text="Logout", command=self.logout)
-        logout_button.grid(row=0, column=0, padx=10, pady=10)
+        design_frame = ttk.Frame(self.root, style='design.TFrame')
+        design_frame.place(relx=0.3, rely=0, relwidth=0.2, relheight=1)
+        header_frame = ttk.Frame(self.root, style='tablesHeader.TFrame')
+        header_frame.place(relx=0.5, rely=0.055, relwidth=1, relheight=0.13, anchor='center')
+        header = ttk.Label(header_frame, text="Inventory Management", 
+                           font=("Orbitron Black", 40), foreground='white', anchor='center')
+        header.grid(row=0, column=1, pady=10)
+
+        try:
+            img = Image.open("photos/icons/logout.png")
+            max_width, max_height = 25, 25  # Set the maximum width and height
+            img.thumbnail((max_width, max_height), Image.LANCZOS)
+            image = ImageTk.PhotoImage(img)
+            logout_button = ttk.Button(header_frame, text="Logout", image=image, compound='left', command=self.logout)
+            logout_button.grid(row=0, column=0, padx=10, pady=10)
+        except FileNotFoundError:
+            logout_button = ttk.Button(header_frame, text="Logout", command=self.logout)
+            logout_button.grid(row=0, column=0, padx=10, pady=10)
         header_frame.grid_columnconfigure(0, weight=0)
         header_frame.grid_columnconfigure(1, weight=1)
+    def init(self):
+        #self.root.configure(bg='#880000')
 
         tables = self.fetch_tables()
         if tables:
-            frame = ttk.Frame(self.root)
-            frame.place(relx=0.5, rely=0.5, anchor='center')
-
-            scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL)
-            listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set, font=("Kanit Light", 20), justify='center')
-            scrollbar.config(command=listbox.yview)
-
-            for table in tables:
-                listbox.insert(tk.END, table)
-
-            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            frame = ttk.Frame(self.root, style='tables.TFrame')
+            frame.place(relx=0.5, rely=0.55, relheight=0.3, relwidth=1, anchor='center')
 
             accessedTable = AccessedTable(self.db, self.account_type, self.root)
-            access_button = ttk.Button(self.root, text="Access Table",
-                                       command=lambda: accessedTable.access_table(listbox.get(tk.ACTIVE)))
-            access_button.grid(row=3, column=0, columnspan=2, padx=20, pady=10)
+
+            table_images = {}
+
+            frame.grid_columnconfigure(0, weight=1)
+            for i in range(len(tables) + 1):  # Add extra rows for vertical centering
+                frame.grid_rowconfigure(i, weight=1)
+            for i, table in enumerate(tables):
+                icon_path = f"photos/icons/{table}.png"
+                try:
+                    img = Image.open(icon_path)
+                    max_width, max_height = 25, 25  # Set the maximum width and height
+                    img.thumbnail((max_width, max_height), Image.LANCZOS)
+                    table_images[table] = ImageTk.PhotoImage(img)
+                except FileNotFoundError:
+                    table_images[table] = None
+                table_button = ttk.Button(frame, text=table, 
+                                          image=table_images[table] if table_images[table] else None, 
+                                          style='tables.TButton', compound='left', command=lambda t=table: accessedTable.access_table(t))
+                table_button.place(relx=0.5, rely=(i + 0.5) / len(tables), 
+                                   relwidth=0.3, relheight=0.6 / len(tables), anchor='center')
 
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_rowconfigure(0, weight=0)
@@ -371,7 +386,7 @@ class AccessedTable:
             item_values = tree.item(selected_item, "values")
             if table == 'employees':
                 employee_id = item_values[0]
-                confirm = messagebox.askyesno("Confirm Delete", "Deleting this employee will set the employee column of all associated items to NULL. Do you want to proceed?")
+                confirm = messagebox.askyesno("Confirm Delete", "Deleting this employee will set the employee column of all associated items to NONE. Do you want to proceed?")
                 if confirm:
                     try:
                         # Set the employee column to NULL for associated items
@@ -412,7 +427,6 @@ class AccessedTable:
 
 
         try:
-
             if table == 'items':
                 query = f"""
                 SELECT items.item_id, serial_number AS 'Serial Number', items.item_name AS 'Item Name', 
@@ -439,9 +453,9 @@ class AccessedTable:
             cursor.execute(query)
 
             rows = cursor.fetchall()
-
             
-            configure_styles()
+            
+
             table_window = tk.Toplevel()
             table_window.state('zoomed')
             table_window.title(f"Table: {table}")
@@ -451,6 +465,9 @@ class AccessedTable:
 
 
             table_window.title(f"Table: {table}")
+            tree = ttk.Treeview(table_window, columns=columns, show='headings')
+            for row in rows:
+                tree.insert("", tk.END, values=row)
 
             # Create a frame for the search bar
             search_frame = ttk.Frame(table_window)
@@ -466,8 +483,15 @@ class AccessedTable:
 
 
             # Add a clear button to the search bar
-            clear_button = ttk.Button(search_frame, text='X', command=lambda: clear_search())
-            clear_button.place(in_=search_entry, relx=1.0, rely=0.5, anchor="e")
+            try:
+                clear_icon = Image.open("photos/icons/clear_search.png")
+                max_width, max_height = 20, 20  # Set the maximum width and height
+                clear_icon.thumbnail((max_width, max_height), Image.LANCZOS)
+                self.clear_image = ImageTk.PhotoImage(clear_icon)
+                clear_button = ttk.Button(search_frame, image=self.clear_image, compound='image', command=lambda: clear_search())
+            except FileNotFoundError:
+                clear_button = ttk.Button(search_frame, text='X', command=lambda: clear_search())
+            clear_button.place(in_=search_entry, relx=0.7, rely=0.5, anchor="e")
             clear_button.place_forget()
 
             def clear_search():
@@ -484,7 +508,6 @@ class AccessedTable:
 
             
             # Create a Treeview to display the rows
-            tree = ttk.Treeview(table_window, columns=columns, show='headings')
             for col in columns:
                 tree.heading(col, text=col, command=lambda _col=col: sort_column(tree, _col, False))
                 tree.column(col, width=100, anchor='center')
@@ -544,7 +567,10 @@ class AccessedTable:
             for row in rows:
                 # Generate QR code for the row
                 # Include item_id, serial_number, item_name, assigned_to, department in the QR code
-                qr_data = f"{row[0]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}, {row[6]}"
+                if table == 'items':
+                    qr_data = f"{row[0]}, {row[2]}, {row[3]}, {row[4]}, {row[5]}, {row[6]}"
+                else:
+                    continue
                 qr = qrcode.QRCode(
                     version=1,
                     error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -571,7 +597,7 @@ class AccessedTable:
                 img.save(qr_file)
                 qr_image = ImageTk.PhotoImage(img)
                 qr_images[row[0]] = qr_image  # Store the image reference to prevent garbage collection
-                tree.insert("", tk.END, values=row)
+
 
             if self.accountType == "Admin":
                 button_frame = ttk.Frame(table_window)
@@ -603,6 +629,7 @@ class AccessedTable:
 
             back_button = ttk.Button(convertbtn_frame, text="Back", command=lambda: back_to_main(table_window))
             back_button.grid(row=1, column=0, columnspan=3, pady=10)
+            configure_styles()
 
             table_window.protocol("WM_DELETE_WINDOW", lambda: close_application(table_window))
             
