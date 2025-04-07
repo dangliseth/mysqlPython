@@ -1,4 +1,4 @@
-from datetime import datetime
+import os
 
 from flaskext.mysql import MySQL
 
@@ -16,8 +16,6 @@ from flask import current_app, g
 
 def get_cursor():
     """Get a cursor from the database connection."""
-    mysql = MySQL()
-    mysql.init_app(current_app)
     db = mysql.get_db()
     return db.cursor()
 

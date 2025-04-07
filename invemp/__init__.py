@@ -19,7 +19,8 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-
+    from . import db
+    db.init_app(app)
 
     from . import auth
     app.register_blueprint(auth.bp)

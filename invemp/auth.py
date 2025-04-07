@@ -17,9 +17,6 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        current_app.config['DATABASE']['user'] = username
-        current_app.config['DATABASE']['password'] = password
-
         c = get_cursor()
         error = None
         c.execute(
