@@ -1,22 +1,24 @@
 from datetime import datetime
 
-from flask_mysqldb import MySQL
+from flaskext.mysql import MySQL
 
 from flask import current_app, g
-from . import mysql
 
-def init_db():
-    db = get_db()
 
-def get_db():
-    """Get a connection to the database. If a connection already exists, return it."""
+"""def init_db():
+    db = get_db()"""
+
+"""def get_db():
+    Get a connection to the database. If a connection already exists, return it.
     if 'db' not in g:
         g.db = mysql.connection
-    return g.db
+    return g.db"""
 
 def get_cursor():
     """Get a cursor from the database connection."""
-    db = get_db()
+    mysql = MySQL()
+    mysql.init_app(current_app)
+    db = mysql.get_db()
     return db.cursor()
 
 def close_db(e=None):
