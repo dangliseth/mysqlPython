@@ -7,6 +7,10 @@ from flask import Flask
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+    app.config['MYSQL_DATABASE_USER'] = 'app_user'
+    app.config['MYSQL_DATABASE_PASSWORD'] = 'test'
+    app.config['MYSQL_DATABASE_DB'] = 'inventory_database'
     app.config.from_mapping(
         SECRET_KEY="dev",
     )
