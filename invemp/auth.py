@@ -36,9 +36,60 @@ def register():
             )
             c.connection.commit()
             c.close()
-            return redirect(url_for('auth.register'))
+            return redirect(url_for('auth.login'))
 
         flash(error)
 
     return render_template('auth/register.html')
 
+@bp.route('/login', methods=('GET', 'POST'))
+def login():
+    """Log in a user."""
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        c = get_cursor()
+        error = None
+        user = c.execute(
+            'SELECT * FROM user_accounts WHERE username = %s', (username,)
+        ).fetchone()
+
+        if user is None:
+            error = 'Incorrect username.'
+        elif not check_password_hash(user['password'], password):
+            error = 'Incorrect password.'
+
+        if error is None:
+            session.clear()
+            session['user_id'] = user['id']
+            return redirect(url_for('index'))
+
+        flash(error)
+
+    return render_template('auth/login.html')
+
+@bp.before_app_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        g.user = None
+    else:
+        g.user = get_cursor().execute(
+            'SELECT * FROM user WHERE id = %s', (user_id,)
+        ).fetchone()
+
+@bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+
+        return view(**kwargs)
+
+    return wrapped_view

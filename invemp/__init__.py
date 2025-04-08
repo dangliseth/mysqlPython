@@ -11,10 +11,10 @@ def create_app(test_config=None):
     app.config['MYSQL_DATABASE_USER'] = 'app_user'
     app.config['MYSQL_DATABASE_PASSWORD'] = 'test'
     app.config['MYSQL_DATABASE_DB'] = 'inventory_database'
+    
     app.config.from_mapping(
         SECRET_KEY="dev",
     )
-
 
     if test_config is None:
         # load the instance config, if it exists, when not testing

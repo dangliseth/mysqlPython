@@ -6,8 +6,8 @@ from flask import current_app, g
 
 
 mysql = MySQL()
-def init_db():
-    db = get_db()
+"""def init_db():
+    db = get_db()"""
 
 def get_db():
     """Get a connection to the database. If a connection already exists, return it."""
