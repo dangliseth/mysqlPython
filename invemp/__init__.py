@@ -7,13 +7,13 @@ from flask import Flask
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-    app.config['MYSQL_DATABASE_USER'] = 'app_user'
-    app.config['MYSQL_DATABASE_PASSWORD'] = 'test'
-    app.config['MYSQL_DATABASE_DB'] = 'inventory_database'
     
     app.config.from_mapping(
         SECRET_KEY="dev",
+        MYSQL_DATABASE_HOST='localhost',
+        MYSQL_DATABASE_USER='app_user',
+        MYSQL_DATABASE_PASSWORD='test',
+        MYSQL_DATABASE_DB='inventory_database',
     )
 
     if test_config is None:
@@ -28,5 +28,9 @@ def create_app(test_config=None):
 
     from . import auth
     app.register_blueprint(auth.bp)
+
+    from . import dashboard
+    app.register_blueprint(dashboard.bp)
+    app.add_url_rule('/', endpoint='index')
 
     return app

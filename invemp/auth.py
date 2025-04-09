@@ -50,18 +50,20 @@ def login():
         password = request.form['password']
         c = get_cursor()
         error = None
-        user = c.execute(
+        c.execute(
             'SELECT * FROM user_accounts WHERE username = %s', (username,)
-        ).fetchone()
+        )
+        user = c.fetchone()
+        c.close()
 
         if user is None:
             error = 'Incorrect username.'
-        elif not check_password_hash(user['password'], password):
+        elif not check_password_hash(user[2], password):
             error = 'Incorrect password.'
 
         if error is None:
             session.clear()
-            session['user_id'] = user['id']
+            session['user_id'] = user[0]
             return redirect(url_for('index'))
 
         flash(error)
@@ -76,8 +78,8 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = get_cursor().execute(
-            'SELECT * FROM user WHERE id = %s', (user_id,)
-        ).fetchone()
+            'SELECT * FROM user_accounts WHERE id = %s', (user_id,)
+        )
 
 @bp.route('/logout')
 def logout():
