@@ -20,9 +20,10 @@ def index():
     return render_template('dashboard/index.html', tables=tables)
 
 @bp.route('/view_table/<table_name>')
+@login_required
 def view_table(table_name):
     # check for admin access
-    if g.user and g.user[3] != 'admin' and table_name != 'items':
+    if g.user[3] != 'admin' and table_name != 'items':
         flash("You do not have permission to access this table.")
         return redirect(url_for('dashboard.index'))
     
