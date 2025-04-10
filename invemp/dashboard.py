@@ -47,3 +47,22 @@ def view_table(table_name):
         columns = [column[0] for column in c.description]
     c.close()
     return render_template('dashboard/view_table.html', items=items, columns=columns, table_name=table_name)
+
+def get_item(item_id):
+    c = get_cursor()
+    c.execute('SELECT * FROM items WHERE item_id = %s', (item_id,))
+    item = c.fetchone()
+    c.close()
+    return item
+
+@bp.route('/view_table/<table_name>/create', methods=('GET', 'POST'))
+@admin_required
+def create(table_name):
+    c = get_cursor()
+
+    c.execute(f"DESCRIBE `{table_name}`")
+    columns = [row[0] for row in c.fetchall()]
+    c.close()
+
+    if request.method == 'POST':
+        values = [request.form.get(column) for column in columns]

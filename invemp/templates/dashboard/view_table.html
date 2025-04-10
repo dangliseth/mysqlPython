@@ -1,7 +1,10 @@
 {% extends "base.html" %}
-
-{% block title %} {{ table_name }} {% endblock %}
-{% block header %} <h1>{{ table_name }}</h1> {% endblock %}
+ 
+{% block header %}
+<h1>{% block title %} {{ table_name }} {% endblock %}</h1>
+{% if g.user[3] = 'admin' %}
+<a href = "{{ url_for ('dashboard.create') }}" class="btn btn-create">Create Entry/a>
+{% endblock %}
 
 {% block content %}
 <table class="table table-striped table-bordered table-hover">
