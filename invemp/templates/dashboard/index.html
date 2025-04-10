@@ -1,27 +1,16 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block header %}
-  <h1>{% block title %}Posts{% endblock %}</h1>
-  {% if g.user %}
-    <a class="action" href="{{ url_for('blog.create') }}">New</a>
-  {% endif %}
+{% block  header%}
+<h1>{% block title %} Database {% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
+<div class="table-buttons">
   {% for table in tables %}
-    <section class="post">
-      <header>
-        <div>
-          <h1>{{ post['title'] }}</h1>
-          <div class="about">by {{ post['username'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
-        </div>
-        {% if g.user['id'] == post['author_id'] %}
-          <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
-        {% endif %}
-      </header>
-    </section>
-    {% if not loop.last %}
-      <hr>
-    {% endif %}
+    <a href="{{ url_for('dashboard.view_table', table_name=table) }}" 
+       class="btn btn-table">
+      {{ table }}
+    </a>
   {% endfor %}
+</div>
 {% endblock %}

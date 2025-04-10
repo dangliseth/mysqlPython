@@ -10,7 +10,32 @@ from invemp.db import get_cursor
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+@bp.before_app_request
+def load_logged_in_user():
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        g.user = None
+    else:
+        c = get_cursor()
+        c.execute('SELECT * FROM user_accounts WHERE id = %s', (user_id,))
+        g.user = c.fetchone()
+        c.close()
+
+def admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+        elif g.user[3] != 'admin':
+            return redirect(url_for('dashboard.view_table', table_name='items'))
+
+        return view(**kwargs)
+
+    return wrapped_view
+
 @bp.route('/register', methods=('GET', 'POST'))
+@admin_required
 def register():
     """Register a new user."""
     if request.method == 'POST':
@@ -36,7 +61,7 @@ def register():
             )
             c.connection.commit()
             c.close()
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.register'))
 
         flash(error)
 
@@ -64,27 +89,19 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user[0]
-            return redirect(url_for('index'))
+            if user[3] == 'admin':
+                return redirect(url_for('index'))
+            else:
+                return redirect(url_for('dashboard.view_table', table_name='items'))
 
         flash(error)
 
     return render_template('auth/login.html')
 
-@bp.before_app_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
-
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = get_cursor().execute(
-            'SELECT * FROM user_accounts WHERE id = %s', (user_id,)
-        )
-
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('auth.login'))
 
 def login_required(view):
     @functools.wraps(view)

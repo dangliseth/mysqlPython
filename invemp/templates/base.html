@@ -4,8 +4,10 @@
 <nav>
   <h1>Inventory Management</h1>
   <ul>
-      <li><span>{{ g.user['username'] }}</span>
+      {% if g.user %}
+      <li><span>{{ g.user[1] }}</span>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+      {% endif %}
   </ul>
 </nav>
 <section class="content">
