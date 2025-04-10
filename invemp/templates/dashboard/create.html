@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block header %}
+<h1>Create Entry in {{ table_name }}</h1>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  {% for column in columns %}
+    <div class="form-group">
+      <label for="{{ column }}">{{ column }}</label>
+      <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" required>
+    </div>
+  {% endfor %}
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

@@ -66,3 +66,14 @@ def create(table_name):
 
     if request.method == 'POST':
         values = [request.form.get(column) for column in columns]
+        placeholders = ', '.join(['%s'] * len(values))
+        query = f"INSERT INTO '{table_name}' ({', '.join(columns)}) VALUES ({placeholders})"
+
+        c = get_cursor()
+        c.execute(query, values)
+        c.connection.commit()
+        c.close()
+
+        flash(f"Successfully created new {table_name[:-1]}")
+        return redirect(url_for('dashboard.view_table', table_name=table_name))
+    return render_template('dashboard/create.html', table_name=table_name, columns=columns)
