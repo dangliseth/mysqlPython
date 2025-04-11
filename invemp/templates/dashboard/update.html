@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block header %}
+<h1>Update {{ item }}</h1>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% for column in columns %}
+      <div class="form-group">
+        {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
+        <label for="{{ column }}">{{ column }}</label>
+        <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+        value="{{ entry[column] }}" required>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
+{% endblock %}
