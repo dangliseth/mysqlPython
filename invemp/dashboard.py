@@ -119,7 +119,7 @@ def create(table_name):
         return redirect(url_for('dashboard.view_table', table_name=table_name))
     return render_template('dashboard/create.html', table_name=table_name, columns=columns)
 
-@bp.route('/view_table/<table_name>/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/view_table/<table_name>/<id>/update', methods=('GET', 'POST'))
 @admin_required
 def update(id, table_name):
     entry = get_entry(id, table_name)
@@ -132,16 +132,20 @@ def update(id, table_name):
 
     if request.method == 'POST':
         values = []
+        update_columns = []
         for column in columns:
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
+                id_column = column
                 continue
             if column == 'last_updated':
                 values.append(current_datetime)
+                update_columns.append(column)
             else:
                 values.append(request.form.get(column))
+                update_columns.append(column)
 
-        placeholders = ', '.join([f"`{col}` = %s" for col in columns])
-        query = f"UPDATE `{table_name}` SET {placeholders} WHERE `{columns[0]}` = %s"
+        placeholders = ', '.join([f"`{col}` = %s" for col in update_columns])
+        query = f"UPDATE `{table_name}` SET {placeholders} WHERE `{id_column}` = %s"
         values.append(id)
 
         c = get_cursor()
