@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block header %}
-<h1>Create Entry in {{ table_name }}</h1>
+<h1>{% block title%}Create Entry in {{ table_name }}{% endblock%}</h1>
 {% endblock %}
 
 {% block content %}
@@ -10,7 +10,16 @@
     <div class="form-group">
       {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
       <label for="{{ column }}">{{ column }}</label>
-      <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" required>
+      {% if column in dropdown_options %}
+        <!-- Render dropdown menu for specific columns -->
+        <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+          {% for option in dropdown_options[column] %}
+          <option value="{{ option }}">{{ option }}</option>
+          {% endfor %}
+        </select>
+        {% else %}
+        <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" required>
+        {% endif %}
     </div>
   {% endif %}
   {% endfor %}

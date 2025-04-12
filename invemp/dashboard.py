@@ -80,6 +80,11 @@ def create(table_name):
     columns = [row[0] for row in c.fetchall()]
     c.close()
 
+    dropdown_options = {
+        'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
+        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5']
+    }
+
     id_column = None
     for column in columns:
         if column == 'id' or column.endswith('_id'):
@@ -117,7 +122,8 @@ def create(table_name):
 
         flash(f"Successfully created new {table_name[:-1]}")
         return redirect(url_for('dashboard.view_table', table_name=table_name))
-    return render_template('dashboard/create.html', table_name=table_name, columns=columns)
+    return render_template('dashboard/create.html', table_name=table_name, 
+                           columns=columns, dropdown_options=dropdown_options)
 
 @bp.route('/view_table/<table_name>/<id>/update', methods=('GET', 'POST'))
 @admin_required
@@ -128,6 +134,11 @@ def update(id, table_name):
     c.execute(f"DESCRIBE `{table_name}`")
     columns = [row[0] for row in c.fetchall()]
     c.close()
+
+    dropdown_options = {
+        'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
+        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5']
+    }
     current_datetime = datetime.datetime.now()
 
     if request.method == 'POST':
@@ -155,4 +166,5 @@ def update(id, table_name):
 
         flash(f"Successfully updated {table_name[:-1]}")
         return redirect(url_for('dashboard.view_table', table_name=table_name))
-    return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns)
+    return render_template('dashboard/update.html', entry=entry, table_name=table_name, 
+                           columns=columns, dropdown_options=dropdown_options)

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block header %}
-<h1>Update {{ entry[1] }}</h1>
+<h1>{% block title %}Update {{ entry[1] if table_name == 'employees' else entry[2] }}{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
@@ -10,8 +10,19 @@
       <div class="form-group">
         {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
         <label for="{{ column }}">{{ column }}</label>
+        {% if column in dropdown_options %}
+        <!-- Render dropdown menu for specific columns -->
+        <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+          {% for option in dropdown_options[column] %}
+          <option value="{{ option }}" {% if entry[loop.index0] == option %}selected{% endif %}>
+            {{ option }}
+          </option>
+          {% endfor %}
+        </select>
+        {% else %}
         <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
         value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
+        {% endif %}
         {% endif %}
       </div>
     {% endfor %}
