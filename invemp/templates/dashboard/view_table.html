@@ -2,7 +2,9 @@
  
 {% block header %}
 <h1>{% block title %} {{ table_name }} {% endblock %}</h1>
-{% if g.user[3] == 'admin' %}
+{% if table_name == 'user_accounts' and g.user[3] == 'admin' %}
+<a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
+{% elif g.user[3] == 'admin' %}
 <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
 {% endif %}
 {% endblock %}

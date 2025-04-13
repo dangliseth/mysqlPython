@@ -42,6 +42,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         account_type = request.form['type']
+        dropdown_options = {account_type: ['admin', 'user']}
         c = get_cursor()
         error = None
 
@@ -61,11 +62,11 @@ def register():
             )
             c.connection.commit()
             c.close()
-            return redirect(url_for('auth.register'))
+            return redirect(url_for('auth.register', dropdown_options=dropdown_options))
 
         flash(error)
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', dropdown_options=dropdown_options)
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():

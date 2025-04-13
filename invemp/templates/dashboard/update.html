@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block header %}
-<h1>{% block title %}Update {{ entry[1] if table_name == 'employees' else entry[2] }}{% endblock %}</h1>
+<h1>{% block title %}Update {{ entry[1] if table_name == 'employees' or table_name == 'user_accounts' else entry[2] }}{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}

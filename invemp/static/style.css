@@ -1,1 +1,9 @@
-html { font-family: 'Nunito'; background-color: maroon;}
+html { font-family: 'Grandstander';}
+h1 { font-family: 'OCR A';}
+.content form {  display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Changed from vh to rem for better consistency */
+    max-width: 20rem; /* Better than vw for forms */
+    width: 100%; /* Important for responsiveness */
+    margin: 0 auto; /* Horizontal centering */
+    padding: 2rem;}
