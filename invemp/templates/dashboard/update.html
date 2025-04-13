@@ -14,7 +14,7 @@
         <!-- Render dropdown menu for specific columns -->
         <select class="form-control" id="{{ column }}" name="{{ column }}" required>
           {% for option in dropdown_options[column] %}
-          <option value="{{ option }}" {% if entry[loop.index0] == option %}selected{% endif %}>
+          <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
             {{ option }}
           </option>
           {% endfor %}

@@ -82,7 +82,7 @@ def create(table_name):
 
     dropdown_options = {
         'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
-        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5']
+        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5', 'Department 6']
     }
 
     id_column = None
@@ -137,7 +137,7 @@ def update(id, table_name):
 
     dropdown_options = {
         'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
-        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5']
+        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5', 'Department 6']
     }
     current_datetime = datetime.datetime.now()
 
