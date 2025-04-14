@@ -112,4 +112,24 @@ button[type="submit"] {
     border-radius: 4px;
     outline: none;
 }
+div.create-edit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Full viewport height */
+    margin: 0; /* Remove default body margin */
+    padding: 1rem; /* Add some breathing room */
+}
+.create-edit form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 15rem;
+    /* Remove the manual margins - flex parent handles centering */
+    padding: 2rem;
+    border: 1px solid #ddd; /* Optional: visual boundary */
+    border-radius: 8px; /* Optional: rounded corners */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: subtle shadow */
+}
 /******************************************************/
