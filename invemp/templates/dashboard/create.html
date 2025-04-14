@@ -5,24 +5,26 @@
 {% endblock %}
 
 {% block content %}
-<form method="post">
-  {% for column in columns %}
-    <div class="form-group">
-      {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
-      <label for="{{ column }}">{{ column }}</label>
-      {% if column in dropdown_options %}
-        <!-- Render dropdown menu for specific columns -->
-        <select class="form-control" id="{{ column }}" name="{{ column }}" required>
-          {% for option in dropdown_options[column] %}
-          <option value="{{ option }}">{{ option }}</option>
-          {% endfor %}
-        </select>
-        {% else %}
-        <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" required>
-        {% endif %}
-    </div>
-  {% endif %}
-  {% endfor %}
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+<body class="create-edit">
+  <form method="post">
+    {% for column in columns %}
+      <div class="form-group">
+        {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
+        <label for="{{ column }}">{{ column }}</label>
+        {% if column in dropdown_options %}
+          <!-- Render dropdown menu for specific columns -->
+          <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+            {% for option in dropdown_options[column] %}
+            <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" required>
+          {% endif %}
+      </div>
+    {% endif %}
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</body>
 {% endblock %}

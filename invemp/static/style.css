@@ -1,9 +1,115 @@
-html { font-family: 'Grandstander';}
-h1 { font-family: 'OCR A';}
-.content form {  display: flex;
+/************* Global elements ***********************/
+html {font-family: 'Bahnschrift', 'Cambria', serif;}
+h1 {
+    font-family: 'Felix Titling', 'OCR A', monospace;
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+.flash {
+    position: fixed; /* or 'absolute' if inside a positioned container */
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 15rem; /* Match your form width */
+    margin: 0;
+    padding: 1em;
+    background: #badff5;
+    border: 1px solid #377ba8;
+    text-align: center;
+    z-index: 1000;
+    /* Animation for smooth appearance */
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/********************************************************/
+
+/************************* Login page ******************/
+.content form.auth {
+    display: flex;
     flex-direction: column;
-    gap: 1rem; /* Changed from vh to rem for better consistency */
-    max-width: 20rem; /* Better than vw for forms */
+    gap: 0.5rem; /* Changed from vh to rem for better consistency */
+    max-width: 15rem; /* Better than vw for forms */
     width: 100%; /* Important for responsiveness */
-    margin: 0 auto; /* Horizontal centering */
-    padding: 2rem;}
+    margin: 11rem auto; /* Horizontal centering */
+    padding-top: 8rem;}
+
+.content form input { 
+    font-family: 'Bahnschrift', 'Cambria', serif;  
+    border: 1px solid black;
+    border-radius: 4px;
+    outline: none;
+    padding: 0.3rem 0;
+    }
+    
+.content form input:focus,
+.content form input:valid {
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+    }
+.content form input[type="submit"],
+button[type="submit"] {
+    border: 1px solid black;
+    font-size: 1.1rem;
+}
+.content form input[type="submit"]:hover,
+button[type="submit"]:hover {
+    background-color: rgb(63, 63, 63);
+    color: white;
+}
+.content form input[type="submit"]:active,
+button[type="submit"]:active {
+    background-color: black;
+    color: white;
+}
+
+#login-page {
+    background-color: #ffba50;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+div#image {
+    background-image: url('/static/images/MLQU_NEWLOGO.jpeg');
+    background-size: 30%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: white;
+    width: 100vw;
+    height: 29vh;
+    position: absolute;
+    top: 16%;
+    left: 50%;
+    transform: translate(-50%, -20%);
+}
+div#title {
+    background-color: maroon;
+    width: 20vw;
+    height: 100vh;
+    position: absolute;
+    top: 30%;
+    left: 20%;
+    transform: translate(-50%, -30%);
+}
+div#title h1 {
+    color: white;
+    font-size: 1.7rem;
+    text-align: center;
+    line-height: 2;
+    letter-spacing: 3px;
+    margin-top: 17rem;
+}
+/********************************************************/
+
+/***********************create/edit page*****************/
+button[type="submit"] {
+    padding: 0.3rem 0.5rem;
+    font-family: 'Bahnschrift', 'Cambria', serif;  
+    border: 1px solid black;
+    border-radius: 4px;
+    outline: none;
+}
+/******************************************************/

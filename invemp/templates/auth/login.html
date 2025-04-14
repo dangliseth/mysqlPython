@@ -1,15 +1,25 @@
 {% extends 'base.html' %}
 
+{% block title %}Log In{% endblock %}
+
 {% block header %}
-  <h1>{% block title %}Log In{% endblock %}</h1>
+  <div id='image'>
+    <!--<img src="{{ url_for('static', filename='images/MLQU-logo-2.png') }}" alt="MLQU Logo" class="auth">-->
+  </div>
+  <div id='title'>
+    <h1>Inventory Management</h1>
+  </div>
 {% endblock %}
 
+
 {% block content %}
-  <form method="post">
+<body id="login-page">
+  <form method="post" class="auth">
     <label for="username">Username</label>
     <input name="username" id="username" required>
     <label for="password">Password</label>
     <input type="password" name="password" id="password" required>
     <input type="submit" value="Log In">
   </form>
+</body>
 {% endblock %}

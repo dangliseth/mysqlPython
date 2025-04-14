@@ -2,7 +2,6 @@
 <title>{% block title %}{% endblock %} - Inventory</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
-  <h1><strong>Inventory Management</h1></strong>
   <ul>
       {% if g.user %}
       <li><span>{{ g.user[1] }}</span>
@@ -15,7 +14,7 @@
     {% block header %}{% endblock %}
   </header>
   {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
+  <div class="flash">{{ message }}</div>
   {% endfor %}
   {% block content %}{% endblock %}
 </section>
