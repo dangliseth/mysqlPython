@@ -1,7 +1,7 @@
 import functools
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -70,6 +70,8 @@ def register():
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+    if g.user:  # If the user is already logged in, redirect to the index page
+        return redirect(url_for('dashboard.index'))
     """Log in a user."""
     if request.method == 'POST':
         username = request.form['username']
@@ -96,6 +98,11 @@ def login():
                 return redirect(url_for('dashboard.view_table', table_name='items'))
 
         flash(error)
+        response = make_response(render_template('auth/login.html'))
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
 
     return render_template('auth/login.html')
 

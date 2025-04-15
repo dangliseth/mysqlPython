@@ -1,7 +1,7 @@
 /************* Global elements ***********************/
 html {font-family: 'Bahnschrift', 'Cambria', serif;}
 h1 {
-    font-family: 'Felix Titling', 'OCR A', monospace;
+    font-family: 'Oswald', 'OCR A', monospace;
     user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -30,15 +30,33 @@ h1 {
 /********************************************************/
 
 /************************* Login page ******************/
+#login-page {
+    background-color: #ffba50;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
+    margin: 0; /* Remove default margin */
+    
+    /* Flex container properties */
+    display: flex;
+    justify-content: center; /* Horizontal centering */
+    align-items: center; /* Vertical centering */
+    
+    /* Optional: Add padding to prevent form from touching edges */
+    box-sizing: border-box;
+}
 .content form.auth {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Changed from vh to rem for better consistency */
-    max-width: 15rem; /* Better than vw for forms */
-    width: 100%; /* Important for responsiveness */
-    margin: 11rem auto; /* Horizontal centering */
-    padding-top: 8rem;}
-
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 20rem;
+    padding: 2rem;
+    background-color: #5095ff;
+    border-radius: 6px;
+    transform: translateY(40%);
+    box-shadow: -10px 8px 0px #ff6250;
+}
 .content form input { 
     font-family: 'Bahnschrift', 'Cambria', serif;  
     border: 1px solid black;
@@ -46,37 +64,67 @@ h1 {
     outline: none;
     padding: 0.3rem 0;
     }
-    
+.content form input#username,
+.content form input[type="password"] {
+    font-size: 14px;
+    border-radius: 6px;
+    line-height: 1;
+    padding: 0 10px;
+    transition: box-shadow 100ms ease-in, border 100ms ease-in, background-color 100ms ease-in;
+    border: 2px solid #dee1e2;
+    color: rgb(14, 14, 16);
+    background: #dee1e2;
+    display: block;
+    height: 2rem;
+}
+.content form input#username:hover,
+.content form input[type="password"]:hover {
+    border-color: #a0a0a0;
+}
+.content form input#username:focus,
+.content form input[type="password"]:focus{
+    border-color: #ff8a7d;
+    background: #fff;
+}
 .content form input:focus,
 .content form input:valid {
     box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
     }
 .content form input[type="submit"],
 button[type="submit"] {
-    border: 1px solid black;
-    font-size: 1.1rem;
+    display: inline-block;
+    outline: 0;
+    border: 0;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease,transform 0.15s ease;
+    will-change: box-shadow,transform;
+    background: #FCFCFD;
+    box-shadow: 0px 2px 4px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
+    height: 48px;
+    padding: 0 26px;
+    font-size: 18px;
+    border-radius: 6px;
+    color: black;
+    transition: box-shadow 0.15s ease,transform 0.15s ease;
 }
 .content form input[type="submit"]:hover,
 button[type="submit"]:hover {
-    background-color: rgb(63, 63, 63);
-    color: white;
+    box-shadow: 0px 4px 8px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
+    transform: translateY(-2px);
 }
 .content form input[type="submit"]:active,
-button[type="submit"]:active {
-    background-color: black;
+button[type="submit"]:active{
+    box-shadow: inset 0px 3px 7px #d6d6e7;
+    background-color: #3b2501;
     color: white;
+    transform: translateY(2px);
 }
 
-#login-page {
-    background-color: #ffba50;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
 div#image {
     background-image: url('/static/images/MLQU_NEWLOGO.jpeg');
     background-size: 30%;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: 55%;
     background-color: white;
     width: 100vw;
     height: 29vh;
@@ -84,6 +132,7 @@ div#image {
     top: 16%;
     left: 50%;
     transform: translate(-50%, -20%);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
 }
 div#title {
     background-color: maroon;
@@ -93,13 +142,13 @@ div#title {
     top: 30%;
     left: 20%;
     transform: translate(-50%, -30%);
+    box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
 }
 div#title h1 {
     color: white;
-    font-size: 1.7rem;
+    font-size: 2.5rem;
     text-align: center;
     line-height: 2;
-    letter-spacing: 3px;
     margin-top: 17rem;
 }
 /********************************************************/
