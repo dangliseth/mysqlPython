@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block  header%}
+<h1>{% block title %} Database {% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="table-buttons">
+  {% for table in tables %}
+    <a href="{{ url_for('dashboard.view_table', table_name=table) }}" 
+       class="btn btn-table">
+      {{ table }}
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -28,7 +28,7 @@ def admin_required(view):
         if g.user is None:
             return redirect(url_for('auth.login'))
         elif g.user[3] != 'admin':
-            return redirect(url_for('dashboard.view_table', table_name='items'))
+            return redirect(url_for('index'))
 
         return view(**kwargs)
 
@@ -92,24 +92,27 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user[0]
-            if user[3] == 'admin':
-                return redirect(url_for('index'))
-            else:
-                return redirect(url_for('dashboard.view_table', table_name='items'))
+            response = redirect(url_for('index'))
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
 
         flash(error)
-        response = make_response(render_template('auth/login.html'))
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-        return response
 
-    return render_template('auth/login.html')
+    response = make_response(render_template('auth/login.html'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
 
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('auth.login'))
+    response = redirect(url_for('auth.login'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    return response
 
 def login_required(view):
     @functools.wraps(view)

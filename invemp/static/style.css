@@ -27,6 +27,9 @@ h1 {
     from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+nav {
+    list-style: none;
+}
 /********************************************************/
 
 /************************* Login page ******************/
@@ -48,26 +51,26 @@ h1 {
 .content form.auth {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
     width: 100%;
     max-width: 20rem;
     padding: 2rem;
     background-color: #5095ff;
-    border-radius: 6px;
+    border-radius: 16px;
     transform: translateY(40%);
     box-shadow: -10px 8px 0px #ff6250;
 }
 .content form input { 
     font-family: 'Bahnschrift', 'Cambria', serif;  
     border: 1px solid black;
-    border-radius: 4px;
+    border-radius: 12px;
     outline: none;
     padding: 0.3rem 0;
     }
 .content form input#username,
 .content form input[type="password"] {
     font-size: 14px;
-    border-radius: 6px;
+    border-radius: 10px;
     line-height: 1;
     padding: 0 10px;
     transition: box-shadow 100ms ease-in, border 100ms ease-in, background-color 100ms ease-in;
@@ -90,8 +93,7 @@ h1 {
 .content form input:valid {
     box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
     }
-.content form input[type="submit"],
-button[type="submit"] {
+.content form input[type="submit"] {
     display: inline-block;
     outline: 0;
     border: 0;
@@ -107,16 +109,12 @@ button[type="submit"] {
     color: black;
     transition: box-shadow 0.15s ease,transform 0.15s ease;
 }
-.content form input[type="submit"]:hover,
-button[type="submit"]:hover {
+.content form input[type="submit"]:hover {
     box-shadow: 0px 4px 8px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
     transform: translateY(-2px);
 }
-.content form input[type="submit"]:active,
-button[type="submit"]:active{
+.content form input[type="submit"]:active{
     box-shadow: inset 0px 3px 7px #d6d6e7;
-    background-color: #3b2501;
-    color: white;
     transform: translateY(2px);
 }
 
@@ -145,7 +143,7 @@ div#title {
     box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
 }
 div#title h1 {
-    color: white;
+    color: #ffddaa;
     font-size: 2.5rem;
     text-align: center;
     line-height: 2;
@@ -180,5 +178,59 @@ div.create-edit {
     border: 1px solid #ddd; /* Optional: visual boundary */
     border-radius: 8px; /* Optional: rounded corners */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: subtle shadow */
+}
+/******************************************************/
+
+/*********************** Index page *****************/
+.tables_nav {
+    display: flex;
+    gap: 1.5rem; /* Space between items */
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    list-style: none;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-self: center; /* Allows wrapping on small screens */
+  }
+  
+.nav-item {
+display: flex;
+align-items: center;
+}
+
+#current-table {
+margin: 0;
+font-size: 1.5rem;
+color: maroon; /* Your preferred color */
+}
+
+#table-link {
+text-decoration: none;
+font-size: 1.2rem;
+color: #666; /* Slightly muted for non-active tables */
+padding: 0.25rem 0.5rem;
+border-radius: 4px;
+transition: all 0.2s ease;
+}
+
+#table-link:hover {
+color: #333; /* Highlight color */
+background-color: #f8f9fa; /* Subtle hover background */
+}
+
+/* Optional: Add visual indicator for current table */
+#current-table {
+position: relative;
+padding-bottom: 0.25rem;
+}
+
+#current-table::after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 2px;
+background-color: #ca841a;
 }
 /******************************************************/

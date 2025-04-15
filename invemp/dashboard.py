@@ -10,23 +10,14 @@ from invemp.db import get_cursor
 bp = Blueprint('dashboard', __name__)
 
 
-@bp.route('/')
-@admin_required
-def index():
-    c = get_cursor()
-    c.execute('SHOW TABLES')
-    tables = [table[0] for table in c.fetchall()]
-    c.close()
-
-    return render_template('dashboard/index.html', tables=tables)
-
-@bp.route('/view_table/<table_name>')
+@bp.route('/', defaults={'table_name': 'items'})
+@bp.route('/<table_name>')
 @login_required
-def view_table(table_name):
+def index(table_name):
     # check for admin access
     if g.user[3] != 'admin' and table_name != 'items':
         flash("You do not have permission to access this table.")
-        return redirect(url_for('dashboard.index'))
+        return redirect(url_for('dashboard.index', table_name))
     
 
     c = get_cursor()
@@ -47,7 +38,16 @@ def view_table(table_name):
         items = c.fetchall()
         columns = [column[0] for column in c.description]
     c.close()
-    return render_template('dashboard/view_table.html', items=items, columns=columns, table_name=table_name)
+
+    tables = get_tables()
+    return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables)
+
+def get_tables():
+    c = get_cursor()
+    c.execute("SHOW TABLES")
+    tables = [row[0] for row in c.fetchall()]
+    c.close()
+    return tables
 
 def get_entry(entry_id, table_name):
     c = get_cursor()
@@ -71,7 +71,15 @@ def get_entry(entry_id, table_name):
 
     return entry
 
-@bp.route('/view_table/<table_name>/create', methods=('GET', 'POST'))
+def get_dropdown_options():
+    dropdown_options = {
+        'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
+        'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
+                       'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library']
+    }
+    return dropdown_options
+
+@bp.route('/<table_name>/create', methods=('GET', 'POST'))
 @admin_required
 def create(table_name):
     c = get_cursor()
@@ -80,10 +88,7 @@ def create(table_name):
     columns = [row[0] for row in c.fetchall()]
     c.close()
 
-    dropdown_options = {
-        'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
-        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5', 'Department 6']
-    }
+    dropdown_options = get_dropdown_options()
 
     id_column = None
     for column in columns:
@@ -125,7 +130,7 @@ def create(table_name):
     return render_template('dashboard/create.html', table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options)
 
-@bp.route('/view_table/<table_name>/<id>/update', methods=('GET', 'POST'))
+@bp.route('/<table_name>/<id>/update', methods=('GET', 'POST'))
 @admin_required
 def update(id, table_name):
     entry = get_entry(id, table_name)
@@ -135,10 +140,7 @@ def update(id, table_name):
     columns = [row[0] for row in c.fetchall()]
     c.close()
 
-    dropdown_options = {
-        'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
-        'department': ['Department 1', 'Department 2', 'Department 3', 'Department 4', 'Department 5', 'Department 6']
-    }
+    dropdown_options = get_dropdown_options()
     current_datetime = datetime.datetime.now()
 
     if request.method == 'POST':
