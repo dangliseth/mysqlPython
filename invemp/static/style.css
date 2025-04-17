@@ -53,8 +53,8 @@ nav {
     flex-direction: column;
     gap: 1rem;
     width: 100%;
-    max-width: 20rem;
-    padding: 2rem;
+    max-width: clamp(30rem, 50vw, 60rem);
+    padding: clamp(2rem, 4vw, 3rem);
     background-color: #5095ff;
     border-radius: 16px;
     transform: translateY(40%);
@@ -120,12 +120,12 @@ nav {
 
 div#image {
     background-image: url('/static/images/MLQU_NEWLOGO.jpeg');
-    background-size: 30%;
+    background-size: 35%;
     background-repeat: no-repeat;
     background-position: 55%;
     background-color: white;
     width: 100vw;
-    height: 29vh;
+    height: clamp(150px, 29vh, 350px);
     position: absolute;
     top: 16%;
     left: 50%;
@@ -134,20 +134,23 @@ div#image {
 }
 div#title {
     background-color: maroon;
-    width: 20vw;
+    width: 24vw; /* Or use a fixed width (e.g., 300px) if preferred */
+    max-width: 400px;
     height: 100vh;
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
     position: absolute;
-    top: 30%;
-    left: 20%;
-    transform: translate(-50%, -30%);
+    top: 0;
+    left: 10%;
     box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
 }
 div#title h1 {
-    color: #ffddaa;
-    font-size: 2.5rem;
+    color: #ffe7c2;
+    font-size: clamp(1rem, 3vw, 4rem);
     text-align: center;
-    line-height: 2;
-    margin-top: 17rem;
+    line-height: 3;
+    margin: 0; /* Remove fixed margin */
 }
 /********************************************************/
 
