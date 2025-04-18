@@ -37,12 +37,12 @@ def admin_required(view):
 @bp.route('/register', methods=('GET', 'POST'))
 @admin_required
 def register():
+    dropdown_options = {'admin', 'user'}
     """Register a new user."""
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         account_type = request.form['type']
-        dropdown_options = {account_type: ['admin', 'user']}
         c = get_cursor()
         error = None
 

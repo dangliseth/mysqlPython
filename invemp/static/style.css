@@ -1,5 +1,11 @@
 /************* Global elements ***********************/
-html {font-family: 'Bahnschrift', 'Cambria', serif;}
+html {
+    font-family: 'Bahnschrift', 'Cambria', serif;
+}
+body {
+    margin: 0;
+  padding: 0;
+}
 h1 {
     font-family: 'Oswald', 'OCR A', monospace;
     user-select: none;
@@ -30,42 +36,43 @@ h1 {
 /********************************************************/
 
 /************************* Login page ******************/
-#login-page {
+.auth-page {
     background-color: #ffba50;
     overflow-x: hidden;
     overflow-y: auto;
-    min-height: 100vh;
-    margin: 0; /* Remove default margin */
+    height: 100vh;
+    flex: 1;
+    margin: 0;
+    padding: 0; /* Remove default margin */
     
     /* Flex container properties */
     display: flex;
     justify-content: center; /* Horizontal centering */
     align-items: center; /* Vertical centering */
     
-    /* Optional: Add padding to prevent form from touching edges */
-    box-sizing: border-box;
 }
-.content form.auth {
+.auth-page form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     width: 100%;
-    max-width: clamp(30rem, 50vw, 60rem);
+    max-width: clamp(20rem, 12vw, 40rem);
     padding: clamp(2rem, 4vw, 3rem);
     background-color: #5095ff;
+    position: relative;
+    top: clamp(80px, 4vh, 100px);
+    left: clamp(120px, 4vw, 20px);
     border-radius: 16px;
-    transform: translateY(40%);
     box-shadow: -10px 8px 0px #ff6250;
 }
-.content form input { 
+.auth-page form input { 
     font-family: 'Bahnschrift', 'Cambria', serif;  
     border: 1px solid black;
     border-radius: 12px;
     outline: none;
-    padding: 0.3rem 0;
     }
-.content form input#username,
-.content form input[type="password"] {
+.auth-page form input#username,
+.auth-page form input#password {
     font-size: 14px;
     border-radius: 10px;
     line-height: 1;
@@ -77,21 +84,22 @@ h1 {
     display: block;
     height: 2rem;
 }
-.content form input#username:hover,
-.content form input[type="password"]:hover {
+.auth-page form input#username:hover,
+.auth-page form input#password:hover {
     border-color: #a0a0a0;
 }
-.content form input#username:focus,
-.content form input[type="password"]:focus{
+.auth-page form input#username:focus,
+.auth-page form input#password:focus{
     border-color: #ff8a7d;
     background: #fff;
 }
-.content form input:focus,
-.content form input:valid {
+.auth-page form input:focus,
+.auth-page form input:valid {
     box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
     }
-.content form input[type="submit"] {
+.auth-page form input[type="submit"] {
     display: inline-block;
+    align-self: center;
     outline: 0;
     border: 0;
     cursor: pointer;
@@ -100,17 +108,17 @@ h1 {
     background: #FCFCFD;
     box-shadow: 0px 2px 4px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
     height: 48px;
-    padding: 0 26px;
+    width: 50%;
     font-size: 18px;
     border-radius: 6px;
     color: black;
     transition: box-shadow 0.15s ease,transform 0.15s ease;
 }
-.content form input[type="submit"]:hover {
+.auth-page form input[type="submit"]:hover {
     box-shadow: 0px 4px 8px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
     transform: translateY(-2px);
 }
-.content form input[type="submit"]:active{
+.auth-page form input[type="submit"]:active{
     box-shadow: inset 0px 3px 7px #d6d6e7;
     transform: translateY(2px);
 }
@@ -146,7 +154,8 @@ div#title h1 {
     color: #ffe7c2;
     font-size: clamp(1rem, 3vw, 4rem);
     text-align: center;
-    line-height: 3;
+    text-transform: uppercase;
+    line-height: 2;
     margin: 0; /* Remove fixed margin */
 }
 /********************************************************/
@@ -181,6 +190,16 @@ div.create-edit {
 }
 /******************************************************/
 
+/************************* Login page ******************/
+#reg-page {
+    background-color: white;
+}
+#reg-page form {
+    background-color: #ff6250;
+    box-shadow: -10px 8px 0px #5095ff;
+}
+/******************************************************/
+
 /*********************** Index page *****************/
 nav {
     display: flex;
@@ -196,17 +215,18 @@ nav ul li {
     align-items: center;
 }
 /* From Uiverse.io by doniaskima */ 
-nav button.btn-53,
-nav button.btn-53 *,
-nav button.btn-53 :after,
-nav button.btn-53 :before,
-nav button.btn-53:after,
-nav button.btn-53:before {
+nav a.btn-53,
+nav a.btn-53 *,
+nav a.btn-53 :after,
+nav a.btn-53 :before,
+nav a.btn-53:after,
+nav a.btn-53:before {
   border: 0 solid;
   box-sizing: border-box;
+  text-decoration: none;
 }
 
-nav button.btn-53 {
+nav a.btn-53 {
   -webkit-tap-highlight-color: transparent;
   -webkit-appearance: button;
   appearance: button;
@@ -225,23 +245,24 @@ nav button.btn-53 {
   padding: 0;
 }
 
-nav button.btn-53:disabled {
+nav a.btn-53:disabled {
   cursor: default;
 }
 
-nav button.btn-53:-moz-focusring {
+nav a.btn-53:-moz-focusring {
   outline: auto;
 }
 
-nav button.btn-53 svg {
+nav a.btn-53 svg {
   display: block;
 }
 
-nav button.btn-53 [hidden] {
+nav a.btn-53 [hidden] {
   display: none;
 }
 
-nav button.btn-53 {
+nav a.btn-53 {
+    text-decoration: none;
   border: 1px solid;
   border-radius: 999px;
   box-sizing: border-box;
@@ -253,7 +274,7 @@ nav button.btn-53 {
   text-transform: uppercase;
 }
 
-nav button.btn-53 .original {
+nav a.btn-53 .original {
   background: #fff;
   color: #000;
   display: grid;
@@ -264,47 +285,57 @@ nav button.btn-53 .original {
   transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1);
 }
 
-nav button.btn-53:hover .original {
+nav a.btn-53:hover .original {
+    text-decoration: none;
   transform: translateY(100%);
 }
 
-nav button.btn-53 .letters {
+nav a.btn-53 .letters {
   display: inline-flex;
+  text-decoration: none;
 }
 
-nav button.btn-53 span {
-  opacity: 0;
-  transform: translateY(-15px);
-  transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.2s;
+nav a.btn-53 span {
+text-decoration: none;
+opacity: 0;
+transform: translateY(-15px);
+transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.2s;
 }
 
-nav button.btn-53 span:nth-child(2n) {
+nav a.btn-53 span:nth-child(2n) {
   transform: translateY(15px);
+  text-decoration: none;
 }
 
-nav button.btn-53:hover span {
+nav a.btn-53:hover span {
   opacity: 1;
   transform: translateY(0);
+  text-decoration: none;
 }
 
-nav button.btn-53:hover span:nth-child(2) {
+nav a.btn-53:hover span:nth-child(2) {
   transition-delay: 0.1s;
+  text-decoration: none;
 }
 
-nav button.btn-53:hover span:nth-child(3) {
+nav a.btn-53:hover span:nth-child(3) {
   transition-delay: 0.2s;
+  text-decoration: none;
 }
 
-nav button.btn-53:hover span:nth-child(4) {
+nav a.btn-53:hover span:nth-child(4) {
   transition-delay: 0.3s;
+  text-decoration: none;
 }
 
-nav button.btn-53:hover span:nth-child(5) {
+nav a.btn-53:hover span:nth-child(5) {
   transition-delay: 0.4s;
+  text-decoration: none;
 }
 
-nav button.btn-53:hover span:nth-child(6) {
+nav a.btn-53:hover span:nth-child(6) {
   transition-delay: 0.5s;
+  text-decoration: none;
 }
 
 .tables_nav {

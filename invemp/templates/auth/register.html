@@ -5,13 +5,19 @@
 {% endblock %}
 
 {% block content %}
+<main class="auth-page" id="reg-page">
   <form method="post">
     <label for="username">Username</label>
     <input name="username" id="username" required>
     <label for="password">Password</label>
     <input type="password" name="password" id="password" required>
     <label for="type">Account type</label>
-    <input name="type" id="type" required>  
+    <select name="type" id="type" required>
+      {% for option in dropdown_options %}
+      <option value="{{ option }}">{{ option }}</option>
+      {% endfor %}
+    </select>
     <input type="submit" value="Register">
   </form>
+</main>
 {% endblock %}

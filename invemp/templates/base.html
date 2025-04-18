@@ -1,23 +1,23 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - Inventory</title>
 <link rel="icon" href="{{ url_for('static', filename='icons/favicon/favicon.ico') }}">
+<title>{% block title %}{% endblock %} - Inventory</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% if g.user %}
 <nav>
   <ul>
-      {% if g.user %}
       <li><span>{{ g.user[1] }}</span>
-      <li><button class="btn-53">
-        <a href="{{ url_for('auth.logout') }}" class="original">Log Out</a>
+      <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
+        <div class="original">Log Out</div>
         <div class="letters">
           <span>B</span>
           <span>Y</span>
           <span>E</span>
           <span>?</span>
         </div>
-      </button>
-      {% endif %}
+      </a>
   </ul>
 </nav>
+{% endif %}
 <section class="content">
   <header>
     {% block header %}{% endblock %}
