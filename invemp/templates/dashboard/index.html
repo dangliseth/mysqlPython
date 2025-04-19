@@ -35,7 +35,7 @@
     {% for item in items %}
       <tr>
         {% for value in item %}
-          <td>{{ value }}</td>
+        <td>{{ value }}</td>
         {% endfor %}
         <td>
           <a href="{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}" 

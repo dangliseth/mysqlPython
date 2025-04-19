@@ -27,6 +27,7 @@ h1 {
     z-index: 1000;
     /* Animation for smooth appearance */
     animation: fadeIn 0.3s ease-in-out;
+    transition: opacity 0.5s ease-out;
 }
 
 @keyframes fadeIn {
@@ -197,6 +198,9 @@ div.create-edit {
 #reg-page form {
     background-color: #ff6250;
     box-shadow: -10px 8px 0px #5095ff;
+    position: relative;
+    top: 0;
+    left: 0;
 }
 /******************************************************/
 

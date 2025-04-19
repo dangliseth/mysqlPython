@@ -62,7 +62,7 @@ def register():
             )
             c.connection.commit()
             c.close()
-            return redirect(url_for('auth.register', dropdown_options=dropdown_options))
+            return redirect(url_for('dashboard.index', table_name = 'user_accounts'))
 
         flash(error)
 

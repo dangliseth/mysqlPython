@@ -23,7 +23,21 @@
     {% block header %}{% endblock %}
   </header>
   {% for message in get_flashed_messages() %}
-  <div class="flash">{{ message }}</div>
+  <div class="flash" data-flash>{{ message }}</div>
   {% endfor %}
   {% block content %}{% endblock %}
 </section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessages = document.querySelectorAll('[data-flash]');
+    
+    flashMessages.forEach(message => {
+      // Remove after 5 seconds (5000ms)
+      setTimeout(() => {
+        message.style.opacity = '0';
+        setTimeout(() => message.remove(), 500); // Match this with CSS transition
+      }, 5000);
+    });
+  });
+  </script>

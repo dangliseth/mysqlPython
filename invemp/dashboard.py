@@ -32,6 +32,10 @@ def index(table_name):
         c.execute(query)
         items = c.fetchall()
         columns = [column[0] for column in c.description]
+    elif table_name == 'user_accounts':
+        c.execute(f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100")
+        columns = [column[0] for column in c.description if column != 'password']
+        items = c.fetchall()
     else:
         # Generic query for other tables
         c.execute(f"SELECT * FROM `{table_name}` LIMIT 100")
