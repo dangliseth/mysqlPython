@@ -5,7 +5,7 @@
 {% if g.user %}
 <nav>
   <ul>
-      <li><span>{{ g.user[1] }}</span>
+      <li id="current-user"><span>{{ g.user[1] }}</span>
       <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
         <div class="original">Log Out</div>
         <div class="letters">
@@ -16,6 +16,24 @@
         </div>
       </a>
   </ul>
+  {% if g.user[3] == 'admin'%}
+  <ul class="tables-nav">
+      {% if table_name == 'user_accounts' and g.user[3] == 'admin' %}
+      <a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
+      {% elif g.user[3] == 'admin' %}
+      <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
+      {% endif %}
+    {% for table in tables %}
+    <li class="nav-item">
+      {% if table == table_name %}
+      <h1 class="tables" id="current-table">{{ table_name }}</h1>
+      {% else %}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 </nav>
 {% endif %}
 <section class="content">

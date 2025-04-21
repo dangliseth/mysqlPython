@@ -159,9 +159,9 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
                 id_column = column
                 continue
-            if column == 'employee':
+            ##if column == 'employee':
 
-            elif column == 'last_updated':
+            if column == 'last_updated':
                 values.append(current_datetime)
                 update_columns.append(column)
             else:

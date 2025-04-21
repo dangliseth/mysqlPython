@@ -31,6 +31,8 @@ def create_app(test_config=None):
     @app.route('/favicon.ico')
     def favicon():
         return redirect(url_for('static', filename='icons/favicon/favicon.ico'))
+    
+    
     from . import db
 
     db.init_app(app)

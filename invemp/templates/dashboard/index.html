@@ -1,25 +1,6 @@
 {% extends "base.html" %}
  
-{% block header %}
-{% if g.user[3] == 'admin'%}
-<ul class="tables_nav">
-  {% for table in tables %}
-  <li class="nav-item">
-    {% if table == table_name %}
-    <h1 class="tables" id="current-table">{% block title %} {{ table_name }} {% endblock %}</h1>
-    {% else %}
-    <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
-{% endif %}
-{% if table_name == 'user_accounts' and g.user[3] == 'admin' %}
-  <a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
-{% elif g.user[3] == 'admin' %}
-  <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
-{% endif %}
-{% endblock %}
+{% block title %} {{ table_name }} {% endblock %}
 
 {% block content %}
 <main id="tables-view">
