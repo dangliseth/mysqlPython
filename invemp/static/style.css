@@ -29,10 +29,53 @@ h1 {
   animation: fadeIn 0.3s ease-in-out;
   transition: opacity 0.5s ease-out;
 }
-
 @keyframes fadeIn {
   from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* Filter Form Styling */
+#filter-form {
+  position: relative;
+  display: inline-block;
+}
+
+#filter-icon {
+  cursor: pointer;
+  font-size: 1.5rem;
+  background-color: #5095ff;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#filter-icon:hover {
+  background-color: #377ba8;
+  transform: scale(1.1);
+}
+
+#filter-fields {
+  display: none; /* Initially hidden */
+  position: absolute;
+  top: 100%; /* Place it just below the search icon */
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  width: 200px; /* Set a fixed width for the form */
+  z-index: 1000;
+}
+
+#filter-form:focus-within #filter-fields {
+  display: flex; /* Show the filter fields when the form is focused */
+  flex-direction: column;
+  gap: 0.5rem;
 }
 /********************************************************/
 
@@ -123,7 +166,6 @@ h1 {
   box-shadow: inset 0px 3px 7px #d6d6e7;
   transform: translateY(2px);
 }
-
 div#image {
   background-image: url('/static/images/MLQU_NEWLOGO.jpeg');
   background-size: 35%;
@@ -227,7 +269,7 @@ table#main-table thead {
   font-weight: bold; /* Emphasize header text */
 }
 table#main-table th, table#main-table td {
-  padding: 0.75rem 1rem; /* Add padding for better spacing */
+  padding: 0.7rem 1rem; /* Add padding for better spacing */
   text-align: left; /* Align text to the left */
   border-bottom: 1px solid #ddd; /* Subtle border between rows */
 }
@@ -287,7 +329,7 @@ nav a.btn-53 {
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
     Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  font-size: 100%;
+  font-size: 70%;
   font-weight: lighter;
   line-height: 1;
   margin: 0;
@@ -315,7 +357,7 @@ nav a.btn-53 {
   display: block;
   font-weight: 900;
   overflow: hidden;
-  padding: 0.4rem 1.4rem;
+  padding: 0.4rem 1.2rem;
   position: relative;
   text-transform: uppercase;
 }
@@ -394,7 +436,7 @@ nav a.btn-53:hover span:nth-child(6) {
 #table-link {
   text-decoration: none;
   font-size: 1.2rem;
-  color: #b6b6b6; /* Slightly muted for non-active tables */
+  color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
   padding: 0 0.5rem;
   border-radius: 4px;
   transition: all 0.2s ease;

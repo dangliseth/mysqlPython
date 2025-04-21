@@ -44,7 +44,9 @@ def index(table_name):
     c.close()
 
     tables = get_tables()
-    return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables)
+    filters = {}
+    return render_template('dashboard/index.html', items=items, columns=columns, 
+                           table_name=table_name, tables=tables, filters = filters)
 
 def get_tables():
     c = get_cursor()
@@ -181,3 +183,32 @@ def update(id, table_name):
         return redirect(url_for('dashboard.index', table_name=table_name))
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options)
+
+@bp.route('/<table_name>/filter', methods=('GET', 'POST'))
+@login_required
+def filter_items(table_name):
+    c = get_cursor()
+
+    # Fetch the column names for the table
+    c.execute(f"DESCRIBE `{table_name}`")
+    columns = [row[0] for row in c.fetchall()]
+
+    # Get filter criteria from the request
+    filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
+
+    # Build the WHERE clause dynamically
+    where_clause = " AND ".join([f"`{col}` LIKE %s" for col in filters.keys()])
+    sql_query = f"SELECT * FROM `{table_name}`"
+    if where_clause:
+        sql_query += f" WHERE {where_clause}"
+    sql_query += " LIMIT 100"
+
+    filter_values = [f"%{value}%" for value in filters.values()]
+
+    # Execute the query with filter values
+    c.execute(sql_query, tuple(filter_values))
+    items = c.fetchall()
+    c.close()
+
+    tables = get_tables()
+    return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables, filters=filters)

@@ -4,27 +4,27 @@
 
 {% block content %}
 <main id="tables-view">
-<table class="table table-striped" id="main-table">
-  <thead>
-    <tr>
-      {% for column in columns %}
-        <th>{{ column }}</th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in items %}
-      {% if g.user[3] == 'admin' %}
-      <tr onclick="window.location='{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}'" style="cursor: pointer;">
-      {% else %}
+  <table class="table table-striped" id="main-table">
+    <thead>
       <tr>
-      {% endif %}
-        {% for value in item %}
-        <td>{{ value }}</td>
+        {% for column in columns %}
+          <th>{{ column }}</th>
         {% endfor %}
       </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        {% if g.user[3] == 'admin' %}
+        <tr onclick="window.location='{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}'" style="cursor: pointer;">
+        {% else %}
+        <tr>
+        {% endif %}
+          {% for value in item %}
+          <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </main>
 {% endblock %}
