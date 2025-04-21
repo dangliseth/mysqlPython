@@ -33,47 +33,249 @@ h1 {
   from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
+nav {
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  background-color: black;
+  padding-bottom: 0.5rem;
+  gap: 4rem;
+}
+nav h1 {
+  justify-self: center;
+  align-self: center;
+  color: white;
+}
+nav ul li {
+  list-style: none;
+  color: white
+}
+nav ul li#current-user {
+  text-align: center;
+}
+/* From Uiverse.io by doniaskima */ 
+nav a.btn-53,
+nav a.btn-53 *,
+nav a.btn-53 :after,
+nav a.btn-53 :before,
+nav a.btn-53:after,
+nav a.btn-53:before {
+  border: 0 solid;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+nav a.btn-53 {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: button;
+  appearance: button;
+  background-color: #000;
+  background-image: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 70%;
+  font-weight: lighter;
+  line-height: 1;
+  margin: 0;
+  -webkit-mask-image: -webkit-radial-gradient(#000, #fff);
+  mask-image: -webkit-radial-gradient(#000, #fff);
+  padding: 0;
+}
+nav a.btn-53:disabled {
+  cursor: default;
+}
+nav a.btn-53:-moz-focusring {
+  outline: auto;
+}
+nav a.btn-53 svg {
+  display: block;
+}
+nav a.btn-53 [hidden] {
+  display: none;
+}
+nav a.btn-53 {
+  text-decoration: none;
+  border: 1px solid;
+  border-radius: 999px;
+  box-sizing: border-box;
+  display: block;
+  font-weight: 900;
+  overflow: hidden;
+  padding: 0.4rem 1.2rem;
+  position: relative;
+  text-transform: uppercase;
+}
+nav a.btn-53 .original {
+  background: #fff;
+  color: #000;
+  display: grid;
+  text-decoration: none;
+  inset: 0;
+  place-content: center;
+  position: absolute;
+  transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1);
+}
+nav a.btn-53:hover .original {
+  text-decoration: none;
+  transform: translateY(100%);
+}
+nav a.btn-53 .letters {
+  display: inline-flex;
+  text-decoration: none;
+}
+nav a.btn-53 span {
+text-decoration: none;
+opacity: 0;
+transform: translateY(-15px);
+transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.2s;
+}
+nav a.btn-53 span:nth-child(2n) {
+  transform: translateY(15px);
+  text-decoration: none;
+}
+nav a.btn-53:hover span {
+  opacity: 1;
+  transform: translateY(0);
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(2) {
+  transition-delay: 0.1s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(3) {
+  transition-delay: 0.2s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(4) {
+  transition-delay: 0.3s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(5) {
+  transition-delay: 0.4s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(6) {
+  transition-delay: 0.5s;
+  text-decoration: none;
+}
+.tables-nav {
+  display: flex;
+  gap: 1.5rem; /* Space between items */
+  margin: 0 2rem;
+  list-style: none;
+  align-self: center;
+  flex-wrap: wrap;
+  justify-self: center; /* Allows wrapping on small screens */
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+}
+#current-table {
+  margin: 0;
+  font-size: 1.5rem;
+  color: white;
+}
+#table-link {
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
+  padding: 0 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+#table-link:hover {
+  color: black; /* Highlight color */
+  background-color: #ffba50;
+  padding: 0.2rem 0.6rem; /* Subtle hover background */
+}
+/* Optional: Add visual indicator for current table */
+#current-table {
+  position: relative;
+  padding-bottom: 0.25rem;
+}
+#current-table::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: maroon;
+}
+.tables-nav .btn-create {
+  text-decoration: none;
+  color: white;
+  background-color: #ff6250;
+  padding: 0.6rem 0.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+.tables-nav .btn-create:hover {
+  background-color: #e5533d; /* Slightly darker shade for hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+.tables-nav .btn-create:active {
+  background-color: #a33521; /* Even darker shade for active state */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
+  transform: translateY(2px); /* Slight press effect */
+}
 /* Filter Form Styling */
 #filter-form {
   position: relative;
   display: inline-block;
+  align-self: center;
 }
 
+/* Hide the checkbox input */
+.filter-toggle {
+  display: none;
+}
+
+/* Style the filter icon */
 #filter-icon {
   cursor: pointer;
-  font-size: 1.5rem;
-  background-color: #5095ff;
-  color: white;
+  background-color: #2b8b34;
+  color: black;
   padding: 0.5rem;
   border-radius: 50%;
   display: flex;
-  align-items: center;
+  align-content: center;
   justify-content: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 #filter-icon:hover {
-  background-color: #377ba8;
+  background-color: #35cc44;
   transform: scale(1.1);
 }
 
+/* Hide filter fields by default */
 #filter-fields {
-  display: none; /* Initially hidden */
+  display: none;
   position: absolute;
-  top: 100%; /* Place it just below the search icon */
-  left: 0;
+  top: 100%;
+  right: 20%;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   padding: 1rem;
-  width: 200px; /* Set a fixed width for the form */
+  width: 200px;
   z-index: 1000;
 }
 
-#filter-form:focus-within #filter-fields {
-  display: flex; /* Show the filter fields when the form is focused */
+/* Show filter fields when checkbox is checked */
+.filter-toggle:checked + #filter-icon + #filter-fields {
+  display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
@@ -286,197 +488,5 @@ table#main-table th {
 }
 table#main-table td:last-child {
   text-align: center; /* Center-align the last column (e.g., actions) */
-}
-nav {
-  display: flex;
-  list-style: none;
-  flex-wrap: wrap;
-  background-color: black;
-  padding-bottom: 0.5rem;
-  gap: 1rem;
-}
-nav h1 {
-  justify-self: center;
-  align-self: center;
-  color: white;
-}
-nav ul li {
-  list-style: none;
-  color: white
-}
-nav ul li#current-user {
-  text-align: center;
-}
-/* From Uiverse.io by doniaskima */ 
-nav a.btn-53,
-nav a.btn-53 *,
-nav a.btn-53 :after,
-nav a.btn-53 :before,
-nav a.btn-53:after,
-nav a.btn-53:before {
-  border: 0 solid;
-  box-sizing: border-box;
-  text-decoration: none;
-}
-nav a.btn-53 {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-appearance: button;
-  appearance: button;
-  background-color: #000;
-  background-image: none;
-  color: #fff;
-  cursor: pointer;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  font-size: 70%;
-  font-weight: lighter;
-  line-height: 1;
-  margin: 0;
-  -webkit-mask-image: -webkit-radial-gradient(#000, #fff);
-  mask-image: -webkit-radial-gradient(#000, #fff);
-  padding: 0;
-}
-nav a.btn-53:disabled {
-  cursor: default;
-}
-nav a.btn-53:-moz-focusring {
-  outline: auto;
-}
-nav a.btn-53 svg {
-  display: block;
-}
-nav a.btn-53 [hidden] {
-  display: none;
-}
-nav a.btn-53 {
-  text-decoration: none;
-  border: 1px solid;
-  border-radius: 999px;
-  box-sizing: border-box;
-  display: block;
-  font-weight: 900;
-  overflow: hidden;
-  padding: 0.4rem 1.2rem;
-  position: relative;
-  text-transform: uppercase;
-}
-nav a.btn-53 .original {
-  background: #fff;
-  color: #000;
-  display: grid;
-  text-decoration: none;
-  inset: 0;
-  place-content: center;
-  position: absolute;
-  transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1);
-}
-nav a.btn-53:hover .original {
-  text-decoration: none;
-  transform: translateY(100%);
-}
-nav a.btn-53 .letters {
-  display: inline-flex;
-  text-decoration: none;
-}
-nav a.btn-53 span {
-text-decoration: none;
-opacity: 0;
-transform: translateY(-15px);
-transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.2s;
-}
-nav a.btn-53 span:nth-child(2n) {
-  transform: translateY(15px);
-  text-decoration: none;
-}
-nav a.btn-53:hover span {
-  opacity: 1;
-  transform: translateY(0);
-  text-decoration: none;
-}
-nav a.btn-53:hover span:nth-child(2) {
-  transition-delay: 0.1s;
-  text-decoration: none;
-}
-nav a.btn-53:hover span:nth-child(3) {
-  transition-delay: 0.2s;
-  text-decoration: none;
-}
-nav a.btn-53:hover span:nth-child(4) {
-  transition-delay: 0.3s;
-  text-decoration: none;
-}
-nav a.btn-53:hover span:nth-child(5) {
-  transition-delay: 0.4s;
-  text-decoration: none;
-}
-nav a.btn-53:hover span:nth-child(6) {
-  transition-delay: 0.5s;
-  text-decoration: none;
-}
-.tables-nav {
-  display: flex;
-  gap: 1.5rem; /* Space between items */
-  margin: 0 2rem;
-  list-style: none;
-  align-self: center;
-  flex-wrap: wrap;
-  justify-self: center; /* Allows wrapping on small screens */
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  justify-items: center;
-}
-#current-table {
-  margin: 0;
-  font-size: 1.5rem;
-  color: white;
-}
-#table-link {
-  text-decoration: none;
-  font-size: 1.2rem;
-  color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
-  padding: 0 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-#table-link:hover {
-  color: black; /* Highlight color */
-  background-color: #ffba50;
-  padding: 0.2rem 0.6rem; /* Subtle hover background */
-}
-/* Optional: Add visual indicator for current table */
-#current-table {
-  position: relative;
-  padding-bottom: 0.25rem;
-}
-#current-table::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: maroon;
-}
-.tables-nav .btn-create {
-  text-decoration: none;
-  color: white;
-  background-color: #ff6250;
-  padding: 0.6rem 0.5rem;
-  border-radius: 6px;
-  font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-.tables-nav .btn-create:hover {
-  background-color: #e5533d; /* Slightly darker shade for hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
-  transform: translateY(-2px); /* Slight lift effect */
-}
-.tables-nav .btn-create:active {
-  background-color: #a33521; /* Even darker shade for active state */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
-  transform: translateY(1px); /* Slight press effect */
 }
 /******************************************************/

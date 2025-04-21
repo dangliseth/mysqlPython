@@ -37,15 +37,16 @@
   {% if g.user %}
   <!-- Filter Form -->
   <form method="get" action="{{ url_for('dashboard.filter_items', table_name=table_name) }}" id="filter-form">
-    <div id="filter-icon" tabindex="0">
-      <span>&#128269;</span> <!-- Unicode for search icon -->
-    </div>
+    <input type="checkbox" id="filter-toggle" class="filter-toggle">
+    <label for="filter-toggle" id="filter-icon">
+      <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
+    </label>
     <div id="filter-fields">
-    {% for column in columns %}
+      {% for column in columns %}
         <label for="{{ column }}">{{ column }}</label>
         <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
-        value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
-    {% endfor %}
+              value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
+      {% endfor %}
       <button type="submit">Apply Filters</button>
     </div>
   </form>
