@@ -75,6 +75,11 @@ def get_entry(entry_id, table_name):
 
     return entry
 
+def get_employees():
+    c = get_cursor()
+    all_employees = c.execute(f"SELECT * FROM employees")
+    return all_employees
+
 def get_dropdown_options():
     dropdown_options = {
         'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
@@ -154,7 +159,9 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
                 id_column = column
                 continue
-            if column == 'last_updated':
+            if column == 'employee':
+
+            elif column == 'last_updated':
                 values.append(current_datetime)
                 update_columns.append(column)
             else:
@@ -171,6 +178,6 @@ def update(id, table_name):
         c.close()
 
         flash(f"Successfully updated {table_name[:-1]}")
-        return redirect(url_for('dashboard.view_table', table_name=table_name))
+        return redirect(url_for('dashboard.index', table_name=table_name))
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options)

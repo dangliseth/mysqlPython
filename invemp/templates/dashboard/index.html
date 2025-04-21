@@ -22,29 +22,28 @@
 {% endblock %}
 
 {% block content %}
-<table class="table table-striped table-bordered table-hover">
+<main id="tables-view">
+<table class="table table-striped" id="main-table">
   <thead>
     <tr>
       {% for column in columns %}
         <th>{{ column }}</th>
       {% endfor %}
-      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
     {% for item in items %}
+      {% if g.user[3] == 'admin' %}
+      <tr onclick="window.location='{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}'" style="cursor: pointer;">
+      {% else %}
       <tr>
+      {% endif %}
         {% for value in item %}
         <td>{{ value }}</td>
         {% endfor %}
-        <td>
-          <a href="{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}" 
-          class="btn btn-sm btn-primary">
-            Edit
-          </a>
-        </td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
+</main>
 {% endblock %}

@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import (Flask, redirect, url_for)
 
 
 
@@ -28,8 +28,11 @@ def create_app(test_config=None):
         if 'Cache-Control' not in response.headers:
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         return response
-
+    @app.route('/favicon.ico')
+    def favicon():
+        return redirect(url_for('static', filename='icons/favicon/favicon.ico'))
     from . import db
+
     db.init_app(app)
 
     from . import auth

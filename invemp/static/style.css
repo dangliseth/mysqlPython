@@ -57,12 +57,12 @@ h1 {
     flex-direction: column;
     gap: 1rem;
     width: 100%;
-    max-width: clamp(20rem, 12vw, 40rem);
-    padding: clamp(2rem, 4vw, 3rem);
+    max-width: clamp(15rem, 12vw, 40rem);
+    padding: clamp(2rem, 3vw, 3rem);
     background-color: #5095ff;
     position: relative;
-    top: clamp(80px, 4vh, 100px);
-    left: clamp(120px, 4vw, 20px);
+    top: clamp(120px, 4vh, 100px);
+    left: clamp(100px, 4vw, 20px);
     border-radius: 16px;
     box-shadow: -10px 8px 0px #ff6250;
 }
@@ -131,7 +131,7 @@ div#image {
     background-position: 55%;
     background-color: white;
     width: 100vw;
-    height: clamp(150px, 28vh, 320px);
+    height: clamp(220px, 28vh, 320px);
     position: absolute;
     top: 16%;
     left: 50%;
@@ -140,7 +140,7 @@ div#image {
 }
 div#title {
     background-color: maroon;
-    width: 24vw; /* Or use a fixed width (e.g., 300px) if preferred */
+    width: 23vw; /* Or use a fixed width (e.g., 300px) if preferred */
     max-width: 400px;
     height: 100vh;
     display: flex;
@@ -191,7 +191,7 @@ div.create-edit {
 }
 /******************************************************/
 
-/************************* Login page ******************/
+/************************* Register page ******************/
 #reg-page {
     background-color: white;
 }
@@ -205,18 +205,61 @@ div.create-edit {
 /******************************************************/
 
 /*********************** Index page *****************/
+#tables-view {
+  display: flex;
+  flex-direction: row;
+}
+table#main-table {
+  width: 100%; /* Make the table span the full width */
+  border-collapse: collapse; /* Remove gaps between table cells */
+  margin: 1rem 0; /* Add some spacing above and below the table */
+  font-family: 'Bahnschrift', 'Cambria', serif; /* Modern font */
+  font-size: 1rem; /* Adjust font size for readability */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
+  border-radius: 8px; /* Rounded corners */
+  overflow: hidden;
+}
+table#main-table thead {
+  background-color: #5095ff; /* Modern header background color */
+  color: white; /* White text for contrast */
+  align-items: center;
+  text-transform: uppercase; /* Make header text uppercase */
+  font-weight: bold; /* Emphasize header text */
+}
+table#main-table th, table#main-table td {
+  padding: 0.75rem 1rem; /* Add padding for better spacing */
+  text-align: left; /* Align text to the left */
+  border-bottom: 1px solid #ddd; /* Subtle border between rows */
+}
+
+table#main-table tbody tr:nth-child(even) {
+  background-color: #d3d3d3; /* Light background for even rows */
+}
+
+table#main-table tbody tr:hover {
+  background-color: #ff6250; /* Highlight row on hover */
+  transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+table#main-table th {
+  border-bottom: 2px solid #377ba8; /* Stronger border for header */
+}
+
+table#main-table td:last-child {
+  text-align: center; /* Center-align the last column (e.g., actions) */
+}
 nav {
-    display: flex;
-    list-style: none;
-    flex-wrap: wrap;
-    padding-bottom: 1rem;
-    gap: 1rem;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
 }
 nav ul li {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 /* From Uiverse.io by doniaskima */ 
 nav a.btn-53,
