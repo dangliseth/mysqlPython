@@ -208,6 +208,7 @@ div.create-edit {
 #tables-view {
   display: flex;
   flex-direction: row;
+  padding-top: 1rem;
 }
 table#main-table {
   width: 100%; /* Make the table span the full width */
@@ -249,7 +250,7 @@ nav {
   list-style: none;
   flex-wrap: wrap;
   background-color: black;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
   gap: 1rem;
 }
 nav h1 {
@@ -374,11 +375,11 @@ nav a.btn-53:hover span:nth-child(6) {
 .tables-nav {
   display: flex;
   gap: 1.5rem; /* Space between items */
-  margin: 0 0 1.5rem 0;
+  margin: 0 2rem;
   list-style: none;
-  align-content: center;
+  align-self: center;
   flex-wrap: wrap;
-  justify-content: center; /* Allows wrapping on small screens */
+  justify-self: center; /* Allows wrapping on small screens */
 }
 .nav-item {
   display: flex;
@@ -388,19 +389,20 @@ nav a.btn-53:hover span:nth-child(6) {
 #current-table {
   margin: 0;
   font-size: 1.5rem;
-  color: maroon;
+  color: white;
 }
 #table-link {
   text-decoration: none;
   font-size: 1.2rem;
-  color: #666; /* Slightly muted for non-active tables */
-  padding: 0.25rem 0.5rem;
+  color: #b6b6b6; /* Slightly muted for non-active tables */
+  padding: 0 0.5rem;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 #table-link:hover {
-  color: #242424; /* Highlight color */
-  background-color: #f8f9fa; /* Subtle hover background */
+  color: black; /* Highlight color */
+  background-color: #ffba50;
+  padding: 0.2rem 0.6rem; /* Subtle hover background */
 }
 /* Optional: Add visual indicator for current table */
 #current-table {
@@ -414,13 +416,13 @@ nav a.btn-53:hover span:nth-child(6) {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #ca841a;
+  background-color: maroon;
 }
 .tables-nav .btn-create {
   text-decoration: none;
   color: white;
   background-color: #ff6250;
-  padding: 0.5rem 0.5rem;
+  padding: 0.6rem 0.5rem;
   border-radius: 6px;
   font-weight: bold;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
