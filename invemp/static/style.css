@@ -167,7 +167,7 @@ nav a.btn-53:hover span:nth-child(6) {
 }
 .tables-nav {
   display: flex;
-  gap: 1.5rem; /* Space between items */
+  gap: 1.4rem; /* Space between items */
   list-style: none;
   align-self: center;
   flex-wrap: wrap;
@@ -187,7 +187,6 @@ nav a.btn-53:hover span:nth-child(6) {
   text-decoration: none;
   font-size: 1.2rem;
   color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
-  padding: 0 0.5rem;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
@@ -244,7 +243,7 @@ nav a.btn-53:hover span:nth-child(6) {
 /* Style the filter icon */
 #filter-icon {
   cursor: pointer;
-  background-color: #2b8b34;
+  background-color: #db7337;
   color: black;
   padding: 0.5rem;
   border-radius: 50%;
@@ -256,7 +255,7 @@ nav a.btn-53:hover span:nth-child(6) {
 }
 
 #filter-icon:hover {
-  background-color: #35cc44;
+  background-color: #92471c;
   transform: scale(1.1);
 }
 
@@ -280,6 +279,17 @@ nav a.btn-53:hover span:nth-child(6) {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+nav #btn-pdf {
+  align-content: center;
+  justify-self: center;
+  scale: 1.3;
+}
+nav a #pdf-icon-img:hover {
+  background-color: #154361;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 /********************************************************/
 

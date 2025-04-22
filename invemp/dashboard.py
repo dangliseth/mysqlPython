@@ -239,16 +239,16 @@ def filter_items(table_name):
     tables = get_tables()
     return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables, filters=filters)
 
-bp.route('/<table_name>/convert_pdf')
+@bp.route('/<table_name>/convert_pdf')
 @login_required
-def convert_to_pdf(table_name):
+def convert_pdf(table_name):
     c = get_cursor()
 
     # Fetch the column names for the table
     if table_name == 'items':
         columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
                     'comment', 'Assigned To', 'department', 'last_updated']
-        sql_query = """
+        base_query = """
             SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
             i.comment, e.name AS 'Assigned To', i.department, i.last_updated
             FROM items i
@@ -257,21 +257,40 @@ def convert_to_pdf(table_name):
     else:
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]
-        sql_query = f"SELECT * FROM `{table_name}`"
+        base_query = f"SELECT * FROM `{table_name}`"
 
-    # Apply filters if present
+    # --- Handle Filters ---
     filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
     where_clauses = []
     filter_values = []
     for col, value in filters.items():
-        if col == "Assigned To":
+        if table_name == 'items' and col == "Assigned To":
             where_clauses.append("e.name LIKE %s")
+        elif table_name == 'items':
+            where_clauses.append(f"i.`{col}` LIKE %s")
         else:
-            where_clauses.append(f"i.`{col}` LIKE %s" if table_name == 'items' else f"`{col}` LIKE %s")
+            where_clauses.append(f"`{col}` LIKE %s")
         filter_values.append(f"%{value}%")
+    where_sql = ""
     if where_clauses:
-        sql_query += " WHERE " + " AND ".join(where_clauses)
-    sql_query += " LIMIT 100"
+        where_sql = " WHERE " + " AND ".join(where_clauses)
+
+    # --- Handle Sorting ---
+    sort_column = request.args.get('column')
+    sort_direction = request.args.get('direction', 'asc')
+    order_sql = ""
+    if sort_column and sort_column in columns and sort_direction in ['asc', 'desc']:
+        # For items, prefix with i. unless it's 'Assigned To'
+        if table_name == 'items':
+            if sort_column == "Assigned To":
+                order_sql = f" ORDER BY e.name {sort_direction}"
+            else:
+                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
+        else:
+            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
+
+    # --- Final Query ---
+    sql_query = base_query + where_sql + order_sql
 
     # Execute the query
     c.execute(sql_query, tuple(filter_values))
