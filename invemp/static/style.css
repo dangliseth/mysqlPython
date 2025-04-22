@@ -6,6 +6,9 @@ body {
   margin: 0;
   padding: 0;
 }
+section.content {
+  width: 100%;
+}
 h1 {
   font-family: 'Oswald', 'OCR A', monospace;
   user-select: none;
@@ -41,7 +44,7 @@ nav {
   justify-content: center;
   background-color: black;
   padding-bottom: 0.5rem;
-  gap: 4rem;
+  gap: 3rem;
 }
 nav h1 {
   justify-self: center;
@@ -165,7 +168,6 @@ nav a.btn-53:hover span:nth-child(6) {
 .tables-nav {
   display: flex;
   gap: 1.5rem; /* Space between items */
-  margin: 0 2rem;
   list-style: none;
   align-self: center;
   flex-wrap: wrap;
@@ -449,10 +451,12 @@ div.create-edit {
 /******************************************************/
 
 /*********************** Index page *****************/
-#tables-view {
+main#tables-view {
   display: flex;
   flex-direction: row;
   padding-top: 1rem;
+  box-sizing: border-box;
+  overflow: auto;
 }
 table#main-table {
   width: 100%; /* Make the table span the full width */
@@ -484,9 +488,13 @@ table#main-table tbody tr:hover {
   transition: background-color 0.8s ease; /* Smooth hover effect */
 }
 table#main-table th {
-  border-bottom: 2px solid #377ba8; /* Stronger border for header */
+  border-bottom: 2px solid #154361; /* Stronger border for header */
 }
 table#main-table td:last-child {
   text-align: center; /* Center-align the last column (e.g., actions) */
+}
+th {
+  cursor: pointer;
+  position: relative;
 }
 /******************************************************/

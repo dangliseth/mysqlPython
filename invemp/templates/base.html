@@ -16,6 +16,9 @@
         </div>
       </a>
   </ul>
+  <a href="{{ url_for('dashboard.convert_to_pdf', table_name = table_name) }}">
+    <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
+  </a>
   {% if g.user[3] == 'admin'%}
   <ul class="tables-nav">
       {% if table_name == 'user_accounts' and g.user[3] == 'admin' %}

@@ -1,8 +1,10 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for, make_response
 )
 from werkzeug.exceptions import abort
 import datetime
+
+from fpdf import FPDF
 
 from invemp.auth import login_required, admin_required
 from invemp.db import get_cursor
@@ -99,6 +101,8 @@ def create(table_name):
     columns = [row[0] for row in c.fetchall()]
     c.close()
 
+    filters = {}
+
     dropdown_options = get_dropdown_options()
 
     id_column = None
@@ -139,7 +143,7 @@ def create(table_name):
         flash(f"Successfully created new {table_name[:-1]}")
         return redirect(url_for('dashboard.view_table', table_name=table_name))
     return render_template('dashboard/create.html', table_name=table_name, 
-                           columns=columns, dropdown_options=dropdown_options)
+                           columns=columns, dropdown_options=dropdown_options, filters = filters)
 
 @bp.route('/<table_name>/<id>/update', methods=('GET', 'POST'))
 @admin_required
@@ -153,6 +157,8 @@ def update(id, table_name):
 
     dropdown_options = get_dropdown_options()
     current_datetime = datetime.datetime.now()
+
+    filters = {}
 
     if request.method == 'POST':
         values = []
@@ -182,7 +188,7 @@ def update(id, table_name):
         flash(f"Successfully updated {table_name[:-1]}")
         return redirect(url_for('dashboard.index', table_name=table_name))
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, 
-                           columns=columns, dropdown_options=dropdown_options)
+                           columns=columns, dropdown_options=dropdown_options, filters = filters)
 
 @bp.route('/<table_name>/filter', methods=('GET', 'POST'))
 @login_required
@@ -190,15 +196,35 @@ def filter_items(table_name):
     c = get_cursor()
 
     # Fetch the column names for the table
-    c.execute(f"DESCRIBE `{table_name}`")
-    columns = [row[0] for row in c.fetchall()]
+    if table_name == 'items':
+        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+                   'comment', 'Assigned To', 'department', 'last_updated']
+    else:
+        c.execute(f"DESCRIBE `{table_name}`")
+        columns = [row[0] for row in c.fetchall()]
 
     # Get filter criteria from the request
     filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
 
     # Build the WHERE clause dynamically
-    where_clause = " AND ".join([f"`{col}` LIKE %s" for col in filters.keys()])
-    sql_query = f"SELECT * FROM `{table_name}`"
+    where_clauses = []
+    filter_values = []
+    for col, value in filters.items():
+        if col == "Assigned To":
+            where_clauses.append("e.name LIKE %s")
+        else:
+            where_clauses.append(f"i.`{col}` LIKE %s" if table_name == 'items' or table_name == 'items_disposal' else f"`{col}` LIKE %s")
+        filter_values.append(f"%{value}%")
+    where_clause = " AND ".join(where_clauses)
+    if table_name == 'items' or table_name == 'items_disposal':
+        sql_query = f"""
+            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
+            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
+            FROM items i
+            LEFT JOIN employees e ON i.employee = e.employee_id
+        """
+    else:
+        sql_query = f"SELECT * FROM `{table_name}`"
     if where_clause:
         sql_query += f" WHERE {where_clause}"
     sql_query += " LIMIT 100"
@@ -212,3 +238,72 @@ def filter_items(table_name):
 
     tables = get_tables()
     return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables, filters=filters)
+
+bp.route('/<table_name>/convert_pdf')
+@login_required
+def convert_to_pdf(table_name):
+    c = get_cursor()
+
+    # Fetch the column names for the table
+    if table_name == 'items':
+        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+                    'comment', 'Assigned To', 'department', 'last_updated']
+        sql_query = """
+            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
+            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
+            FROM items i
+            LEFT JOIN employees e ON i.employee = e.employee_id
+        """
+    else:
+        c.execute(f"DESCRIBE `{table_name}`")
+        columns = [row[0] for row in c.fetchall()]
+        sql_query = f"SELECT * FROM `{table_name}`"
+
+    # Apply filters if present
+    filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
+    where_clauses = []
+    filter_values = []
+    for col, value in filters.items():
+        if col == "Assigned To":
+            where_clauses.append("e.name LIKE %s")
+        else:
+            where_clauses.append(f"i.`{col}` LIKE %s" if table_name == 'items' else f"`{col}` LIKE %s")
+        filter_values.append(f"%{value}%")
+    if where_clauses:
+        sql_query += " WHERE " + " AND ".join(where_clauses)
+    sql_query += " LIMIT 100"
+
+    # Execute the query
+    c.execute(sql_query, tuple(filter_values))
+    items = c.fetchall()
+    c.close()
+
+    # Generate PDF
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Add table name as title
+    pdf.set_font("Arial", style="B", size=16)
+    pdf.cell(200, 10, txt=f"{table_name.capitalize()} Report", ln=True, align='C')
+    pdf.ln(10)
+
+    # Add column headers
+    pdf.set_font("Arial", style="B", size=12)
+    for column in columns:
+        pdf.cell(40, 10, column, border=1, align='C')
+    pdf.ln()
+
+    # Add rows
+    pdf.set_font("Arial", size=10)
+    for item in items:
+        for value in item:
+            pdf.cell(40, 10, str(value), border=1, align='C')
+        pdf.ln()
+
+    # Output PDF as a downloadable file
+    response = make_response(pdf.output(dest='S').encode('latin1'))
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename={table_name}_report.pdf'
+    return response
