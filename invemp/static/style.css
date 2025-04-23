@@ -171,7 +171,8 @@ nav a.btn-53:hover span:nth-child(6) {
   list-style: none;
   align-self: center;
   flex-wrap: wrap;
-  justify-self: center; /* Allows wrapping on small screens */
+  justify-self: center;
+  align-items: center; /* Allows wrapping on small screens */
 }
 .nav-item {
   display: flex;
@@ -191,14 +192,15 @@ nav a.btn-53:hover span:nth-child(6) {
   transition: all 0.2s ease;
 }
 #table-link:hover {
-  color: #fddca9; /* Highlight color */
+  color: white; /* Highlight color */
   background-color: maroon;
-  padding: 0.2rem 0.6rem; /* Subtle hover background */
+  padding: 0.5rem 0.6rem; /* Subtle hover background */
 }
 /* Optional: Add visual indicator for current table */
 #current-table {
   position: relative;
   padding-bottom: 0.25rem;
+  justify-content: center;
 }
 #current-table::after {
   content: '';
@@ -221,12 +223,20 @@ nav a.btn-53:hover span:nth-child(6) {
 .tables-nav .btn-create:hover {
   background-color: #ff4e4e; /* Slightly darker shade for hover */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
-  transform: translateY(-2px); /* Slight lift effect */
+  transform: translateY(-3px); /* Slight lift effect */
+  transition: all 0.2s ease-in-out;
 }
 .tables-nav .btn-create:active {
   background-color: #752323; /* Even darker shade for active state */
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
   transform: translateY(2px); /* Slight press effect */
+}
+.nav-icon {
+  height: 1.2em;
+  width: 1.2em;
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
 }
 /* Filter Form Styling */
 #filter-form {
@@ -255,8 +265,10 @@ nav a.btn-53:hover span:nth-child(6) {
 }
 
 #filter-icon:hover {
-  background-color: rgb(197, 193, 193);
+  border-radius: 15px;
   transform: scale(1.1);
+  background-color: #f34949;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Hide filter fields by default */
@@ -281,15 +293,22 @@ nav a.btn-53:hover span:nth-child(6) {
   gap: 0.5rem;
 }
 nav #btn-pdf {
-  align-content: center;
-  justify-self: center;
-  scale: 1.3;
+  display: flex;
+  align-self: center;
+  aspect-ratio: 1/1;
+  width: 2.5rem;
+  height: 2.5rem;
 }
-nav a #pdf-icon-img:hover {
+nav #btn-pdf img {
+  object-fit: contain;
+  display: block;
+  margin: auto;
+}
+nav #btn-pdf:hover {
   background-color: #f34949;
-  padding: 0.5rem;
   border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease-in-out;
+  scale: 1.2;
 }
 /********************************************************/
 
@@ -447,6 +466,124 @@ div.create-edit {
 }
 /******************************************************/
 
+/***********************create/edit page*****************/
+/* Update View Main Container */
+#update-view {
+  max-width: 30rem;
+  margin: 2.5rem auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(30, 30, 60, 0.18);
+  padding: 2.5rem 2rem 2rem 2rem;
+  animation: fadeInUp 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Form Group Styling */
+.form-group {
+  margin-bottom: 1.5rem;
+  transition: background 0.3s;
+}
+.form-group:focus-within {
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+/* Label Styling */
+#update-view label {
+  font-weight: 600;
+  color: #8E1616;
+  margin-bottom: 0.4rem;
+  display: block;
+  letter-spacing: 0.03em;
+  transition: color 0.3s;
+}
+
+/* Input and Select Styling */
+#update-view input[type="text"],
+#update-view select.form-control {
+  width: 100%;
+  padding: 0.7rem 0.5rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 7px;
+  font-size: 1rem;
+  background: #f9f9fb;
+  color: #222;
+  transition: border 0.3s, box-shadow 0.3s;
+  margin-top: 0.2rem;
+  outline: none;
+}
+#update-view input[type="text"]:focus,
+#update-view select.form-control:focus {
+  border-color: #8E1616;
+  box-shadow: 0 0 0 2px #f5bf6f55;
+}
+
+/* Update Button */
+.btn.btn-primary {
+  color: black;
+  border: 1px solid #7f87f7;
+  border-radius: 7px;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(142, 22, 22, 0.08);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 0.7rem;
+}
+.btn.btn-primary:hover {
+  background: #7f87f7;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+  transition: all 0.4s ease-in-out;
+}
+
+/* Archive Button */
+.btn-danger {
+  border: 2px red solid;
+  border-radius: 7px;
+  padding: 0.6rem 1.5rem;
+  margin-top: 1.2rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(216, 64, 64, 0.08);
+  transition: background 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-danger:hover {
+  background: red;
+  border: none;
+  transform: scale(1.06) rotate(-2deg);
+}
+
+/* Archive Icon */
+.icon-danger {
+  width: 1.4em;
+  height: 1.4em;
+  filter: drop-shadow(0 2px 4px #d8404022);
+  transition: filter 0.3s, transform 0.2s;
+}
+.btn-danger:hover .icon-danger {
+  filter: drop-shadow(0 4px 8px #8E161655);
+  transform: scale(1.15) rotate(-8deg);
+}
+
+/* Fade In Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/******************************************************/
+
 /************************* Register page ******************/
 #reg-page {
   background-color: white;
@@ -506,7 +643,7 @@ table#main-table td:last-child {
 table#main-table th:last-child {
   text-align: right; /* Center-align the last column (e.g., actions) */
 }
-th {
+table#main-table th {
   cursor: pointer;
   position: relative;
 }

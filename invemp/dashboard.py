@@ -46,7 +46,7 @@ def index(table_name):
     c.close()
 
     tables = get_tables()
-    filters = {}
+    filters = get_filters(table_name)
     return render_template('dashboard/index.html', items=items, columns=columns, 
                            table_name=table_name, tables=tables, filters = filters)
 
@@ -79,17 +79,24 @@ def get_entry(entry_id, table_name):
 
     return entry
 
-def get_employees():
-    c = get_cursor()
-    all_employees = c.execute(f"SELECT * FROM employees")
-    return all_employees
 
 def get_dropdown_options():
+    c = get_cursor()
+    
+    # Get all employees
+    c.execute("SELECT employee_id, name FROM employees")
+    employees = c.fetchall()
+    
+    # Format as list of "ID - Name" strings
+    employee_options = [f"{emp[1]}" for emp in employees]
+
     dropdown_options = {
         'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
         'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
-                       'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library']
+                       'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library'],
+        'employee': employee_options
     }
+    c.close()
     return dropdown_options
 
 @bp.route('/<table_name>/create', methods=('GET', 'POST'))
@@ -101,7 +108,7 @@ def create(table_name):
     columns = [row[0] for row in c.fetchall()]
     c.close()
 
-    filters = {}
+    filters = get_filters(table_name)
 
     dropdown_options = get_dropdown_options()
 
@@ -158,7 +165,7 @@ def update(id, table_name):
     dropdown_options = get_dropdown_options()
     current_datetime = datetime.datetime.now()
 
-    filters = {}
+    filters = get_filters(table_name)
 
     if request.method == 'POST':
         values = []
@@ -167,8 +174,6 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
                 id_column = column
                 continue
-            ##if column == 'employee':
-
             if column == 'last_updated':
                 values.append(current_datetime)
                 update_columns.append(column)
@@ -189,6 +194,46 @@ def update(id, table_name):
         return redirect(url_for('dashboard.index', table_name=table_name))
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options, filters = filters)
+
+@bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
+@admin_required
+def archive_scrap(id, table_name):
+    c = get_cursor()
+    entry = get_entry(id, table_name)
+
+    c.execute(f"DESCRIBE `{table_name}`")
+    columns = [row[0] for row in c.fetchall()]
+    c.close()
+
+    for column in columns:
+        if column == 'id' or column.endswith('_id') or column == 'ID':  # Determin id column
+            id_column = column
+            break
+
+    if request.method == 'POST':
+        try:
+            c = get_cursor()
+            if table_name == 'items':
+                # Move to items_disposal
+                move_query = f"INSERT INTO items_disposal SELECT * FROM `{table_name}` WHERE `{id_column}` = %s"
+                c.execute(move_query, (id,))
+                delete_query = f"DELETE FROM `{table_name}` WHERE `{id_column}` = %s"
+                c.execute(delete_query, (id,))
+            else:
+                # Move to employees_archive
+                move_query = f"INSERT INTO employees_archive SELECT * FROM `{table_name}` WHERE `{id_column}` = %s"
+                c.execute(move_query, (id,))
+                delete_query = f"DELETE FROM `{table_name}` WHERE `{id_column}` = %s"
+                c.execute(delete_query, (id,))
+            c.connection.commit()
+            flash("Entry archived successfully.")
+        except Exception as e:
+            c.connection.rollback()
+            flash(f"Error archiving entry: {e}")
+        finally:
+            c.close()
+    return redirect(url_for('dashboard.index', table_name = table_name))
+
 
 @bp.route('/<table_name>/filter', methods=('GET', 'POST'))
 @login_required
@@ -239,6 +284,20 @@ def filter_items(table_name):
     tables = get_tables()
     return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables, filters=filters)
 
+def get_filters(table_name):
+    c = get_cursor()
+
+    # Fetch the column names for the table
+    if table_name == 'items':
+        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+                   'comment', 'Assigned To', 'department', 'last_updated']
+    else:
+        c.execute(f"DESCRIBE `{table_name}`")
+        columns = [row[0] for row in c.fetchall()]
+
+    filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
+    return filters
+
 def calculate_column_widths(items, columns):
     """Calculate relative column widths based on content"""
     if not items:
@@ -255,17 +314,14 @@ def calculate_column_widths(items, columns):
             max_len = max(max_len, len(value))
         
         # Special handling for known types
-        if 'date' in column.lower() or 'time' in column.lower():
-            width_factors[column] = 1.5  # Fixed width for timestamps
-        elif max_len > 50:
+        if max_len > 50:
             width_factors[column] = 3
         elif max_len > 20:
             width_factors[column] = 2
         else:
-            width_factors[column] = 1
+            width_factors[column] = 0.5
     
     return width_factors
-
 
 @bp.route('/<table_name>/convert_pdf')
 @login_required
@@ -367,7 +423,8 @@ def convert_pdf(table_name):
                 width: 100%;
                 border-collapse: collapse;
                 table-layout: fixed;  /* Essential for column control */
-                word-wrap: break-word;
+                display: flex
+                flex-direction: row
             }
             th {
                 background-color: #f2f2f2;
@@ -382,7 +439,6 @@ def convert_pdf(table_name):
                 vertical-align: top;  /* Align content to top */
             }
             .timestamp {
-                white-space: nowrap;  /* Prevent datetime wrapping */
                 font-size: 8pt;       /* Smaller font for timestamps */
             }
             ''')

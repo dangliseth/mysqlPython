@@ -5,27 +5,40 @@
 {% endblock %}
 
 {% block content %}
-<form method="post">
-    {% for column in columns %}
-      <div class="form-group">
-        {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
-        <label for="{{ column }}">{{ column }}</label>
-        {% if column in dropdown_options %}
-        <!-- Render dropdown menu for specific columns -->
-        <select class="form-control" id="{{ column }}" name="{{ column }}" required>
-          {% for option in dropdown_options[column] %}
-          <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
-            {{ option }}
-          </option>
-          {% endfor %}
-        </select>
-        {% else %}
-        <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
-        value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
-        {% endif %}
-        {% endif %}
-      </div>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary">Update</button>
-</form>
+<main id="update-view">
+  <form method="post">
+      {% for column in columns %}
+        <div class="form-group">
+          {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
+          <label for="{{ column }}">{{ column }}</label>
+          {% if column in dropdown_options %}
+          <!-- Render dropdown menu for specific columns -->
+          <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+            {% for option in dropdown_options[column] %}
+            <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
+              {{ option }}
+            </option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+          value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
+          {% endif %}
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Update</button>
+  </form>
+  <form action="{{ url_for('dashboard.archive_scrap', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
+    {% if table_name == 'items'%}
+    <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
+      <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
+    </button>
+    {% else %}
+    <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
+      <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
+    </button>
+    {% endif %}
+  </form>
+</main>
 {% endblock %}

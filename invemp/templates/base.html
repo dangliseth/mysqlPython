@@ -28,7 +28,15 @@
       {% endif %}
     {% for table in tables %}
     <li class="nav-item">
-      {% if table == table_name %}
+      {% if table == 'items_disposal' and table != table_name%}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> items
+      </a>
+      {% elif table == table_name and table == 'items_disposal' %}
+      <h1 class="tables" id="current-table">
+        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> items
+      </h1>
+      {% elif table == table_name %}
       <h1 class="tables" id="current-table">{{ table_name }}</h1>
       {% else %}
       <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>

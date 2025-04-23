@@ -48,6 +48,10 @@
       rows.forEach(row => tbody.appendChild(row));
       table.setAttribute("data-sort-col", colIndex);
       table.setAttribute("data-sort-dir", isAsc ? "desc" : "asc");
+      // Remove sort classes from all headers
+      ths.forEach(th => th.classList.remove("sorted", "asc", "desc"));
+      // Add to the sorted header
+      ths[colIndex].classList.add("sorted", isAsc ? "desc" : "asc");
     }
   </script>
 </main>
