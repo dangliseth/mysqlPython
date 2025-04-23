@@ -94,7 +94,7 @@ def get_dropdown_options():
         'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
         'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
                        'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library'],
-        'employee': employee_options
+        'Assigned To': employee_options
     }
     c.close()
     return dropdown_options
@@ -156,6 +156,7 @@ def create(table_name):
 @admin_required
 def update(id, table_name):
     entry = get_entry(id, table_name)
+    entry = list(entry)
     c = get_cursor()
 
     c.execute(f"DESCRIBE `{table_name}`")
@@ -166,6 +167,28 @@ def update(id, table_name):
     current_datetime = datetime.datetime.now()
 
     filters = get_filters(table_name)
+
+    if 'employee' in columns:
+        # Rename 'employee' column to 'Assigned To' in display
+        columns = ['Assigned To' if col == 'employee' else col for col in columns]
+        
+        # Get the index of the employee column in the original data
+        employee_idx = [i for i, col in enumerate(columns) if col == 'Assigned To'][0]
+        
+        # Get the employee_id from the entry
+        employee_id = entry[employee_idx]
+        
+        if employee_id:  # Only query if employee_id exists
+            c = get_cursor()
+            try:
+                c.execute("SELECT name FROM employees WHERE employee_id = %s", (employee_id,))
+                result = c.fetchone()
+                employee_name = result[0] if result else None
+                entry[employee_idx] = employee_name  # Replace ID with name
+            finally:
+                c.close()
+        else:
+            entry[employee_idx] = None  # Ensure None is preserved
 
     if request.method == 'POST':
         values = []
