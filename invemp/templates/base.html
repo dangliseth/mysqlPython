@@ -16,7 +16,7 @@
         </div>
       </a>
   </ul>
-  <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name) }}" id="btn-pdf">
+  <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf">
     <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
   </a>
   {% if g.user[3] == 'admin'%}

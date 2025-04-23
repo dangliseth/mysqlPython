@@ -191,8 +191,8 @@ nav a.btn-53:hover span:nth-child(6) {
   transition: all 0.2s ease;
 }
 #table-link:hover {
-  color: black; /* Highlight color */
-  background-color: #ffba50;
+  color: #fddca9; /* Highlight color */
+  background-color: maroon;
   padding: 0.2rem 0.6rem; /* Subtle hover background */
 }
 /* Optional: Add visual indicator for current table */
@@ -207,24 +207,24 @@ nav a.btn-53:hover span:nth-child(6) {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: maroon;
+  background-color: #f5bf6f;
 }
 .tables-nav .btn-create {
   text-decoration: none;
   color: white;
-  background-color: #ff6250;
-  padding: 0.6rem 0.5rem;
+  background-color: #D84040;
+  padding: 0.6rem 0.3rem;
   border-radius: 6px;
   font-weight: bold;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 .tables-nav .btn-create:hover {
-  background-color: #e5533d; /* Slightly darker shade for hover */
+  background-color: #ff4e4e; /* Slightly darker shade for hover */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
   transform: translateY(-2px); /* Slight lift effect */
 }
 .tables-nav .btn-create:active {
-  background-color: #a33521; /* Even darker shade for active state */
+  background-color: #752323; /* Even darker shade for active state */
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
   transform: translateY(2px); /* Slight press effect */
 }
@@ -243,7 +243,7 @@ nav a.btn-53:hover span:nth-child(6) {
 /* Style the filter icon */
 #filter-icon {
   cursor: pointer;
-  background-color: #db7337;
+  background-color: white;
   color: black;
   padding: 0.5rem;
   border-radius: 50%;
@@ -255,7 +255,7 @@ nav a.btn-53:hover span:nth-child(6) {
 }
 
 #filter-icon:hover {
-  background-color: #92471c;
+  background-color: rgb(197, 193, 193);
   transform: scale(1.1);
 }
 
@@ -286,7 +286,7 @@ nav #btn-pdf {
   scale: 1.3;
 }
 nav a #pdf-icon-img:hover {
-  background-color: #154361;
+  background-color: #f34949;
   padding: 0.5rem;
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -478,7 +478,7 @@ table#main-table {
   overflow: hidden;
 }
 table#main-table thead {
-  background-color: #5095ff; /* Modern header background color */
+  background-color: #8E1616; /* Modern header background color */
   color: white; /* White text for contrast */
   align-items: center;
   text-transform: uppercase; /* Make header text uppercase */
@@ -494,14 +494,17 @@ table#main-table tbody tr:nth-child(even) {
 }
 
 table#main-table tbody tr:hover {
-  background-color: #ff6250; /* Highlight row on hover */
+  background-color: #7f87f7; /* Highlight row on hover */
   transition: background-color 0.8s ease; /* Smooth hover effect */
 }
 table#main-table th {
-  border-bottom: 2px solid #154361; /* Stronger border for header */
+  border-bottom: 2px solid black; /* Stronger border for header */
 }
 table#main-table td:last-child {
-  text-align: center; /* Center-align the last column (e.g., actions) */
+  text-align: right; /* Center-align the last column (e.g., actions) */
+}
+table#main-table th:last-child {
+  text-align: right; /* Center-align the last column (e.g., actions) */
 }
 th {
   cursor: pointer;

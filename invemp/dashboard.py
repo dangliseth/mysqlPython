@@ -4,7 +4,7 @@ from flask import (
 from werkzeug.exceptions import abort
 import datetime
 
-from fpdf import FPDF
+from weasyprint import CSS, HTML
 
 from invemp.auth import login_required, admin_required
 from invemp.db import get_cursor
@@ -239,10 +239,40 @@ def filter_items(table_name):
     tables = get_tables()
     return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables, filters=filters)
 
+def calculate_column_widths(items, columns):
+    """Calculate relative column widths based on content"""
+    if not items:
+        return {col: 1 for col in columns}
+    
+    # Sample first 10 rows to determine content length
+    sample_rows = items[:10]
+    width_factors = {}
+    
+    for col_idx, column in enumerate(columns):
+        max_len = len(column)  # Start with header length
+        for row in sample_rows:
+            value = str(row[col_idx] if row[col_idx] is not None else '')
+            max_len = max(max_len, len(value))
+        
+        # Special handling for known types
+        if 'date' in column.lower() or 'time' in column.lower():
+            width_factors[column] = 1.5  # Fixed width for timestamps
+        elif max_len > 50:
+            width_factors[column] = 3
+        elif max_len > 20:
+            width_factors[column] = 2
+        else:
+            width_factors[column] = 1
+    
+    return width_factors
+
+
 @bp.route('/<table_name>/convert_pdf')
 @login_required
 def convert_pdf(table_name):
     c = get_cursor()
+    request_args = request.args.to_dict()
+
 
     # Fetch the column names for the table
     if table_name == 'items':
@@ -260,27 +290,29 @@ def convert_pdf(table_name):
         base_query = f"SELECT * FROM `{table_name}`"
 
     # --- Handle Filters ---
-    filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
     where_clauses = []
     filter_values = []
-    for col, value in filters.items():
-        if table_name == 'items' and col == "Assigned To":
-            where_clauses.append("e.name LIKE %s")
-        elif table_name == 'items':
-            where_clauses.append(f"i.`{col}` LIKE %s")
-        else:
-            where_clauses.append(f"`{col}` LIKE %s")
-        filter_values.append(f"%{value}%")
-    where_sql = ""
-    if where_clauses:
-        where_sql = " WHERE " + " AND ".join(where_clauses)
+    
+    # Process each possible filter parameter
+    for column in columns:
+        if column in request_args and request_args[column]:
+            value = request_args[column]
+            if table_name == 'items' and column == "Assigned To":
+                where_clauses.append("e.name LIKE %s")
+            elif table_name == 'items':
+                where_clauses.append(f"i.`{column}` LIKE %s")
+            else:
+                where_clauses.append(f"`{column}` LIKE %s")
+            filter_values.append(f"%{value}%")
+    
+    where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
     # --- Handle Sorting ---
-    sort_column = request.args.get('column')
-    sort_direction = request.args.get('direction', 'asc')
+    sort_column = request_args.get('sort_column') or request_args.get('column')
+    sort_direction = request_args.get('sort_direction', 'asc')
+    
     order_sql = ""
-    if sort_column and sort_column in columns and sort_direction in ['asc', 'desc']:
-        # For items, prefix with i. unless it's 'Assigned To'
+    if sort_column and sort_column in columns and sort_direction.lower() in ['asc', 'desc']:
         if table_name == 'items':
             if sort_column == "Assigned To":
                 order_sql = f" ORDER BY e.name {sort_direction}"
@@ -297,32 +329,67 @@ def convert_pdf(table_name):
     items = c.fetchall()
     c.close()
 
-    # Generate PDF
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
+    html = render_template(
+        'pdf_template.html',  # Create a new template specifically for PDF
+        items=items,
+        columns=columns,
+        table_name=table_name,
+        current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
+        column_widths=calculate_column_widths(items, columns),
+        zip = zip
+    )
 
-    # Add table name as title
-    pdf.set_font("Arial", style="B", size=16)
-    pdf.cell(200, 10, txt=f"{table_name.capitalize()} Report", ln=True, align='C')
-    pdf.ln(10)
-
-    # Add column headers
-    pdf.set_font("Arial", style="B", size=12)
-    for column in columns:
-        pdf.cell(40, 10, column, border=1, align='C')
-    pdf.ln()
-
-    # Add rows
-    pdf.set_font("Arial", size=10)
-    for item in items:
-        for value in item:
-            pdf.cell(40, 10, str(value), border=1, align='C')
-        pdf.ln()
+    # Generate PDF with proper CSS
+    pdf = HTML(
+        string=html,
+        base_url=request.base_url  # Important for static files
+    ).write_pdf(stylesheets=[
+        CSS(string='''
+            @page { 
+            size: A4 landscape;  /* Landscape often works better for wide tables */
+            margin: 1cm; 
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 8pt;
+            }
+            }
+            body { 
+                font-family: Arial; 
+                font-size: 9pt;  /* Slightly smaller font */
+                line-height: 1.3;
+            }
+            h1 { 
+                color: #333; 
+                text-align: center;
+                margin-bottom: 0.5cm;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;  /* Essential for column control */
+                word-wrap: break-word;
+            }
+            th {
+                background-color: #f2f2f2;
+                text-align: left;
+                padding: 4px;
+                border: 1px solid #ddd;
+                font-weight: bold;
+            }
+            td {
+                padding: 4px;
+                border: 1px solid #ddd;
+                vertical-align: top;  /* Align content to top */
+            }
+            .timestamp {
+                white-space: nowrap;  /* Prevent datetime wrapping */
+                font-size: 8pt;       /* Smaller font for timestamps */
+            }
+            ''')
+    ])
 
     # Output PDF as a downloadable file
-    response = make_response(pdf.output(dest='S').encode('latin1'))
+    response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'attachment; filename={table_name}_report.pdf'
     return response
