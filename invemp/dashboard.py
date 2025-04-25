@@ -160,6 +160,10 @@ def update(id, table_name):
     c = get_cursor()
 
     c.execute(f"DESCRIBE `{table_name}`")
+    if table_name == 'items' or table_name == 'items_disposal':
+        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+                   'comment', 'Assigned To', 'department', 'last_updated']
+    else:
     columns = [row[0] for row in c.fetchall()]
     c.close()
 
@@ -264,7 +268,7 @@ def filter_items(table_name):
     c = get_cursor()
 
     # Fetch the column names for the table
-    if table_name == 'items':
+    if table_name == 'items' or table_name == 'items_disposal':
         columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
                    'comment', 'Assigned To', 'department', 'last_updated']
     else:
