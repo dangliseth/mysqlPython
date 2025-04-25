@@ -48,7 +48,7 @@ def index(table_name):
     tables = get_tables()
     filters = get_filters(table_name)
     return render_template('dashboard/index.html', items=items, columns=columns, 
-                           table_name=table_name, tables=tables, filters = filters)
+                           table_name=table_name, tables=tables, filters = filters, is_index = True)
 
 def get_tables():
     c = get_cursor()
@@ -164,7 +164,7 @@ def update(id, table_name):
         columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
                    'comment', 'Assigned To', 'department', 'last_updated']
     else:
-    columns = [row[0] for row in c.fetchall()]
+        columns = [row[0] for row in c.fetchall()]
     c.close()
 
     dropdown_options = get_dropdown_options()
@@ -172,10 +172,7 @@ def update(id, table_name):
 
     filters = get_filters(table_name)
 
-    if 'employee' in columns:
-        # Rename 'employee' column to 'Assigned To' in display
-        columns = ['Assigned To' if col == 'employee' else col for col in columns]
-        
+    if 'Assigned To' in columns:
         # Get the index of the employee column in the original data
         employee_idx = [i for i, col in enumerate(columns) if col == 'Assigned To'][0]
         
@@ -201,7 +198,9 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
                 id_column = column
                 continue
-            if column == 'last_updated':
+            if column == 'Assigned To':
+                column = 'employee'
+            elif column == 'last_updated':
                 values.append(current_datetime)
                 update_columns.append(column)
             else:
@@ -217,10 +216,11 @@ def update(id, table_name):
         c.connection.commit()
         c.close()
 
+
         flash(f"Successfully updated {table_name[:-1]}")
         return redirect(url_for('dashboard.index', table_name=table_name))
-    return render_template('dashboard/update.html', entry=entry, table_name=table_name, 
-                           columns=columns, dropdown_options=dropdown_options, filters = filters)
+    return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns, 
+                           dropdown_options=dropdown_options, filters = filters)
 
 @bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
 @admin_required
@@ -309,7 +309,8 @@ def filter_items(table_name):
     c.close()
 
     tables = get_tables()
-    return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, tables=tables, filters=filters)
+    return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, 
+                           tables=tables, filters=filters, is_index = True)
 
 def get_filters(table_name):
     c = get_cursor()

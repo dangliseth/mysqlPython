@@ -4,6 +4,12 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 {% if g.user %}
 <nav>
+  {% if not is_index %}
+  <button class="btn-back" onclick="window.history.back(); return false;">
+    <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}">
+    <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}">
+  </button>
+  {% endif %}
   <ul>
       <li id="current-user"><span>{{ g.user[1] }}</span>
       <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
@@ -21,9 +27,9 @@
   </a>
   {% if g.user[3] == 'admin'%}
   <ul class="tables-nav">
-      {% if table_name == 'user_accounts' and g.user[3] == 'admin' %}
+      {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
       <a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
-      {% elif g.user[3] == 'admin' %}
+      {% elif g.user[3] == 'admin' and is_index %}
       <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
       {% endif %}
     {% for table in tables %}
