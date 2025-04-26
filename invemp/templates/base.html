@@ -23,12 +23,14 @@
       </a>
   </ul>
   {% if is_index %}
-  <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf">
-    <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
-  </a>
-  <a href="{{ url_for('dashboard.convert_pdf_qr', table_name = table_name, **request.args) }}" id="btn-qr">
-    <img src="{{ url_for('static', filename='icons/qr_code.svg') }}" alt="QR Code" id="qr-icon-img">
-  </a>
+  <div id="download-btns">
+    <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf" class="btn-download">
+      <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
+    </a>
+    <a href="{{ url_for('dashboard.convert_pdf_qr', table_name = table_name, **request.args) }}" id="btn-qr" class="btn-download">
+      <img src="{{ url_for('static', filename='icons/qr_code.svg') }}" alt="QR Code" id="qr-icon-img">
+    </a>
+  </div>
   {% endif %}
   {% if g.user[3] == 'admin'%}
   <ul class="tables-nav">

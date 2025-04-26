@@ -291,23 +291,31 @@ nav a.btn-53:hover span:nth-child(6) {
   flex-direction: column;
   gap: 0.5rem;
 }
-nav #btn-pdf {
+nav #download-btns {
   display: flex;
   align-self: center;
-  aspect-ratio: 1/1;
+  justify-items: center;
+  gap: 0.5rem;
+}
+nav .btn-download {
   width: 2.5rem;
   height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
-nav #btn-pdf img {
-  object-fit: contain;
-  display: block;
-  margin: auto;
-}
-nav #btn-pdf:hover {
+nav .btn-download:hover {
   background-color: #f34949;
   border-radius: 50%;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.4s ease-in-out;
   scale: 1.2;
+}
+nav #btn-qr:hover {
+  background-color: #7f87f7;
 }
 .btn-back {
   position: relative;
