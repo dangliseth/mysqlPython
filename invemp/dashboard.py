@@ -4,6 +4,9 @@ from flask import (
 from werkzeug.exceptions import abort
 import datetime
 
+import io
+import qrcode
+from fpdf import FPDF
 from weasyprint import CSS, HTML
 
 from invemp.auth import login_required, admin_required
@@ -105,23 +108,55 @@ def create(table_name):
     c = get_cursor()
 
     c.execute(f"DESCRIBE `{table_name}`")
-    columns = [row[0] for row in c.fetchall()]
+    if table_name == 'items' or table_name == 'items_disposal':
+        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+                   'comment', 'Assigned To', 'department', 'last_updated']
+    else:
+        columns = [row[0] for row in c.fetchall()]
     c.close()
 
     filters = get_filters(table_name)
 
     dropdown_options = get_dropdown_options()
 
+    if 'Assigned To' in columns:
+        # Get the index of the employee column in the original data
+        employee_idx = [i for i, col in enumerate(columns) if col == 'Assigned To'][0]
+        
+        # Get the employee_id from the entry
+        employee_id = request.form.get(column)[employee_idx]
+        
+        if employee_id:  # Only query if employee_id exists
+            c = get_cursor()
+            try:
+                c.execute("SELECT name FROM employees WHERE employee_id = %s", (employee_id,))
+                result = c.fetchone()
+                employee_name = result[0] if result else None
+                request.form.get(column)[employee_idx] = employee_name  # Replace ID with name
+            finally:
+                c.close()
+        else:
+            request.form.get(column)[employee_idx] = None  # Ensure None is preserved
+    
     id_column = None
     for column in columns:
         if column == 'id' or column.endswith('_id'):
             id_column = column
             break
 
+    if table_name == 'items':
+        table_name2 = 'items_disposal'
+    else:
+        table_name2 = 'emplyees_archive'
     if request.method == 'POST':
         if id_column:
             c = get_cursor()
-            c.execute(f"SELECT MAX({id_column}) FROM `{table_name}`")
+            c.execute(f"""
+                      SELECT MAX({id_column}) FROM (SELECT `{id_column}` FROM `{table_name}`
+                      UNION ALL
+                      SELECT `{id_column}` FROM `{table_name2}`
+                      )
+                      """)
             max_id = c.fetchone()[0]
             next_id = (max_id or 0) + 1  # Increment the max ID or start from 1
             c.close()
@@ -136,6 +171,8 @@ def create(table_name):
                 values.append(next_id)
             elif column == 'last_updated':
                 values.append(current_datetime)
+            elif column == 'Assigned To':
+                column = 'employee'
             else:
                 values.append(request.form.get(column))
 
@@ -226,7 +263,6 @@ def update(id, table_name):
 @admin_required
 def archive_scrap(id, table_name):
     c = get_cursor()
-    entry = get_entry(id, table_name)
 
     c.execute(f"DESCRIBE `{table_name}`")
     columns = [row[0] for row in c.fetchall()]
@@ -260,6 +296,29 @@ def archive_scrap(id, table_name):
         finally:
             c.close()
     return redirect(url_for('dashboard.index', table_name = table_name))
+
+@bp.route('/<table_name>/<id>/delete', methods=('GET', 'POST'))
+def delete(id, table_name):
+    c = get_cursor()
+    c.execute(f"DESCRIBE `{table_name}`")
+    columns = [row[0] for row in c.fetchall()]
+    c.close()
+
+    for column in columns:
+        if column == 'id' or column.endswith('_id') or column == 'ID':  # Determin id column
+            id_column = column
+            break
+
+    if request.method == 'POST':
+        c = get_cursor()
+        delete_query = f"DELETE FROM `{table_name}` WHERE `{id_column}` = %s"
+        c.execute(delete_query, (id,)) 
+        c.connection.commit()
+        flash(f"{id_column}: {id} DELETED from {table_name}")
+
+    filters = get_filters(table_name)
+    
+    return redirect(url_for('dashboard.index', table_name = table_name, filters = filters))
 
 
 @bp.route('/<table_name>/filter', methods=('GET', 'POST'))
@@ -476,4 +535,99 @@ def convert_pdf(table_name):
     response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'attachment; filename={table_name}_report.pdf'
+    return response
+
+@bp.route('/items/convert_pdf_qr')
+@admin_required
+def convert_pdf_qr():
+    c = get_cursor()
+    request_args = request.args.to_dict()
+
+    # Columns and base query (same as your convert_pdf)
+    columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+               'comment', 'Assigned To', 'department', 'last_updated']
+    base_query = """
+        SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
+        i.comment, e.name AS 'Assigned To', i.department, i.last_updated
+        FROM items i
+        LEFT JOIN employees e ON i.employee = e.employee_id
+    """
+
+    # --- Handle Filters ---
+    where_clauses = []
+    filter_values = []
+    for column in columns:
+        if column in request_args and request_args[column]:
+            value = request_args[column]
+            if column == "Assigned To":
+                where_clauses.append("e.name LIKE %s")
+            else:
+                where_clauses.append(f"i.`{column}` LIKE %s")
+            filter_values.append(f"%{value}%")
+    where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+
+    # --- Handle Sorting ---
+    sort_column = request_args.get('sort_column') or request_args.get('column')
+    sort_direction = request_args.get('sort_direction', 'asc')
+    order_sql = ""
+    if sort_column and sort_column in columns and sort_direction.lower() in ['asc', 'desc']:
+        if sort_column == "Assigned To":
+            order_sql = f" ORDER BY e.name {sort_direction}"
+        else:
+            order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
+
+    sql_query = base_query + where_sql + order_sql
+
+    c.execute(sql_query, tuple(filter_values))
+    items = c.fetchall()
+    c.close()
+
+    # --- Only include these columns in the QR code ---
+    qr_columns = ['item_id', 'item_name', 'serial_number']  # Change as needed
+
+    # Map column names to their index in the row
+    col_indices = {col: idx for idx, col in enumerate(columns)}
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=8)
+
+    page_width = 190
+    qr_width = 25
+    qr_height = 25
+    spacing = 10
+    max_per_row = page_width // (qr_width + spacing)
+    x_start = 10
+    y_start = 20
+    x = x_start
+    y = y_start
+
+    for idx, row in enumerate(items):
+        # Build QR data string with only the selected columns
+        qr_data = "\n".join(f"{col}: {row[col_indices[col]]}" for col in qr_columns)
+        qr_img = qrcode.make(qr_data)
+        img_io = io.BytesIO()
+        qr_img.save(img_io, format='PNG')
+        img_io.seek(0)
+        pdf.image(img_io, x=x, y=y, w=qr_width, h=qr_height, type='PNG')
+        pdf.set_xy(x, y + qr_height)
+        pdf.cell(qr_width, 5, f"{row[col_indices['item_id']]}", 0, 0, "C")
+
+        x += qr_width + spacing
+        if (idx + 1) % max_per_row == 0:
+            x = x_start
+            y += qr_height + 15
+        if y + qr_height + 15 > 277:
+            pdf.add_page()
+            x = x_start
+            y = y_start
+
+    pdf_buffer = io.BytesIO()
+    pdf.output(pdf_buffer)
+    pdf_buffer.seek(0)
+
+    response = make_response(pdf_buffer.read())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=items_qr_codes.pdf'
     return response

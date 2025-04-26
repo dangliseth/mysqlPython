@@ -10,25 +10,34 @@
       {% for column in columns %}
         <div class="form-group">
           {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
-          <label for="{{ column }}">{{ column }}</label>
-          {% if column in dropdown_options %}
-          <!-- Render dropdown menu for specific columns -->
-          <select class="form-control" id="{{ column }}" name="{{ column }}" required>
-            {% for option in dropdown_options[column] %}
-            <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
-              {{ option }}
-            </option>
-            {% endfor %}
-          </select>
-          {% else %}
-          <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
-          value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
-          {% endif %}
-          {% endif %}
+            <label for="{{ column }}">{{ column }}</label>
+              {% if not (table_name == 'items_disposal' or table_name == 'employees_archive') %}
+                {% if column in dropdown_options %}
+                  <!-- Render dropdown menu for specific columns -->
+                  <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+                    {% for option in dropdown_options[column] %}
+                    <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
+                      {{ option }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                {% else %}
+                  <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+                  value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
+                {% endif %}
+              {% else %}
+                  <span>{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}</span>
+              {% endif %}
+            {% endif %}
         </div>
       {% endfor %}
+      {% if not (table_name == 'items_disposal' or table_name == 'employees_archive') %}
       <button type="submit" class="btn btn-primary">Update</button>
+      {% endif %}
   </form>
+  <!--- Delete func for items_disposal and employees_archive -->
+  <!---Archive_scrap func for items and employees -->
+  {% if not (table_name == 'items_disposal' or table_name == 'employees_archive') %}
   <form action="{{ url_for('dashboard.archive_scrap', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
     {% if table_name == 'items'%}
     <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
@@ -40,5 +49,18 @@
     </button>
     {% endif %}
   </form>
+  {% else %}
+  <form action="{{ url_for('dashboard.delete', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
+    {% if table_name == 'items'%}
+    <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
+      <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
+    </button>
+    {% else %}
+    <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
+      <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
+    </button>
+    {% endif %}
+  </form>
+  {% endif %}
 </main>
 {% endblock %}

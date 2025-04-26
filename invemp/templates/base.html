@@ -6,8 +6,8 @@
 <nav>
   {% if not is_index %}
   <button class="btn-back" onclick="window.history.back(); return false;">
-    <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}">
-    <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}">
+    <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}" class="btn-back-icon">
+    <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
   </button>
   {% endif %}
   <ul>
@@ -22,9 +22,14 @@
         </div>
       </a>
   </ul>
+  {% if is_index %}
   <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf">
     <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
   </a>
+  <a href="{{ url_for('dashboard.convert_pdf_qr', table_name = table_name, **request.args) }}" id="btn-qr">
+    <img src="{{ url_for('static', filename='icons/qr_code.svg') }}" alt="QR Code" id="qr-icon-img">
+  </a>
+  {% endif %}
   {% if g.user[3] == 'admin'%}
   <ul class="tables-nav">
       {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
