@@ -148,15 +148,17 @@ def create(table_name):
     if table_name == 'items':
         table_name2 = 'items_disposal'
     else:
-        table_name2 = 'emplyees_archive'
+        table_name2 = 'employees_archive'
     if request.method == 'POST':
         if id_column:
             c = get_cursor()
             c.execute(f"""
-                      SELECT MAX({id_column}) FROM (SELECT `{id_column}` FROM `{table_name}`
+                      SELECT MAX({id_column}) AS max_id
+                      FROM (
+                      SELECT `{id_column}` AS id_column FROM `{table_name}`
                       UNION ALL
-                      SELECT `{id_column}` FROM `{table_name2}`
-                      )
+                      SELECT `{id_column}` AS id_column FROM `{table_name2}`
+                      ) AS combined_ids
                       """)
             max_id = c.fetchone()[0]
             next_id = (max_id or 0) + 1  # Increment the max ID or start from 1
@@ -186,7 +188,7 @@ def create(table_name):
         c.close()
 
         flash(f"Successfully created new {table_name[:-1]}")
-        return redirect(url_for('dashboard.view_table', table_name=table_name))
+        return redirect(url_for('dashboard.index', table_name=table_name, filters = filters))
     return render_template('dashboard/create.html', table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options, filters = filters)
 
