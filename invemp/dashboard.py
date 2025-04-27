@@ -119,25 +119,6 @@ def create(table_name):
     filters = get_filters(table_name)
 
     dropdown_options = get_dropdown_options()
-
-    if 'Assigned To' in columns:
-        # Get the index of the employee column in the original data
-        employee_idx = [i for i, col in enumerate(columns) if col == 'Assigned To'][0]
-        
-        # Get the employee_id from the entry
-        employee_id = request.form.get(column)[employee_idx]
-        
-        if employee_id:  # Only query if employee_id exists
-            c = get_cursor()
-            try:
-                c.execute("SELECT name FROM employees WHERE employee_id = %s", (employee_id,))
-                result = c.fetchone()
-                employee_name = result[0] if result else None
-                request.form.get(column)[employee_idx] = employee_name  # Replace ID with name
-            finally:
-                c.close()
-        else:
-            request.form.get(column)[employee_idx] = None  # Ensure None is preserved
     
     id_column = None
     for column in columns:
@@ -145,23 +126,38 @@ def create(table_name):
             id_column = column
             break
 
+    # Max id check
     if table_name == 'items':
         table_name2 = 'items_disposal'
-    else:
+    elif table_name == 'employees':
         table_name2 = 'employees_archive'
+    else:
+        table_name2 = None
     if request.method == 'POST':
         if id_column:
             c = get_cursor()
-            c.execute(f"""
-                      SELECT MAX({id_column}) AS max_id
-                      FROM (
-                      SELECT `{id_column}` AS id_column FROM `{table_name}`
-                      UNION ALL
-                      SELECT `{id_column}` AS id_column FROM `{table_name2}`
-                      ) AS combined_ids
-                      """)
+            if table_name2:
+                c.execute(f"""
+                    SELECT MAX({id_column}) AS max_id
+                    FROM (
+                        SELECT `{id_column}` FROM `{table_name}`
+                        UNION ALL
+                        SELECT `{id_column}` FROM `{table_name2}`
+                    ) AS combined_ids
+                """)
+            else:
+                c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
             max_id = c.fetchone()[0]
-            next_id = (max_id or 0) + 1  # Increment the max ID or start from 1
+            if isinstance(max_id, str) and max_id.startswith('MLQU-'):
+                # Extract numeric part, increment, and format with leading zeros
+                num_part = max_id.split('-')[-1]
+                next_num = int(num_part) + 1 if num_part.isdigit() else 1
+                next_id = f"MLQU-{next_num:07d}"
+            else:
+                try:
+                    next_id = (int(max_id) if max_id is not None else 0) + 1
+                except Exception:
+                    next_id = 1
             c.close()
         else:
             next_id = None
@@ -169,18 +165,34 @@ def create(table_name):
         # Prepare values for insertion
         values = []
         current_datetime = datetime.datetime.now()
+        insert_columns = []
         for column in columns:
             if column == id_column:
                 values.append(next_id)
+                insert_columns.append(column)
             elif column == 'last_updated':
                 values.append(current_datetime)
+                insert_columns.append(column)
             elif column == 'Assigned To':
-                column = 'employee'
+                # Convert employee name to employee_id before inserting
+                employee_name = request.form.get('Assigned To')
+                if employee_name:
+                    c_lookup = get_cursor()
+                    c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (employee_name,))
+                    emp_row = c_lookup.fetchone()
+                    c_lookup.close()
+                    employee_id = emp_row[0] if emp_row else None
+                else:
+                    employee_id = None
+                values.append(employee_id)
+                insert_columns.append('employee')
             else:
                 values.append(request.form.get(column))
+                insert_columns.append(column)
 
         placeholders = ', '.join(['%s'] * len(values))
-        query = f"INSERT INTO `{table_name}` ({', '.join(columns)}) VALUES ({placeholders})"
+        query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
+
 
         c = get_cursor()
         c.execute(query, values)
