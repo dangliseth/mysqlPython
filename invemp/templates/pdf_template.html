@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ table_name }} Report</title>
+</head>
+<body>
+    <h1>{{ table_name|title }} Report</h1>
+    <p>Generated on: <span class="timestamp">{{ current_time }}</span></p>
+    
+    <table>
+        <thead>
+            <tr>
+                {% for column in columns %}
+                <th style="width: {{ (column_widths[column] * 10)|round(1) }}%;">
+                    {{ column }}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                {% for column, value in zip(columns, item) %}
+                <td class="{% if 'date' in column.lower() or 'time' in column.lower() %}timestamp{% endif %}">
+                    {{ value if value is not none else '' }}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

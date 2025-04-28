@@ -1,0 +1,720 @@
+/************* Global elements ***********************/
+html {
+  font-family: 'Bahnschrift', 'Cambria', serif;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+section.content {
+  width: 100%;
+}
+h1 {
+  font-family: 'Oswald', 'OCR A', monospace;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+.flash {
+  position: fixed; /* or 'absolute' if inside a positioned container */
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 15rem; /* Match your form width */
+  margin: 0;
+  padding: 1em;
+  background: #badff5;
+  border: 1px solid #377ba8;
+  text-align: center;
+  z-index: 1000;
+  /* Animation for smooth appearance */
+  animation: fadeIn 0.3s ease-in-out;
+  transition: opacity 0.5s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+nav {
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  background-color: black;
+  padding-bottom: 0.5rem;
+  gap: 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+}
+nav .btn {
+  justify-self: center;
+  align-self: center;
+}
+nav h1 {
+  justify-self: center;
+  align-self: center;
+  color: white;
+}
+nav ul li {
+  list-style: none;
+  color: white
+}
+nav ul li#current-user {
+  text-align: center;
+}
+/* From Uiverse.io by doniaskima */ 
+nav a.btn-53,
+nav a.btn-53 *,
+nav a.btn-53 :after,
+nav a.btn-53 :before,
+nav a.btn-53:after,
+nav a.btn-53:before {
+  border: 0 solid;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+nav a.btn-53 {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: button;
+  appearance: button;
+  background-color: #000;
+  background-image: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif,
+    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 70%;
+  font-weight: lighter;
+  line-height: 1;
+  margin: 0;
+  -webkit-mask-image: -webkit-radial-gradient(#000, #fff);
+  mask-image: -webkit-radial-gradient(#000, #fff);
+  padding: 0;
+}
+nav a.btn-53:disabled {
+  cursor: default;
+}
+nav a.btn-53:-moz-focusring {
+  outline: auto;
+}
+nav a.btn-53 svg {
+  display: block;
+}
+nav a.btn-53 [hidden] {
+  display: none;
+}
+nav a.btn-53 {
+  text-decoration: none;
+  border: 1px solid;
+  border-radius: 999px;
+  box-sizing: border-box;
+  display: block;
+  font-weight: 900;
+  overflow: hidden;
+  padding: 0.4rem 1.2rem;
+  position: relative;
+  text-transform: uppercase;
+}
+nav a.btn-53 .original {
+  background: #fff;
+  color: #000;
+  display: grid;
+  text-decoration: none;
+  inset: 0;
+  place-content: center;
+  position: absolute;
+  transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1);
+}
+nav a.btn-53:hover .original {
+  text-decoration: none;
+  transform: translateY(100%);
+}
+nav a.btn-53 .letters {
+  display: inline-flex;
+  text-decoration: none;
+}
+nav a.btn-53 span {
+text-decoration: none;
+opacity: 0;
+transform: translateY(-15px);
+transition: transform 0.2s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.2s;
+}
+nav a.btn-53 span:nth-child(2n) {
+  transform: translateY(15px);
+  text-decoration: none;
+}
+nav a.btn-53:hover span {
+  opacity: 1;
+  transform: translateY(0);
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(2) {
+  transition-delay: 0.1s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(3) {
+  transition-delay: 0.2s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(4) {
+  transition-delay: 0.3s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(5) {
+  transition-delay: 0.4s;
+  text-decoration: none;
+}
+nav a.btn-53:hover span:nth-child(6) {
+  transition-delay: 0.5s;
+  text-decoration: none;
+}
+.tables-nav {
+  display: flex;
+  gap: 1.4rem; /* Space between items */
+  list-style: none;
+  align-self: center;
+  flex-wrap: wrap;
+  justify-self: center;
+  align-items: center; /* Allows wrapping on small screens */
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+}
+#current-table {
+  margin: 0;
+  font-size: 1.5rem;
+  color: white;
+}
+#table-link {
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+#table-link:hover {
+  color: white; /* Highlight color */
+  background-color: maroon;
+  padding: 0.5rem 0.6rem; /* Subtle hover background */
+}
+/* Optional: Add visual indicator for current table */
+#current-table {
+  position: relative;
+  padding-bottom: 0.25rem;
+  justify-content: center;
+}
+#current-table::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #f5bf6f;
+}
+.tables-nav .btn-create {
+  text-decoration: none;
+  color: white;
+  background-color: #D84040;
+  padding: 0.6rem 0.3rem;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+.tables-nav .btn-create:hover {
+  background-color: #ff4e4e; /* Slightly darker shade for hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+  transform: translateY(-3px); /* Slight lift effect */
+  transition: all 0.2s ease-in-out;
+}
+.tables-nav .btn-create:active {
+  background-color: #752323; /* Even darker shade for active state */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
+  transform: translateY(2px); /* Slight press effect */
+}
+.nav-icon {
+  height: 1.2em;
+  width: 1.2em;
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
+}
+/* Filter Form Styling */
+#filter-form {
+  position: relative;
+  display: inline-block;
+  align-self: center;
+}
+/* Hide the checkbox input */
+.filter-toggle {
+  display: none;
+}
+/* Style the filter icon */
+#filter-icon {
+  cursor: pointer;
+  background-color: white;
+  color: black;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+#filter-icon:hover {
+  border-radius: 15px;
+  transform: scale(1.1);
+  background-color: #f34949;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Hide filter fields by default */
+#filter-fields {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 20%;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  width: 200px;
+  z-index: 1000;
+}
+/* Show filter fields when checkbox is checked */
+.filter-toggle:checked + #filter-icon + #filter-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+nav #download-btns {
+  display: flex;
+  align-self: center;
+  justify-items: center;
+  gap: 0.5rem;
+}
+nav .btn-download {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+nav .btn-download:hover {
+  background-color: #f34949;
+  border-radius: 50%;
+  transition: all 0.4s ease-in-out;
+  scale: 1.2;
+}
+nav #btn-qr:hover {
+  background-color: #7f87f7;
+}
+.btn-back {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden; /* Ensures icons don't overflow the button */
+  width: 24px; /* Match icon size */
+  height: 24px; /* Match icon size */
+}
+
+.btn-back-icon, .btn-back-icon2 {
+  position: absolute;
+  width: 24px; /* Adjust size as needed */
+  height: 24px;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.btn-back-icon {
+  transform: translateX(0); /* Default position */
+  opacity: 1;
+}
+
+.btn-back-icon2 {
+  transform: translateX(100%); /* Start off-screen to the right */
+  opacity: 0;
+}
+
+.btn-back:hover .btn-back-icon {
+  transform: translateX(-100%); /* Slide out to the left */
+  opacity: 0;
+}
+
+.btn-back:hover .btn-back-icon2 {
+  transform: translateX(0); /* Slide in from the right */
+  opacity: 1;
+}
+/********************************************************/
+
+/************************* Login page ******************/
+.auth-page {
+  background-color: #ffba50;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100vh;
+  flex: 1;
+  margin: 0;
+  padding: 0; /* Remove default margin */
+  
+  /* Flex container properties */
+  display: flex;
+  justify-content: center; /* Horizontal centering */
+  align-items: center; /* Vertical centering */
+    
+}
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: clamp(15rem, 12vw, 40rem);
+  padding: clamp(2rem, 3vw, 3rem);
+  background-color: #5095ff;
+  position: relative;
+  top: clamp(120px, 4vh, 100px);
+  left: clamp(100px, 4vw, 20px);
+  border-radius: 16px;
+  box-shadow: -10px 8px 0px #ff6250;
+}
+.auth-page form input { 
+  font-family: 'Bahnschrift', 'Cambria', serif;  
+  border: 1px solid black;
+  border-radius: 12px;
+  outline: none;
+  }
+.auth-page form input#username,
+.auth-page form input#password {
+  font-size: 14px;
+  border-radius: 10px;
+  line-height: 1;
+  padding: 0 10px;
+  transition: box-shadow 100ms ease-in, border 100ms ease-in, background-color 100ms ease-in;
+  border: 2px solid #dee1e2;
+  color: rgb(14, 14, 16);
+  background: #dee1e2;
+  display: block;
+  height: 2rem;
+}
+.auth-page form input#username:hover,
+.auth-page form input#password:hover {
+  border-color: #a0a0a0;
+}
+.auth-page form input#username:focus,
+.auth-page form input#password:focus{
+  border-color: #ff8a7d;
+  background: #fff;
+}
+.auth-page form input:focus,
+.auth-page form input:valid {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  }
+.auth-page form input[type="submit"] {
+  display: inline-block;
+  align-self: center;
+  outline: 0;
+  border: 0;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease,transform 0.15s ease;
+  will-change: box-shadow,transform;
+  background: #FCFCFD;
+  box-shadow: 0px 2px 4px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
+  height: 48px;
+  width: 50%;
+  font-size: 18px;
+  border-radius: 6px;
+  color: black;
+  transition: box-shadow 0.15s ease,transform 0.15s ease;
+}
+.auth-page form input[type="submit"]:hover {
+  box-shadow: 0px 4px 8px rgb(45 35 66 / 40%), 0px 7px 13px -3px rgb(45 35 66 / 30%), inset 0px -3px 0px #d6d6e7;
+  transform: translateY(-2px);
+}
+.auth-page form input[type="submit"]:active{
+  box-shadow: inset 0px 3px 7px #d6d6e7;
+  transform: translateY(2px);
+}
+div#image {
+  background-image: url('/static/images/MLQU_NEWLOGO.jpeg');
+  background-size: 35%;
+  background-repeat: no-repeat;
+  background-position: 55%;
+  background-color: white;
+  width: 100vw;
+  height: clamp(220px, 28vh, 320px);
+  position: absolute;
+  top: 16%;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+}
+div#title {
+  background-color: maroon;
+  width: 23vw; /* Or use a fixed width (e.g., 300px) if preferred */
+  max-width: 400px;
+  height: 100vh;
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center; /* Centers vertically */
+  position: absolute;
+  top: 0;
+  left: 10%;
+  box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
+}
+div#title h1 {
+  color: #ffe7c2;
+  font-size: clamp(1rem, 3vw, 4rem);
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 2;
+  margin: 0; /* Remove fixed margin */
+}
+/********************************************************/
+
+/***********************create/edit page*****************/
+button[type="submit"] {
+  padding: 0.3rem 0.5rem;
+  font-family: 'Bahnschrift', 'Cambria', serif;  
+  border: 1px solid black;
+  border-radius: 4px;
+  outline: none;
+}
+div.create-edit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Full viewport height */
+  margin: 0; /* Remove default body margin */
+  padding: 1rem; /* Add some breathing room */
+}
+.create-edit form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 15rem;
+  /* Remove the manual margins - flex parent handles centering */
+  padding: 2rem;
+  border: 1px solid #ddd; /* Optional: visual boundary */
+  border-radius: 8px; /* Optional: rounded corners */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: subtle shadow */
+}
+/******************************************************/
+
+/***********************create/edit page*****************/
+/* Update View Main Container */
+#update-view {
+  max-width: 30rem;
+  margin: 2.5rem auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(30, 30, 60, 0.18);
+  padding: 2.5rem 2rem 2rem 2rem;
+  animation: fadeInUp 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Form Group Styling */
+.form-group {
+  margin-bottom: 1.5rem;
+  transition: background 0.3s;
+}
+.form-group:focus-within {
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+/* Label Styling */
+#update-view label {
+  font-weight: 600;
+  color: #8E1616;
+  margin-bottom: 0.4rem;
+  display: block;
+  letter-spacing: 0.03em;
+  transition: color 0.3s;
+}
+
+/* Input and Select Styling */
+#update-view input[type="text"],
+#update-view select.form-control {
+  width: 100%;
+  padding: 0.7rem 0.5rem;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 7px;
+  font-size: 1rem;
+  background: #f9f9fb;
+  color: #222;
+  transition: border 0.3s, box-shadow 0.3s;
+  margin-top: 0.2rem;
+  outline: none;
+}
+#update-view input[type="text"]:focus,
+#update-view select.form-control:focus {
+  border-color: #8E1616;
+  box-shadow: 0 0 0 2px #f5bf6f55;
+}
+
+/* Update Button */
+.btn.btn-primary {
+  color: black;
+  border: 1px solid #7f87f7;
+  border-radius: 7px;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(142, 22, 22, 0.08);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 0.7rem;
+}
+.btn.btn-primary:hover {
+  background: #7f87f7;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+  transition: all 0.4s ease-in-out;
+}
+
+/* Archive Button */
+.btn-danger {
+  border: 1px red solid;
+  border-radius: 7px;
+  padding: 0.6rem 1.5rem;
+  margin-top: 1.2rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(216, 64, 64, 0.08);
+  transition: background 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-danger:hover {
+  background: red;
+  border: none;
+  transform: scale(1.06) rotate(-2deg);
+}
+#btn-reset-password {
+  border: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-decoration: none;
+  text-align: center;
+  width: 50%;
+  color: black;
+}
+#btn-reset-password img.icon-reset {
+  display: inline-block;           /* Keep icon inline with text */
+  vertical-align: middle;          /* Vertically align with text */
+  margin-right: 0.5em;             /* Space between icon and text */
+}
+#btn-reset-password:hover {
+  background-color: #8E1616;
+  color: white;
+}
+
+/* Archive Icon */
+.icon-danger {
+  width: 1.4em;
+  height: 1.4em;
+  filter: drop-shadow(0 2px 4px #d8404022);
+  transition: filter 0.3s, transform 0.2s;
+}
+.btn-danger:hover .icon-danger {
+  filter: drop-shadow(0 4px 8px #8E161655);
+  transform: scale(1.15) rotate(-8deg);
+}
+
+/* Fade In Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/******************************************************/
+
+/************************* Register page ******************/
+#reg-page {
+  background-color: white;
+}
+#reg-page form {
+  background-color: #ff6250;
+  box-shadow: -10px 8px 0px #5095ff;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+/******************************************************/
+
+/*********************** Index page *****************/
+main#tables-view {
+  display: flex;
+  flex-direction: row;
+  padding-top: 1rem;
+  box-sizing: border-box;
+  overflow: auto;
+}
+table#main-table {
+  width: 100%; /* Make the table span the full width */
+  border-collapse: collapse; /* Remove gaps between table cells */
+  font-family: 'Bahnschrift', 'Cambria', serif; /* Modern font */
+  font-size: 1rem; /* Adjust font size for readability */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
+  border-radius: 8px; /* Rounded corners */
+  overflow: hidden;
+}
+table#main-table thead {
+  background-color: #8E1616; /* Modern header background color */
+  color: white; /* White text for contrast */
+  align-items: center;
+  text-transform: uppercase; /* Make header text uppercase */
+  font-weight: bold; /* Emphasize header text */
+}
+table#main-table th, table#main-table td {
+  padding: 0.7rem 1rem; /* Add padding for better spacing */
+  text-align: left; /* Align text to the left */
+  border-bottom: 1px solid #ddd; /* Subtle border between rows */
+}
+table#main-table tbody tr:nth-child(even) {
+  background-color: #d3d3d3; /* Light background for even rows */
+}
+
+table#main-table tbody tr:hover {
+  background-color: #7f87f7; /* Highlight row on hover */
+  transition: background-color 0.8s ease; /* Smooth hover effect */
+}
+table#main-table th {
+  border-bottom: 2px solid black; /* Stronger border for header */
+}
+table#main-table td:last-child {
+  text-align: right; /* Center-align the last column (e.g., actions) */
+}
+table#main-table th:last-child {
+  text-align: right; /* Center-align the last column (e.g., actions) */
+}
+table#main-table th {
+  cursor: pointer;
+  position: relative;
+}
+/******************************************************/

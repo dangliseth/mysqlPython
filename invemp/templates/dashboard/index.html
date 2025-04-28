@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+ 
+{% block title %} {{ table_name }} {% endblock %}
+
+{% block content %}
+<main id="tables-view">
+  <table class="table table-striped" id="main-table">
+    <thead>
+      <tr>
+        {% for column in columns %}
+          <th onclick="sortTable({{ loop.index0 }})" style="cursor:pointer;">
+            {{ column }}
+          </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        {% if g.user[3] == 'admin' %}
+        <tr onclick="window.location='{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}'" style="cursor: pointer;">
+        {% else %}
+        <tr>
+        {% endif %}
+          {% for value in item %}
+          <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+  <script>
+    function sortTable(colIndex) {
+      const table = document.getElementById("main-table");
+      const tbody = table.tBodies[0];
+      const rows = Array.from(tbody.rows);
+      const isAsc = table.getAttribute("data-sort-col") == colIndex && table.getAttribute("data-sort-dir") == "asc";
+      rows.sort((a, b) => {
+        let aText = a.cells[colIndex].textContent.trim();
+        let bText = b.cells[colIndex].textContent.trim();
+        // Try to compare as numbers, fallback to string
+        let aNum = parseFloat(aText.replace(/[^0-9.\-]+/g,""));
+        let bNum = parseFloat(bText.replace(/[^0-9.\-]+/g,""));
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          return isAsc ? aNum - bNum : bNum - aNum;
+        }
+        return isAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+      });
+      rows.forEach(row => tbody.appendChild(row));
+      table.setAttribute("data-sort-col", colIndex);
+      table.setAttribute("data-sort-dir", isAsc ? "desc" : "asc");
+      // Remove sort classes from all headers
+      ths.forEach(th => th.classList.remove("sorted", "asc", "desc"));
+      // Add to the sorted header
+      ths[colIndex].classList.add("sorted", isAsc ? "desc" : "asc");
+    }
+  </script>
+</main>
+{% endblock %}

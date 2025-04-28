@@ -1,4 +1,4 @@
 {
     "git.enabled": false,
-    "github.copilot.editor.enableAutoCompletions": true
+    "github.copilot.editor.enableAutoCompletions": false
 }

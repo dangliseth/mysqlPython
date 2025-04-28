@@ -1,24 +1,124 @@
 <!doctype html>
+<link rel="icon" href="{{ url_for('static', filename='icons/favicon/favicon.ico') }}">
 <title>{% block title %}{% endblock %} - Inventory</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% if g.user %}
 <nav>
-  <h1>Inventory Management</h1>
+  {% if not is_index %}
+  <button class="btn-back" onclick="window.history.back(); return false;">
+    <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}" class="btn-back-icon">
+    <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
+  </button>
+  {% endif %}
   <ul>
-    {% if g.user %}
-      <li><span>{{ g.user['username'] }}</span>
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% else %}
-      <li><a href="{{ url_for('auth.register') }}">Log In</a>
-      <li><a href="{{ url_for('auth.register') }}">Log In</a>
-    {% endif %}
+      <li id="current-user"><span>{{ g.user[1] }}</span>
+      <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
+        <div class="original">Log Out</div>
+        <div class="letters">
+          <span>B</span>
+          <span>Y</span>
+          <span>E</span>
+          <span>?</span>
+        </div>
+      </a>
   </ul>
+  {% if is_index %}
+  <div id="download-btns">
+    <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf" class="btn-download">
+      <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
+    </a>
+    <a href="{{ url_for('dashboard.convert_pdf_qr', table_name = table_name, **request.args) }}" id="btn-qr" class="btn-download">
+      <img src="{{ url_for('static', filename='icons/qr_code.svg') }}" alt="QR Code" id="qr-icon-img">
+    </a>
+  </div>
+  {% endif %}
+  {% if g.user[3] == 'admin'%}
+  <ul class="tables-nav">
+      {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
+      <a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
+      {% elif (g.user[3] == 'admin' and is_index and table_name != 'items_disposal' and table_name != 'employees_archive') %}
+      <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
+      {% endif %}
+    {% for table in tables %}
+    <li class="nav-item">
+      {% if table == 'items_disposal' and table != table_name %}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
+        items
+      </a>
+      {% elif table == table_name and table == 'items_disposal' %}
+      <h1 class="tables" id="current-table">
+        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
+        items
+      </h1>
+      {% elif table == 'employees_archive' and table != table_name %}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
+        employees
+      </a>
+      {% elif table == table_name and table == 'employees_archive' %}
+      <h1 class="tables" id="current-table">
+        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
+        employees
+      </h1>
+      {% elif table == 'user_accounts' and table != table_name %}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+        <img src="{{ url_for('static', filename='icons/manage_accounts.svg') }}" class="nav-icon"> 
+        user accounts
+      </a>
+      {% elif table == table_name and table == 'user_accounts' %}
+      <h1 class="tables" id="current-table">
+        <img src="{{ url_for('static', filename='icons/manage_accounts.svg') }}" class="nav-icon"> 
+        user accounts
+      </h1>
+      {% elif table == table_name %}
+      <h1 class="tables" id="current-table">{{ table_name }}</h1>
+      {% else %}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if g.user %}
+  <!-- Filter Form -->
+  <form method="get" action="{{ url_for('dashboard.filter_items', table_name=table_name) }}" id="filter-form">
+    <input type="checkbox" id="filter-toggle" class="filter-toggle">
+    <label for="filter-toggle" id="filter-icon">
+      <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
+    </label>
+    <div id="filter-fields">
+      {% for column in columns %}
+        <label for="{{ column }}">{{ column }}</label>
+        <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
+              value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
+      {% endfor %}
+      <button type="submit">Apply Filters</button>
+    </div>
+  </form>
+  {% endif %}
 </nav>
+{% endif %}
 <section class="content">
   <header>
     {% block header %}{% endblock %}
   </header>
   {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
+  <div class="flash" data-flash>{{ message }}</div>
   {% endfor %}
   {% block content %}{% endblock %}
 </section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessages = document.querySelectorAll('[data-flash]');
+    
+    flashMessages.forEach(message => {
+      // Remove after 5 seconds (5000ms)
+      setTimeout(() => {
+        message.style.opacity = '0';
+        setTimeout(() => message.remove(), 500); // Match this with CSS transition
+      }, 5000);
+    });
+  });
+  </script>
