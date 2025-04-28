@@ -552,9 +552,9 @@ def convert_pdf(table_name):
     response.headers['Content-Disposition'] = f'attachment; filename={table_name}_report.pdf'
     return response
 
-@bp.route('/items/convert_pdf_qr')
+@bp.route('/<table_name>/convert_pdf_qr')
 @admin_required
-def convert_pdf_qr():
+def convert_pdf_qr(table_name):
     c = get_cursor()
     request_args = request.args.to_dict()
 
@@ -608,6 +608,10 @@ def convert_pdf_qr():
     pdf.add_page()
     pdf.set_font("Arial", size=8)
 
+    # Add header with generation date and time
+    generated_str = f"Generated on {datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
+    pdf.cell(0, 10, generated_str, ln=1, align='C')
+
     page_width = 190
     qr_width = 25
     qr_height = 25
@@ -618,14 +622,16 @@ def convert_pdf_qr():
     x = x_start
     y = y_start
 
+    import tempfile
     for idx, row in enumerate(items):
         # Build QR data string with only the selected columns
         qr_data = "\n".join(f"{col}: {row[col_indices[col]]}" for col in qr_columns)
         qr_img = qrcode.make(qr_data)
-        img_io = io.BytesIO()
-        qr_img.save(img_io, format='PNG')
-        img_io.seek(0)
-        pdf.image(img_io, x=x, y=y, w=qr_width, h=qr_height, type='PNG')
+        # Save QR image to a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
+            qr_img.save(tmp_file, format='PNG')
+            tmp_file_path = tmp_file.name
+        pdf.image(tmp_file_path, x=x, y=y, w=qr_width, h=qr_height, type='PNG')
         pdf.set_xy(x, y + qr_height)
         pdf.cell(qr_width, 5, f"{row[col_indices['item_id']]}", 0, 0, "C")
 
@@ -638,11 +644,17 @@ def convert_pdf_qr():
             x = x_start
             y = y_start
 
-    pdf_buffer = io.BytesIO()
-    pdf.output(pdf_buffer)
-    pdf_buffer.seek(0)
+    # Optionally, clean up temp files after PDF generation
+    import glob, os
+    for tmp_file in glob.glob(os.path.join(tempfile.gettempdir(), "tmp*.png")):
+        try:
+            os.remove(tmp_file)
+        except Exception:
+            pass
 
-    response = make_response(pdf_buffer.read())
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+
+    response = make_response(pdf_bytes)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=items_qr_codes.pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename={table_name}_qr_report.pdf'
     return response

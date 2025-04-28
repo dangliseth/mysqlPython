@@ -114,9 +114,10 @@ def logout():
     response.headers['Pragma'] = 'no-cache'
     return response
 
-"""@bp.route('/reset-password')
+@bp.route('/<table_name>/<id>/reset-password')
 @admin_required
-def reset_password(table_name = 'user_accounts', id):"""
+def reset_password(table_name = 'user_accounts', id):
+
 
 
 def login_required(view):

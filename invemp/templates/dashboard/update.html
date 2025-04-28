@@ -55,6 +55,9 @@
       <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
     </button>
   </form>
+    {% if table_name == 'user_accounts' %}
+      <form action="{{ url_for('dashboard.reset_password', id = entry[0]) }}" method="post"></form>
+    {% endif %}
   {% endif %}
 </main>
 {% endblock %}
