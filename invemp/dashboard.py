@@ -250,6 +250,8 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
                 id_column = column
                 continue
+            if column == 'password':
+                continue
             if column == 'Assigned To':
                 column = 'employee'
             elif column == 'last_updated':

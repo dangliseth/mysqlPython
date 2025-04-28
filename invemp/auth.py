@@ -114,11 +114,41 @@ def logout():
     response.headers['Pragma'] = 'no-cache'
     return response
 
-@bp.route('/<table_name>/<id>/reset-password')
+@bp.route('/<int:id>/reset_password', methods=('GET', 'POST'))
 @admin_required
-def reset_password(table_name = 'user_accounts', id):
+def reset_password(id):
+    # Fetch user entry for display
+    c = get_cursor()
+    c.execute("SELECT * FROM user_accounts WHERE id = %s", (id,))
+    entry = c.fetchone()
+    c.close()
 
+    error = None
 
+    if request.method == 'POST':
+        new_password = request.form.get('new-password', '').strip()
+        confirm_password = request.form.get('confirm-password', '').strip()
+
+        # Validate input
+        if not new_password or not confirm_password:
+            error = "Both password fields are required."
+        elif new_password != confirm_password:
+            error = "Passwords must match!"
+
+        if error is None:
+            c = get_cursor()
+            c.execute(
+                "UPDATE user_accounts SET password = %s WHERE id = %s",
+                (generate_password_hash(new_password), id)
+            )
+            c.connection.commit()
+            c.close()
+            flash("Password reset successful.")
+            return redirect(url_for('dashboard.index', table_name='user_accounts'))
+
+        flash(error)
+
+    return render_template('auth/reset_password.html', entry=entry)
 
 def login_required(view):
     @functools.wraps(view)

@@ -26,7 +26,8 @@
                   value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
                 {% endif %}
               {% else %}
-                  <span>{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}</span>
+                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}"
+                value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" readonly>
               {% endif %}
             {% endif %}
         </div>
@@ -56,7 +57,9 @@
     </button>
   </form>
     {% if table_name == 'user_accounts' %}
-      <form action="{{ url_for('dashboard.reset_password', id = entry[0]) }}" method="post"></form>
+      <a href="{{ url_for('auth.reset_password', id = entry[0], table_name=table_name) }}" class="btn-danger">
+        <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
+      </a>
     {% endif %}
   {% endif %}
 </main>
