@@ -561,14 +561,19 @@ def convert_pdf_qr(table_name):
     request_args = request.args.to_dict()
 
     # Columns and base query (same as your convert_pdf)
-    columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-               'comment', 'Assigned To', 'department', 'last_updated']
-    base_query = """
-        SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
-        i.comment, e.name AS 'Assigned To', i.department, i.last_updated
-        FROM items i
-        LEFT JOIN employees e ON i.employee = e.employee_id
-    """
+    if table_name == 'items' or table_name == 'items_disposal':
+        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
+                'comment', 'Assigned To', 'department', 'last_updated']
+        base_query = """
+            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
+            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
+            FROM items i
+            LEFT JOIN employees e ON i.employee = e.employee_id
+        """
+    else:
+        c.execute(f"DESCRIBE `{table_name}`")
+        columns = [row[0] for row in c.fetchall()]
+        base_query = f"SELECT * FROM `{table_name}`"
 
     # --- Handle Filters ---
     where_clauses = []
@@ -576,10 +581,13 @@ def convert_pdf_qr(table_name):
     for column in columns:
         if column in request_args and request_args[column]:
             value = request_args[column]
-            if column == "Assigned To":
-                where_clauses.append("e.name LIKE %s")
+            if table_name in ['items', 'items_disposal']:
+                if column == "Assigned To":
+                    where_clauses.append("e.name LIKE %s")
+                else:
+                    where_clauses.append(f"i.`{column}` LIKE %s")
             else:
-                where_clauses.append(f"i.`{column}` LIKE %s")
+                where_clauses.append(f"`{column}` LIKE %s")
             filter_values.append(f"%{value}%")
     where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
@@ -588,10 +596,13 @@ def convert_pdf_qr(table_name):
     sort_direction = request_args.get('sort_direction', 'asc')
     order_sql = ""
     if sort_column and sort_column in columns and sort_direction.lower() in ['asc', 'desc']:
-        if sort_column == "Assigned To":
-            order_sql = f" ORDER BY e.name {sort_direction}"
+        if table_name in ['items', 'items_disposal']:
+            if sort_column == "Assigned To":
+                order_sql = f" ORDER BY e.name {sort_direction}"
+            else:
+                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
         else:
-            order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
+            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
 
     sql_query = base_query + where_sql + order_sql
 
@@ -599,8 +610,11 @@ def convert_pdf_qr(table_name):
     items = c.fetchall()
     c.close()
 
-    # --- Only include these columns in the QR code ---
-    qr_columns = ['item_id', 'item_name', 'serial_number']  # Change as needed
+    if table_name == 'items' or table_name == 'items_disposal':
+        # --- Only include these columns in the QR code ---
+        qr_columns = ['item_id', 'item_name', 'serial_number']  # Change as needed
+    else:
+        qr_columns = columns
 
     # Map column names to their index in the row
     col_indices = {col: idx for idx, col in enumerate(columns)}
@@ -635,7 +649,8 @@ def convert_pdf_qr(table_name):
             tmp_file_path = tmp_file.name
         pdf.image(tmp_file_path, x=x, y=y, w=qr_width, h=qr_height, type='PNG')
         pdf.set_xy(x, y + qr_height)
-        pdf.cell(qr_width, 5, f"{row[col_indices['item_id']]}", 0, 0, "C")
+        label_col = 'item_id' if 'item_id' in col_indices else columns[0]
+        pdf.cell(qr_width, 5, f"{row[col_indices[label_col]]}", 0, 0, "C")
 
         x += qr_width + spacing
         if (idx + 1) % max_per_row == 0:
