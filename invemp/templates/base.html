@@ -36,26 +36,40 @@
   <ul class="tables-nav">
       {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
       <a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
-      {% elif g.user[3] == 'admin' and is_index %}
+      {% elif (g.user[3] == 'admin' and is_index and table_name != 'items_disposal' and table_name != 'employees_archive') %}
       <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
       {% endif %}
     {% for table in tables %}
     <li class="nav-item">
       {% if table == 'items_disposal' and table != table_name %}
       <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
-        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> items
+        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
+        items
       </a>
       {% elif table == table_name and table == 'items_disposal' %}
       <h1 class="tables" id="current-table">
-        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> items
+        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
+        items
       </h1>
       {% elif table == 'employees_archive' and table != table_name %}
       <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
-        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> employees
+        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
+        employees
       </a>
       {% elif table == table_name and table == 'employees_archive' %}
       <h1 class="tables" id="current-table">
-        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> employees
+        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
+        employees
+      </h1>
+      {% elif table == 'user_accounts' and table != table_name %}
+      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+        <img src="{{ url_for('static', filename='icons/manage_accounts.svg') }}" class="nav-icon"> 
+        user accounts
+      </a>
+      {% elif table == table_name and table == 'user_accounts' %}
+      <h1 class="tables" id="current-table">
+        <img src="{{ url_for('static', filename='icons/manage_accounts.svg') }}" class="nav-icon"> 
+        user accounts
       </h1>
       {% elif table == table_name %}
       <h1 class="tables" id="current-table">{{ table_name }}</h1>
