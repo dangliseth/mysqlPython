@@ -555,7 +555,7 @@ def convert_pdf(table_name):
     return response
 
 @bp.route('/<table_name>/convert_pdf_qr')
-@admin_required
+@login_required
 def convert_pdf_qr(table_name):
     c = get_cursor()
     request_args = request.args.to_dict()

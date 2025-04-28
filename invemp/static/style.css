@@ -45,6 +45,9 @@ nav {
   background-color: black;
   padding-bottom: 0.5rem;
   gap: 3rem;
+  position: sticky;
+  top: 0;
+  z-index: 1100;
 }
 nav .btn {
   justify-self: center;
@@ -589,7 +592,7 @@ div.create-edit {
 
 /* Archive Button */
 .btn-danger {
-  border: 2px red solid;
+  border: 1px red solid;
   border-radius: 7px;
   padding: 0.6rem 1.5rem;
   margin-top: 1.2rem;
@@ -605,6 +608,25 @@ div.create-edit {
   background: red;
   border: none;
   transform: scale(1.06) rotate(-2deg);
+}
+#btn-reset-password {
+  border: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-decoration: none;
+  text-align: center;
+  width: 50%;
+  color: black;
+}
+#btn-reset-password img.icon-reset {
+  display: inline-block;           /* Keep icon inline with text */
+  vertical-align: middle;          /* Vertically align with text */
+  margin-right: 0.5em;             /* Space between icon and text */
+}
+#btn-reset-password:hover {
+  background-color: #8E1616;
+  color: white;
 }
 
 /* Archive Icon */

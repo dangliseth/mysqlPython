@@ -57,8 +57,9 @@
     </button>
   </form>
     {% if table_name == 'user_accounts' %}
-      <a href="{{ url_for('auth.reset_password', id = entry[0], table_name=table_name) }}" class="btn-danger">
-        <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
+      <a href="{{ url_for('auth.reset_password', id = entry[0], table_name=table_name) }}" class="btn btn-primary" id="btn-reset-password">
+        <img src="{{ url_for('static', filename='icons/password_reset.svg')}}" class="icon-reset">
+        Reset Password
       </a>
     {% endif %}
   {% endif %}
