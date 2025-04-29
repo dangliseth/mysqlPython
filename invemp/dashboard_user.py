@@ -6,7 +6,8 @@ from werkzeug.exceptions import abort
 import datetime
 
 from invemp.auth import login_required
-from invemp.dashboard_helpers import get_cursor, is_valid_table, get_filters, get_tables, calculate_column_widths
+from invemp.dashboard_helpers import is_valid_table, get_filters, get_tables, calculate_column_widths
+from invemp.db import get_cursor
 
 import qrcode
 from fpdf import FPDF
@@ -21,7 +22,7 @@ def index(table_name):
     # check for admin access
     if g.user[3] != 'admin' and table_name != 'items':
         flash("You do not have permission to access this table.")
-        return redirect(url_for('dashboard.index', table_name))
+        return redirect(url_for('dashboard_user.index', table_name))
     
     if not is_valid_table(table_name):
         abort(400)

@@ -62,7 +62,7 @@ def register():
             )
             c.connection.commit()
             c.close()
-            return redirect(url_for('dashboard.index', table_name = 'user_accounts'))
+            return redirect(url_for('dashboard_user.index', table_name = 'user_accounts'))
 
         flash(error)
 
@@ -71,7 +71,7 @@ def register():
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     if g.user:  # If the user is already logged in, redirect to the index page
-        return redirect(url_for('dashboard.index'))
+        return redirect(url_for('dashboard_user.index'))
     """Log in a user."""
     if request.method == 'POST':
         username = request.form['username']
@@ -144,7 +144,7 @@ def reset_password(id):
             c.connection.commit()
             c.close()
             flash("Password reset successful.")
-            return redirect(url_for('dashboard.index', table_name='user_accounts'))
+            return redirect(url_for('dashboard_user.index', table_name='user_accounts'))
 
         flash(error)
 

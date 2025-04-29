@@ -1,12 +1,13 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
 
 import datetime
 
 from invemp.auth import admin_required
-from invemp.dashboard_helpers import is_valid_table, get_cursor, get_filters, get_dropdown_options, get_entry
+from invemp.dashboard_helpers import is_valid_table, get_filters, get_dropdown_options, get_entry
+from invemp.db import get_cursor
 
 bp = Blueprint('dashboard_admin', __name__)
 
