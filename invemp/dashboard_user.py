@@ -15,6 +15,7 @@ import qrcode
 from fpdf import FPDF
 from weasyprint import CSS, HTML
 
+
 bp = Blueprint('dashboard_user', __name__)
 
 @bp.route('/', defaults={'table_name': 'items'})
