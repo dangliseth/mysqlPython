@@ -24,10 +24,10 @@
   </ul>
   {% if is_index %}
   <div id="download-btns">
-    <a href="{{ url_for('dashboard.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf" class="btn-download">
+    <a href="{{ url_for('dashboard_user.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf" class="btn-download">
       <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">
     </a>
-    <a href="{{ url_for('dashboard.convert_pdf_qr', table_name = table_name, **request.args) }}" id="btn-qr" class="btn-download">
+    <a href="{{ url_for('dashboard_user.convert_pdf_qr', table_name = table_name, **request.args) }}" id="btn-qr" class="btn-download">
       <img src="{{ url_for('static', filename='icons/qr_code.svg') }}" alt="QR Code" id="qr-icon-img">
     </a>
   </div>
@@ -37,12 +37,12 @@
       {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
       <a href = "{{ url_for ('auth.register') }}" class="btn btn-create">Create User</a>
       {% elif (g.user[3] == 'admin' and is_index and table_name != 'items_disposal' and table_name != 'employees_archive') %}
-      <a href = "{{ url_for ('dashboard.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
+      <a href = "{{ url_for ('dashboard_admin.create', table_name = table_name) }}" class="btn btn-create">Create Entry</a>
       {% endif %}
     {% for table in tables %}
     <li class="nav-item">
       {% if table == 'items_disposal' and table != table_name %}
-      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
         <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
         items
       </a>
@@ -52,7 +52,7 @@
         items
       </h1>
       {% elif table == 'employees_archive' and table != table_name %}
-      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
         <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
         employees
       </a>
@@ -62,7 +62,7 @@
         employees
       </h1>
       {% elif table == 'user_accounts' and table != table_name %}
-      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
         <img src="{{ url_for('static', filename='icons/manage_accounts.svg') }}" class="nav-icon"> 
         user accounts
       </a>
@@ -74,7 +74,7 @@
       {% elif table == table_name %}
       <h1 class="tables" id="current-table">{{ table_name }}</h1>
       {% else %}
-      <a href="{{ url_for('dashboard.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>
       {% endif %}
     </li>
     {% endfor %}
@@ -82,7 +82,7 @@
   {% endif %}
   {% if g.user %}
   <!-- Filter Form -->
-  <form method="get" action="{{ url_for('dashboard.filter_items', table_name=table_name) }}" id="filter-form">
+  <form method="get" action="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}" id="filter-form">
     <input type="checkbox" id="filter-toggle" class="filter-toggle">
     <label for="filter-toggle" id="filter-icon">
       <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">

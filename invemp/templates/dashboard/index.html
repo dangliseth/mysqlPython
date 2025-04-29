@@ -17,7 +17,7 @@
     <tbody>
       {% for item in items %}
         {% if g.user[3] == 'admin' %}
-        <tr onclick="window.location='{{ url_for('dashboard.update', table_name=table_name, id=item[0]) }}'" style="cursor: pointer;">
+        <tr onclick="window.location='{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0]) }}'" style="cursor: pointer;">
         {% else %}
         <tr>
         {% endif %}

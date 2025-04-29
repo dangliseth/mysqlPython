@@ -1,5 +1,3 @@
-import os
-
 from flask import (Flask, redirect, url_for)
 
 
@@ -40,8 +38,11 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
-    from . import dashboard
-    app.register_blueprint(dashboard.bp)
+    from . import dashboard_user
+    app.register_blueprint(dashboard_user.bp)
     app.add_url_rule('/', endpoint='index')
+
+    from . import dashboard_admin
+    app.register_blueprint(dashboard_admin.bp)
 
     return app
