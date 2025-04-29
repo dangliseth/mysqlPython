@@ -6,7 +6,9 @@ from werkzeug.exceptions import abort
 import datetime
 
 from invemp.auth import login_required
-from invemp.dashboard_helpers import is_valid_table, get_filters, get_tables, calculate_column_widths
+from invemp.dashboard_helpers import (
+    is_valid_table, get_filters, get_tables, calculate_column_widths, get_pagination_params
+    )
 from invemp.db import get_cursor
 
 import qrcode
@@ -28,6 +30,7 @@ def index(table_name):
         abort(400)
 
     c = get_cursor()
+
     if table_name == 'items':
         query = """
             SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
@@ -53,7 +56,8 @@ def index(table_name):
     tables = get_tables()
     filters = get_filters(table_name)
     return render_template('dashboard/index.html', items=items, columns=columns, 
-                           table_name=table_name, tables=tables, filters = filters, is_index = True)
+                           table_name=table_name, tables=tables, filters = filters, 
+                           is_index = True)
 
 @bp.route('/<table_name>/filter', methods=('GET', 'POST'))
 @login_required
@@ -104,8 +108,10 @@ def filter_items(table_name):
     c.close()
 
     tables = get_tables()
+    args = request.args.to_dict()
+    args.pop('page', None)
     return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, 
-                           tables=tables, filters=filters, is_index = True)
+                           tables=tables, filters=filters, is_index = True,)
 
 @bp.route('/<table_name>/convert_pdf')
 @login_required

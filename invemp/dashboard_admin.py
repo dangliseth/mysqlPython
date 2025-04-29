@@ -183,7 +183,7 @@ def update(id, table_name):
         c.close()
 
 
-        flash(f"Successfully updated {table_name[:-1]}")
+        flash(f"Successfully updated {table_name} id: {entry[0]}")
         return redirect(url_for('dashboard_user.index', table_name=table_name))
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns, 
                            dropdown_options=dropdown_options, filters = filters)

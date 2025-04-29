@@ -4,6 +4,14 @@ from flask import (
 
 from invemp.db import get_cursor
 
+def get_pagination_params(request_args, total_rows, per_page=20):
+    page = int(request_args.get('page', 1))
+    if page < 1:
+        page = 1
+    total_pages = (total_rows + per_page - 1) // per_page
+    offset = (page - 1) * per_page
+    return page, per_page, offset, total_pages
+
 def get_tables():
     c = get_cursor()
     c.execute("SHOW TABLES")

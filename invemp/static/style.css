@@ -671,7 +671,6 @@ div.create-edit {
 main#tables-view {
   display: flex;
   flex-direction: row;
-  padding-top: 1rem;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -716,5 +715,15 @@ table#main-table th:last-child {
 table#main-table th {
   cursor: pointer;
   position: relative;
+}
+.pagination {
+  margin: 1em 0;
+  text-align: center;
+}
+.pagination a {
+  margin: 0 0.5em;
+  text-decoration: none;
+  color: #377ba8;
+  font-weight: bold;
 }
 /******************************************************/
