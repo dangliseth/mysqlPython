@@ -27,7 +27,7 @@ h1 {
   background: #badff5;
   border: 1px solid #377ba8;
   text-align: center;
-  z-index: 1000;
+  z-index: 1200;
   /* Animation for smooth appearance */
   animation: fadeIn 0.3s ease-in-out;
   transition: opacity 0.5s ease-out;
