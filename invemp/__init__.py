@@ -30,6 +30,11 @@ def create_app(test_config=None):
     def favicon():
         return redirect(url_for('static', filename='icons/favicon/favicon.ico'))
     
+    from invemp.dashboard_helpers import get_dropdown_options
+    @app.context_processor
+    def inject_dropdown_options():
+        return dict(get_dropdown_options=get_dropdown_options)
+    
     
     from . import db
 

@@ -44,7 +44,7 @@ nav {
   justify-content: center;
   background-color: black;
   padding-bottom: 0.5rem;
-  gap: 3rem;
+  gap: 4rem;
   position: sticky;
   top: 0;
   z-index: 1100;
@@ -58,7 +58,7 @@ nav h1 {
   align-self: center;
   color: white;
 }
-nav ul li {
+nav ul li#current-user {
   list-style: none;
   color: white
 }
@@ -203,6 +203,9 @@ nav a.btn-53:hover span:nth-child(6) {
   background-color: maroon;
   padding: 0.5rem 0.6rem; /* Subtle hover background */
 }
+#table-link.dropdown:hover .dropdown-content {
+  display: block;
+}
 /* Optional: Add visual indicator for current table */
 #current-table {
   position: relative;
@@ -217,6 +220,54 @@ nav a.btn-53:hover span:nth-child(6) {
   width: 100%;
   height: 2px;
   background-color: #f5bf6f;
+}
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+/* Add this to your style.css or in a <style> tag */
+
+.tables.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-arrow {
+  font-size: 0.8em;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: transform 0.2s;
+}
+
+/* Rotate arrow when hovered */
+.tables.dropdown:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background-color: #f9f9f9;
+  min-width: 120px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.tables.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
 }
 .tables-nav .btn-create {
   text-decoration: none;

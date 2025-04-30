@@ -29,25 +29,27 @@
       {% endif %}
     {% for table in tables %}
     <li class="nav-item">
-      {% if table == 'items_disposal' and table != table_name %}
-      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
-        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
+      {% if table == 'items' and table != table_name %}
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables dropdown" id="table-link"> 
         items
+        <span class="dropdown-arrow">&#9662;</span>
+        <!-- Status Dropdown -->
+        <div class="dropdown-content">
+          {% for status in get_dropdown_options()['status'] %}
+            <a href="{{ url_for('dashboard_user.index', table_name='items', status=status) }}">{{ status }}</a>
+          {% endfor %}
+        </div>
       </a>
-      {% elif table == table_name and table == 'items_disposal' %}
-      <h1 class="tables" id="current-table">
-        <img src="{{ url_for('static', filename='icons/delete_white.svg') }}" class="nav-icon"> 
+      {% elif table == table_name and table == 'items' %}
+      <h1 class="tables dropdown" id="current-table">
         items
-      </h1>
-      {% elif table == 'employees_archive' and table != table_name %}
-      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
-        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
-        employees
-      </a>
-      {% elif table == table_name and table == 'employees_archive' %}
-      <h1 class="tables" id="current-table">
-        <img src="{{ url_for('static', filename='icons/books.svg') }}" class="nav-icon"> 
-        employees
+        <span class="dropdown-arrow">&#9662;</span>
+        <!-- Status Dropdown -->
+        <div class="dropdown-content">
+          {% for status in get_dropdown_options()['status'] %}
+            <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}">{{ status }}</a>
+          {% endfor %}
+        </div>
       </h1>
       {% elif table == 'user_accounts' and table != table_name %}
       <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
@@ -84,7 +86,7 @@
       <button type="submit">Apply Filters</button>
     </div>
   </form>
-  <ul>
+  <ul class="profile">
     <li id="current-user"><span>{{ g.user[1] }}</span>
     <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
       <div class="original">Log Out</div>

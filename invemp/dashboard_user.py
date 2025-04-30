@@ -37,9 +37,14 @@ def index(table_name):
         c.execute(query)
         items = c.fetchall()
         columns = [column[0] for column in c.description if column[0] != 'status']
+        # Remove the 'status' value from each row
+        status_idx = [i for i, col in enumerate(c.description) if col[0] == 'status']
+        if status_idx:
+            idx = status_idx[0]
+            items = [row[:idx] + row[idx+1:] for row in items]
     elif table_name == 'user_accounts':
         c.execute(f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100")
-        columns = [column[0] for column in c.description if column != 'password']
+        columns = [column[0] for column in c.description]
         items = c.fetchall()
     else:
         # Generic query for other tables
