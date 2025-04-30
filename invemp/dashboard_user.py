@@ -36,7 +36,7 @@ def index(table_name):
         query = get_items_query()
         c.execute(query)
         items = c.fetchall()
-        columns = [column[0] for column in c.description]
+        columns = [column[0] for column in c.description if column[0] != 'status']
     elif table_name == 'user_accounts':
         c.execute(f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100")
         columns = [column[0] for column in c.description if column != 'password']
@@ -82,12 +82,7 @@ def filter_items(table_name):
         filter_values.append(f"%{value}%")
     where_clause = " AND ".join(where_clauses)
     if table_name == 'items' or table_name == 'items_disposal':
-        sql_query = f"""
-            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
-            i.comment, e.name AS 'Assigned To', i.department, i.status, i.last_updated
-            FROM items i
-            LEFT JOIN employees e ON i.employee = e.employee_id
-        """
+        sql_query = get_items_query()
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
     if where_clause:

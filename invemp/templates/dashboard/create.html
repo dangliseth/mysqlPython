@@ -13,13 +13,13 @@
         <label for="{{ column }}">{{ column }}</label>
         {% if column in dropdown_options %}
           <!-- Render dropdown menu for specific columns -->
-          <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+          <select class="form-control" id="{{ column }}" name="{{ column }}">
             {% for option in dropdown_options[column] %}
             <option value="{{ option }}">{{ option }}</option>
             {% endfor %}
           </select>
           {% else %}
-          <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" required>
+          <input type="text" class="form-control" id="{{ column }}" name="{{ column }}">
           {% endif %}
       </div>
     {% endif %}

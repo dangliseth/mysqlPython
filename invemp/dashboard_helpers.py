@@ -47,8 +47,8 @@ def get_dropdown_options():
     
     # Format as list of "ID - Name" strings
     employee_options = [f"{emp[1]}" for emp in employees]
-
-    dropdown_options = {
+    c.close()
+    return {
         'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
         'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
                        'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library'],
@@ -56,8 +56,6 @@ def get_dropdown_options():
         'account_type': ['user', 'admin'],
         'status': ['active', 'assigned', 'for repair', 'for disposal']
     }
-    c.close()
-    return dropdown_options
 
 def get_items_columns():
     return [

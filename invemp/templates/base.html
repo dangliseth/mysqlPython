@@ -10,18 +10,6 @@
     <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
   </button>
   {% endif %}
-  <ul>
-      <li id="current-user"><span>{{ g.user[1] }}</span>
-      <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
-        <div class="original">Log Out</div>
-        <div class="letters">
-          <span>B</span>
-          <span>Y</span>
-          <span>E</span>
-          <span>?</span>
-        </div>
-      </a>
-  </ul>
   {% if is_index %}
   <div id="download-btns">
     <a href="{{ url_for('dashboard_user.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf" class="btn-download">
@@ -96,6 +84,18 @@
       <button type="submit">Apply Filters</button>
     </div>
   </form>
+  <ul>
+    <li id="current-user"><span>{{ g.user[1] }}</span>
+    <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
+      <div class="original">Log Out</div>
+      <div class="letters">
+        <span>B</span>
+        <span>Y</span>
+        <span>E</span>
+        <span>?</span>
+      </div>
+    </a>
+  </ul>
   {% endif %}
 </nav>
 {% endif %}

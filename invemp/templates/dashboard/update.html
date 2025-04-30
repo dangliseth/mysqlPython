@@ -11,10 +11,10 @@
         <div class="form-group">
           {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
             <label for="{{ column }}">{{ column }}</label>
-              {% if not (table_name == 'items_disposal' or table_name == 'employees_archive' or column == 'username') %}
+              {% if not (column == 'username') %}
                 {% if column in dropdown_options %}
                   <!-- Render dropdown menu for specific columns -->
-                  <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+                  <select class="form-control" id="{{ column }}" name="{{ column }}">
                     {% for option in dropdown_options[column] %}
                     <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
                       {{ option }}
@@ -23,7 +23,7 @@
                   </select>
                 {% else %}
                   <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
-                  value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
+                  value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" >
                 {% endif %}
               {% else %}
                 <input type="text" class="form-control" id="{{ column }}" name="{{ column }}"
