@@ -7,7 +7,7 @@ import datetime
 
 from invemp.auth import login_required
 from invemp.dashboard_helpers import (
-    is_valid_table, get_filters, get_tables, calculate_column_widths, get_pagination_params
+    is_valid_table, get_filters, get_tables, calculate_column_widths, get_items_columns, get_items_query
     )
 from invemp.db import get_cursor
 
@@ -33,13 +33,7 @@ def index(table_name):
     c = get_cursor()
 
     if table_name == 'items':
-        query = """
-            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
-            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
-            FROM items i
-            LEFT JOIN employees e ON i.employee = e.employee_id
-            LIMIT 100
-        """
+        query = get_items_query()
         c.execute(query)
         items = c.fetchall()
         columns = [column[0] for column in c.description]
@@ -69,8 +63,7 @@ def filter_items(table_name):
 
     # Fetch the column names for the table
     if table_name == 'items' or table_name == 'items_disposal':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                   'comment', 'Assigned To', 'department', 'last_updated']
+        columns = get_items_columns()
     else:
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]
@@ -91,7 +84,7 @@ def filter_items(table_name):
     if table_name == 'items' or table_name == 'items_disposal':
         sql_query = f"""
             SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
-            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
+            i.comment, e.name AS 'Assigned To', i.department, i.status, i.last_updated
             FROM items i
             LEFT JOIN employees e ON i.employee = e.employee_id
         """
@@ -125,14 +118,8 @@ def convert_pdf(table_name):
 
     # Fetch the column names for the table
     if table_name == 'items':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                    'comment', 'Assigned To', 'department', 'last_updated']
-        base_query = """
-            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
-            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
-            FROM items i
-            LEFT JOIN employees e ON i.employee = e.employee_id
-        """
+        columns = get_items_columns()
+        base_query = get_items_query()
     else:
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]
@@ -252,15 +239,9 @@ def convert_pdf_qr(table_name):
     request_args = request.args.to_dict()
 
     # Columns and base query (same as your convert_pdf)
-    if table_name == 'items' or table_name == 'items_disposal':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                'comment', 'Assigned To', 'department', 'last_updated']
-        base_query = """
-            SELECT i.item_id, i.serial_number, i.item_name, i.category, i.description, 
-            i.comment, e.name AS 'Assigned To', i.department, i.last_updated
-            FROM items i
-            LEFT JOIN employees e ON i.employee = e.employee_id
-        """
+    if table_name == 'items':
+        columns = get_items_columns()
+        base_query = get_items_query()
     else:
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]

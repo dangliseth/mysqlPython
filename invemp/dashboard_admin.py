@@ -6,7 +6,10 @@ from werkzeug.exceptions import abort
 import datetime
 
 from invemp.auth import admin_required
-from invemp.dashboard_helpers import is_valid_table, get_filters, get_dropdown_options, get_entry
+from invemp.dashboard_helpers import (
+    is_valid_table, get_filters, get_dropdown_options, 
+    get_entry, get_items_columns, get_items_query
+)
 from invemp.db import get_cursor
 
 bp = Blueprint('dashboard_admin', __name__)
@@ -19,9 +22,8 @@ def create(table_name):
     c = get_cursor()
 
     c.execute(f"DESCRIBE `{table_name}`")
-    if table_name == 'items' or table_name == 'items_disposal':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                   'comment', 'Assigned To', 'department', 'last_updated']
+    if table_name == 'items':
+        columns = get_items_columns()
     else:
         columns = [row[0] for row in c.fetchall()]
     c.close()
@@ -37,26 +39,10 @@ def create(table_name):
             break
 
     # Max id check
-    if table_name == 'items':
-        table_name2 = 'items_disposal'
-    elif table_name == 'employees':
-        table_name2 = 'employees_archive'
-    else:
-        table_name2 = None
     if request.method == 'POST':
         if id_column:
             c = get_cursor()
-            if table_name2:
-                c.execute(f"""
-                    SELECT MAX({id_column}) AS max_id
-                    FROM (
-                        SELECT `{id_column}` FROM `{table_name}`
-                        UNION ALL
-                        SELECT `{id_column}` FROM `{table_name2}`
-                    ) AS combined_ids
-                """)
-            else:
-                c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
+            c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
             max_id = c.fetchone()[0]
             if isinstance(max_id, str) and max_id.startswith('MLQU-'):
                 # Extract numeric part, increment, and format with leading zeros
@@ -124,9 +110,8 @@ def update(id, table_name):
     c = get_cursor()
 
     c.execute(f"DESCRIBE `{table_name}`")
-    if table_name == 'items' or table_name == 'items_disposal':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                   'comment', 'Assigned To', 'department', 'last_updated']
+    if table_name == 'items':
+        columns = get_items_columns()
     else:
         columns = [row[0] for row in c.fetchall()]
     c.close()

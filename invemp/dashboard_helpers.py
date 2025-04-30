@@ -4,13 +4,6 @@ from flask import (
 
 from invemp.db import get_cursor
 
-def get_pagination_params(request_args, total_rows, per_page=20):
-    page = int(request_args.get('page', 1))
-    if page < 1:
-        page = 1
-    total_pages = (total_rows + per_page - 1) // per_page
-    offset = (page - 1) * per_page
-    return page, per_page, offset, total_pages
 
 def get_tables():
     c = get_cursor()
@@ -60,10 +53,27 @@ def get_dropdown_options():
         'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
                        'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library'],
         'Assigned To': employee_options,
-        'account_type': ['user', 'admin']
+        'account_type': ['user', 'admin'],
+        'status': ['active', 'assigned', 'for repair', 'for disposal']
     }
     c.close()
     return dropdown_options
+
+def get_items_columns():
+    return [
+        'item_id', 'serial_number', 'item_name', 'category', 'description',
+        'comment', 'Assigned To', 'department', 'status', 'last_updated'
+    ]
+
+def get_items_query():
+    return """
+        SELECT i.item_id AS 'item id', i.serial_number AS 'serial number', 
+        i.item_name AS 'item name', i.category, i.description, 
+        i.comment, e.name AS 'Assigned To', i.department, i.status, i.last_updated
+        FROM items i
+        LEFT JOIN employees e ON i.employee = e.employee_id
+        LIMIT 100
+    """
 
 def get_filters(table_name):
     c = get_cursor()
