@@ -36,7 +36,7 @@
         <!-- Status Dropdown -->
         <div class="dropdown-content">
           {% for status in get_dropdown_options()['status'] %}
-            <a href="{{ url_for('dashboard_user.index', table_name='items', status=status) }}">{{ status }}</a>
+            <a href="{{ url_for('dashboard_user.filter_items', table_name='items', status=status) }}">{{ status }}</a>
           {% endfor %}
         </div>
       </a>
@@ -47,7 +47,7 @@
         <!-- Status Dropdown -->
         <div class="dropdown-content">
           {% for status in get_dropdown_options()['status'] %}
-            <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}">{{ status }}</a>
+            <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
           {% endfor %}
         </div>
       </h1>
@@ -83,7 +83,11 @@
         <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
               value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
       {% endfor %}
-      <button type="submit">Apply Filters</button>
+      <div class="filter-buttons">
+        <button type="submit" class="apply-btn">Apply Filters</button>
+        <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
+          Clear Filters
+        </a>
     </div>
   </form>
   <ul class="profile">

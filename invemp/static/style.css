@@ -247,6 +247,7 @@ nav a.btn-53:hover span:nth-child(6) {
 .dropdown-content {
   display: none;
   position: absolute;
+  border-radius: 8px;
   left: 0;
   top: 100%;
   background-color: #f9f9f9;
@@ -264,10 +265,12 @@ nav a.btn-53:hover span:nth-child(6) {
   padding: 8px 12px;
   text-decoration: none;
   display: block;
+  font-family: 'Poppins';
+  font-size: 1rem;
 }
 
 .dropdown-content a:hover {
-  background-color: #f1f1f1;
+  background-color: #747474;
 }
 .tables-nav .btn-create {
   text-decoration: none;
@@ -339,11 +342,48 @@ nav a.btn-53:hover span:nth-child(6) {
   width: 200px;
   z-index: 1000;
 }
+#filter-fields:active {
+  border-color: maroon;
+}
 /* Show filter fields when checkbox is checked */
 .filter-toggle:checked + #filter-icon + #filter-fields {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.apply-btn, .clear-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.apply-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.clear-btn {
+  background-color: #f44336;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  line-height: normal;
+}
+
+.clear-btn:hover {
+  background-color: #d32f2f;
+}
+
+.apply-btn:hover {
+  background-color: #45a049;
 }
 nav #download-btns {
   display: flex;

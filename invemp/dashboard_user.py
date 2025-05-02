@@ -11,6 +11,7 @@ from invemp.dashboard_helpers import (
     )
 from invemp.db import get_cursor
 
+import re
 import qrcode
 from fpdf import FPDF
 from weasyprint import CSS, HTML
@@ -67,45 +68,81 @@ def filter_items(table_name):
     c = get_cursor()
 
     # Fetch the column names for the table
-    if table_name == 'items' or table_name == 'items_disposal':
+    if table_name in ('items', 'items_disposal'):
         columns = get_items_columns()
     else:
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]
 
-    # Get filter criteria from the request
-    filters = {column: request.args.get(column) for column in columns if request.args.get(column)}
+    # Get filter criteria - treat each input as a whole value
+    filters = {}
+    for column in columns:
+        # Handle both + and %20 in column names
+        url_encoded_column = column.replace(' ', '+')
+        values = request.args.getlist(url_encoded_column)
+        if not values:
+            url_encoded_column = column.replace(' ', '%20')
+            values = request.args.getlist(url_encoded_column)
+        
+        # Only keep non-empty values and join them with spaces if multiple values
+        values = [v.strip() for v in values if v.strip()]
+        if values:
+            filters[column] = ' '.join(values) if len(values) > 1 else values[0]
 
-    # Build the WHERE clause dynamically
+    # Build the WHERE clause
     where_clauses = []
     filter_values = []
+    
     for col, value in filters.items():
         if col == "Assigned To":
             where_clauses.append("e.name LIKE %s")
         else:
-            where_clauses.append(f"i.`{col}` LIKE %s" if table_name == 'items' or table_name == 'items_disposal' else f"`{col}` LIKE %s")
+            escaped_col = f"i.`{col}`" if table_name in ('items', 'items_disposal') else f"`{col}`"
+            where_clauses.append(f"{escaped_col} LIKE %s")
         filter_values.append(f"%{value}%")
-    where_clause = " AND ".join(where_clauses)
-    if table_name == 'items' or table_name == 'items_disposal':
+
+    # Build the base query
+    if table_name in ('items', 'items_disposal'):
         sql_query = get_items_query()
+        # Remove any trailing LIMIT clause if present
+        sql_query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', sql_query, flags=re.IGNORECASE)
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
-    if where_clause:
-        sql_query += f" WHERE {where_clause}"
+        
+    # Add WHERE clause if we have filters
+    if where_clauses:
+        sql_query += f" WHERE {' AND '.join(where_clauses)}"
+    
+    # Add single LIMIT clause at the end
     sql_query += " LIMIT 100"
 
-    filter_values = [f"%{value}%" for value in filters.values()]
+    # Debug output
+    print("Generated SQL:", sql_query)
+    print("Parameters:", filter_values)
 
-    # Execute the query with filter values
-    c.execute(sql_query, tuple(filter_values))
-    items = c.fetchall()
-    c.close()
+    # Execute query
+    try:
+        c.execute(sql_query, tuple(filter_values))
+        items = c.fetchall()
+    except Exception as e:
+        print(f"SQL Error: {str(e)}")
+        print(f"Query: {sql_query}")
+        print(f"Params: {filter_values}")
+        flash("An error occurred while filtering items", "error")
+        items = []
+    finally:
+        c.close()
 
     tables = get_tables()
     args = request.args.to_dict()
     args.pop('page', None)
-    return render_template('dashboard/index.html', items=items, columns=columns, table_name=table_name, 
-                           tables=tables, filters=filters, is_index = True,)
+    return render_template('dashboard/index.html', 
+                         items=items, 
+                         columns=columns, 
+                         table_name=table_name, 
+                         tables=tables, 
+                         filters=filters, 
+                         is_index=True)
 
 @bp.route('/<table_name>/convert_pdf')
 @login_required
