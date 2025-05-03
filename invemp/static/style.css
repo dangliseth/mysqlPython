@@ -221,6 +221,18 @@ nav a.btn-53:hover span:nth-child(6) {
   height: 2px;
   background-color: #f5bf6f;
 }
+.status-active#current-table::after {
+  background-color: greenyellow;
+}
+.status-assigned#current-table::after {
+  background-color: rgb(106, 106, 248);
+}
+.status-repair#current-table::after {
+  background-color: red;
+}
+.status-disposal#current-table::after {
+  background-color: rgb(168, 168, 168);
+}
 .dropdown {
   position: relative;
   display: inline-block;
@@ -328,8 +340,8 @@ nav a.btn-53:hover span:nth-child(6) {
   background-color: #f34949;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* Hide filter fields by default */
-#filter-fields {
+/* Hide filter panel by default */
+#filter-panel {
   display: none;
   position: absolute;
   top: 100%;
@@ -341,20 +353,27 @@ nav a.btn-53:hover span:nth-child(6) {
   padding: 1rem;
   width: 200px;
   z-index: 1000;
+  flex-direction: column; /* Stack fields and buttons vertically */
+  gap: 0.5rem;
+  overflow-y: auto;
 }
-#filter-fields:active {
-  border-color: maroon;
+
+/* Show filter panel when checkbox is checked */
+.filter-toggle:checked ~ #filter-icon ~ #filter-panel {
+  display: flex;
 }
-/* Show filter fields when checkbox is checked */
-.filter-toggle:checked + #filter-icon + #filter-fields {
+
+/* Remove absolute/flex from children */
+#filter-fields, #filter-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-.filter-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  position: static;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  width: 100%;
 }
 
 .apply-btn, .clear-btn {

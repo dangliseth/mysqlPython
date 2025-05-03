@@ -30,8 +30,10 @@
     {% for table in tables %}
     <li class="nav-item">
       {% if table == 'items' and table != table_name %}
+      <div class="tables dropdown" id="table-link">
       <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables dropdown" id="table-link"> 
         items
+      </a>
         <span class="dropdown-arrow">&#9662;</span>
         <!-- Status Dropdown -->
         <div class="dropdown-content">
@@ -39,18 +41,79 @@
             <a href="{{ url_for('dashboard_user.filter_items', table_name='items', status=status) }}">{{ status }}</a>
           {% endfor %}
         </div>
-      </a>
+      </div>
       {% elif table == table_name and table == 'items' %}
-      <h1 class="tables dropdown" id="current-table">
-        items
-        <span class="dropdown-arrow">&#9662;</span>
-        <!-- Status Dropdown -->
-        <div class="dropdown-content">
-          {% for status in get_dropdown_options()['status'] %}
-            <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
-          {% endfor %}
-        </div>
-      </h1>
+        {% if request.args.get('status') == 'active' %}
+        <h1 class="tables dropdown status-active" id="current-table">
+          items
+          <span class="dropdown-arrow">&#9662;</span>
+          <!-- Status Dropdown -->
+          <div class="dropdown-content">
+            {% for status in get_dropdown_options()['status'] %}
+              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+            {% endfor %}
+            {% if request.args.get('status') %}
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+            {% endif %}
+          </div>
+        </h1>
+        {% elif request.args.get('status') == 'assigned' %}
+        <h1 class="tables dropdown status-assigned" id="current-table">
+          items
+          <span class="dropdown-arrow">&#9662;</span>
+          <!-- Status Dropdown -->
+          <div class="dropdown-content">
+            {% for status in get_dropdown_options()['status'] %}
+              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+            {% endfor %}
+            {% if request.args.get('status') %}
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+            {% endif %}
+          </div>
+        </h1>
+        {% elif request.args.get('status') == 'for repair' %}
+        <h1 class="tables dropdown status-repair" id="current-table">
+          items
+          <span class="dropdown-arrow">&#9662;</span>
+          <!-- Status Dropdown -->
+          <div class="dropdown-content">
+            {% for status in get_dropdown_options()['status'] %}
+              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+            {% endfor %}
+            {% if request.args.get('status') %}
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+            {% endif %}
+          </div>
+        </h1>
+        {% elif request.args.get('status') == 'for disposal' %}
+        <h1 class="tables dropdown status-disposal" id="current-table">
+          items
+          <span class="dropdown-arrow">&#9662;</span>
+          <!-- Status Dropdown -->
+          <div class="dropdown-content">
+            {% for status in get_dropdown_options()['status'] %}
+              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+            {% endfor %}
+            {% if request.args.get('status') %}
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+            {% endif %}
+          </div>
+        </h1>
+        {% else %}
+        <h1 class="tables dropdown" id="current-table">
+          items
+          <span class="dropdown-arrow">&#9662;</span>
+          <!-- Status Dropdown -->
+          <div class="dropdown-content">
+            {% for status in get_dropdown_options()['status'] %}
+              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+            {% endfor %}
+            {% if request.args.get('status') %}
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+            {% endif %}
+          </div>
+        </h1>
+        {% endif %}
       {% elif table == 'user_accounts' and table != table_name %}
       <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
         <img src="{{ url_for('static', filename='icons/manage_accounts.svg') }}" class="nav-icon"> 
@@ -77,17 +140,20 @@
     <label for="filter-toggle" id="filter-icon">
       <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
     </label>
-    <div id="filter-fields">
-      {% for column in columns %}
-        <label for="{{ column }}">{{ column }}</label>
-        <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
-              value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
-      {% endfor %}
-      <div class="filter-buttons">
+    <div id="filter-panel">
+      <div id="filter-fields">
+        {% for column in columns %}
+          <label for="{{ column }}">{{ column }}</label>
+          <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
+                value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
+        {% endfor %}
+      </div>
+      <div id="filter-buttons">
         <button type="submit" class="apply-btn">Apply Filters</button>
         <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
           Clear Filters
         </a>
+      </div>
     </div>
   </form>
   <ul class="profile">

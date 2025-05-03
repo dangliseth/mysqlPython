@@ -150,11 +150,10 @@ def convert_pdf(table_name):
     if not is_valid_table(table_name):
         abort(400)
     c = get_cursor()
-    request_args = request.args.to_dict()
-
+    request_args = request.args
 
     # Fetch the column names for the table
-    if table_name == 'items':
+    if table_name in ('items', 'items_disposal'):
         columns = get_items_columns()
         base_query = get_items_query()
     else:
@@ -168,15 +167,22 @@ def convert_pdf(table_name):
     
     # Process each possible filter parameter
     for column in columns:
-        if column in request_args and request_args[column]:
-            value = request_args[column]
-            if table_name == 'items' and column == "Assigned To":
+        # Handle both single values and lists of values
+        values = request_args.getlist(column) or ([request_args[column]] if column in request_args else [])
+        values = [v for v in values if v.strip()]  # Filter out empty values
+        
+        if values:
+            # Join multiple values with spaces for LIKE matching
+            search_value = ' '.join(values)
+            
+            if table_name in ('items', 'items_disposal') and column == "Assigned To":
                 where_clauses.append("e.name LIKE %s")
-            elif table_name == 'items':
+            elif table_name in ('items', 'items_disposal'):
                 where_clauses.append(f"i.`{column}` LIKE %s")
             else:
                 where_clauses.append(f"`{column}` LIKE %s")
-            filter_values.append(f"%{value}%")
+                
+            filter_values.append(f"%{search_value}%")
     
     where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
@@ -186,7 +192,7 @@ def convert_pdf(table_name):
     
     order_sql = ""
     if sort_column and sort_column in columns and sort_direction.lower() in ['asc', 'desc']:
-        if table_name == 'items':
+        if table_name in ('items', 'items_disposal'):
             if sort_column == "Assigned To":
                 order_sql = f" ORDER BY e.name {sort_direction}"
             else:
@@ -195,76 +201,80 @@ def convert_pdf(table_name):
             order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
 
     # --- Final Query ---
-    sql_query = base_query + where_sql + order_sql
+    sql_query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', base_query, flags=re.IGNORECASE) + where_sql + order_sql
 
     # Execute the query
-    c.execute(sql_query, tuple(filter_values))
-    items = c.fetchall()
-    c.close()
+    try:
+        c.execute(sql_query, tuple(filter_values))
+        items = c.fetchall()
+    except Exception as e:
+        print(f"PDF Generation Error: {str(e)}")
+        print(f"Query: {sql_query}")
+        print(f"Params: {filter_values}")
+        flash("Error generating PDF", "error")
+        return redirect(url_for('dashboard_user.index', table_name=table_name))
+    finally:
+        c.close()
 
     html = render_template(
-        'pdf_template.html',  # Create a new template specifically for PDF
+        'pdf_template.html',
         items=items,
         columns=columns,
         table_name=table_name,
         current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
         column_widths=calculate_column_widths(items, columns),
-        zip = zip
+        zip=zip,
+        filters=request_args  # Pass filters for header display
     )
 
-    # Generate PDF with proper CSS
+    # Generate PDF
     pdf = HTML(
         string=html,
-        base_url=request.base_url  # Important for static files
+        base_url=request.base_url
     ).write_pdf(stylesheets=[
         CSS(string='''
             @page { 
-            size: A4 landscape;  /* Landscape often works better for wide tables */
-            margin: 1cm; 
-            @bottom-center {
-                content: "Page " counter(page) " of " counter(pages);
-                font-size: 8pt;
-            }
+                size: A4 landscape;
+                margin: 1cm; 
+                @bottom-center {
+                    content: "Page " counter(page) " of " counter(pages);
+                    font-size: 8pt;
+                }
             }
             body { 
                 font-family: Arial; 
-                font-size: 9pt;  /* Slightly smaller font */
+                font-size: 9pt;
                 line-height: 1.3;
             }
-            h1 { 
-                color: #333; 
-                text-align: center;
-                margin-bottom: 0.5cm;
+            .header {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
             }
             table {
                 width: 100%;
                 border-collapse: collapse;
-                table-layout: fixed;  /* Essential for column control */
-                display: flex
-                flex-direction: row
+                table-layout: fixed;
+            }
+            th, td {
+                padding: 4px;
+                border: 1px solid #ddd;
             }
             th {
                 background-color: #f2f2f2;
-                text-align: left;
-                padding: 4px;
-                border: 1px solid #ddd;
                 font-weight: bold;
             }
-            td {
-                padding: 4px;
-                border: 1px solid #ddd;
-                vertical-align: top;  /* Align content to top */
-            }
-            .timestamp {
-                font-size: 8pt;       /* Smaller font for timestamps */
+            .filters {
+                font-size: 8pt;
+                margin-bottom: 5px;
+                color: #555;
             }
             ''')
     ])
 
-    # Output PDF as a downloadable file
     response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'attachment; filename={table_name}_report.pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename={table_name}_report_{datetime.datetime.now().strftime("%Y%m%d_%H%M")}.pdf'
     return response
 
 @bp.route('/<table_name>/convert_pdf_qr')
