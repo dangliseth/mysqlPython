@@ -143,9 +143,11 @@
     <div id="filter-panel">
       <div id="filter-fields">
         {% for column in columns %}
+          {% if column != 'status' %}
           <label for="{{ column }}">{{ column }}</label>
           <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
                 value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
+          {% endif %}
         {% endfor %}
       </div>
       <div id="filter-buttons">

@@ -14,13 +14,16 @@
               {% if not (column == 'username') %}
                 {% if column in dropdown_options %}
                   <!-- Render dropdown menu for specific columns -->
-                  <select class="form-control" id="{{ column }}" name="{{ column }}">
+                  <select class="form-control" id="{{ column|replace(' ', '-') }}" name="{{ column }}">
                     {% for option in dropdown_options[column] %}
                     <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
-                      {{ option }}
+                      {{ option if option else '-- None --' }}
                     </option>
                     {% endfor %}
                   </select>
+                  {% if column == 'Assigned To' %}
+                  <button type="button" class="btn btn-secondary" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
+                  {% endif %}
                 {% else %}
                   <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
                   value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" >

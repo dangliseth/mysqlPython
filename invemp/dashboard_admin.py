@@ -150,13 +150,36 @@ def update(id, table_name):
             if column == 'password':
                 continue
             if column == 'Assigned To':
+                assigned_to_name = request.form.get('Assigned To')
+                # Convert name to employee_id
+                if assigned_to_name:
+                    c_lookup = get_cursor()
+                    c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+                    emp_row = c_lookup.fetchone()
+                    c_lookup.close()
+                    assigned_to_value = emp_row[0] if emp_row else None
+                else:
+                    assigned_to_value = None
                 column = 'employee'
+                values.append(assigned_to_value)
+                update_columns.append(column)
             elif column == 'last_updated':
                 values.append(current_datetime)
                 update_columns.append(column)
             else:
                 values.append(request.form.get(column))
                 update_columns.append(column)
+
+        status_from_form = request.form.get('status', '').strip().lower()
+
+        # Handle status logic
+        if status_from_form in ['for disposal', 'for repair']:
+            values.append(status_from_form)
+        elif assigned_to_value:  # Not empty/None/Null
+            values.append('assigned')
+        else:
+            values.append('active')
+        update_columns.append('status')
 
         placeholders = ', '.join([f"`{col}` = %s" for col in update_columns])
         query = f"UPDATE `{table_name}` SET {placeholders} WHERE `{id_column}` = %s"
