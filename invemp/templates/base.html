@@ -135,7 +135,8 @@
   {% endif %}
   {% if g.user %}
   <!-- Filter Form -->
-  <form method="get" action="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}" id="filter-form">
+  <form method="get" action="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}" 
+  id="filter-form">
     <input type="checkbox" id="filter-toggle" class="filter-toggle">
     <label for="filter-toggle" id="filter-icon">
       <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
@@ -158,18 +159,25 @@
       </div>
     </div>
   </form>
-  <ul class="profile">
-    <li id="current-user"><span>{{ g.user[1] }}</span>
-    <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
-      <div class="original">Log Out</div>
-      <div class="letters">
-        <span>B</span>
-        <span>Y</span>
-        <span>E</span>
-        <span>?</span>
-      </div>
-    </a>
-  </ul>
+  <section class="profile">
+    <input type="checkbox" id="profile-toggle">
+    <label for="profile-toggle" id="profile-icon">
+      <img src="{{ url_for('static', filename='icons/profile_icon.svg') }}" 
+      alt="profile" class="profile-icon-img">
+    </label>
+    <ul class="profile">
+      <li id="current-user"><span>{{ g.user[1] }}</span>
+      <li><a href="{{ url_for('auth.logout') }}" class="btn-53">
+        <div class="original">Log Out</div>
+        <div class="letters">
+          <span>B</span>
+          <span>Y</span>
+          <span>E</span>
+          <span>?</span>
+        </div>
+      </a>
+    </ul>
+  </section>
   {% endif %}
 </nav>
 {% endif %}
