@@ -136,7 +136,7 @@
   {% if g.user %}
     {% if is_index %}
     <!-- Filter Form -->
-    <form method="get" action="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}" 
+    <form method="get" action="{{ url_for('dashboard_user.index', table_name=table_name) }}" 
     id="filter-form">
       <input type="checkbox" id="filter-toggle" class="filter-toggle">
       <label for="filter-toggle" id="filter-icon">
@@ -148,13 +148,18 @@
             {% if column != 'status' %}
             <label for="{{ column }}">{{ column }}</label>
             <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
-                  value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
+                  value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}"
+                  {% if column == sort_column %}data-sorted="true"{% endif %}>
             {% endif %}
           {% endfor %}
+          {% if sort_column %}
+            <input type="hidden" name="sort_column" value="{{ sort_column }}">
+            <input type="hidden" name="sort_direction" value="{{ sort_direction }}">
+          {% endif %}
         </div>
         <div id="filter-buttons">
           <button type="submit" class="apply-btn">Apply Filters</button>
-          <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
+          <a href="{{ url_for('dashboard_user.index', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
             Clear Filters
           </a>
         </div>

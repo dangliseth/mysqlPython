@@ -38,7 +38,7 @@ def index(table_name):
             page = 1
     except ValueError:
         page = 1
-    per_page = 20
+    per_page = 15
     offset = (page - 1) * per_page
 
     filters = get_filters(table_name)
@@ -90,15 +90,17 @@ def index(table_name):
         c.close()
 
     elif table_name == 'user_accounts':
+        c = get_cursor()
         query = f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100"
         columns = [column[0] for column in c.description]
         items = c.fetchall()
+        c.close()
     else:
         # Generic query for other tables
         c.execute(f"SELECT * FROM `{table_name}` LIMIT 100")
         items = c.fetchall()
         columns = [column[0] for column in c.description]
-    c.close()
+        c.close()
 
     total_pages = (total + per_page - 1) // per_page
     args = request.args.to_dict()
@@ -123,7 +125,7 @@ def filter_items(table_name):
             page = 1
     except ValueError:
         page = 1
-    per_page = 20
+    per_page = 15
     offset = (page - 1) * per_page
 
     # Fetch the column names for the table
