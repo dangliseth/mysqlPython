@@ -28,7 +28,17 @@
       {% endfor %}
     </tbody>
   </table>
-
+  {% if page > 1 %}
+  {% set query_args = args.copy() %}
+  {% set _ = query_args.update({'page': page-1}) %}
+  <a href="{{ url_for('dashboard_user.index', table_name=table_name) }}?{{ query_args|urlencode }}">&laquo; Prev</a>
+  {% endif %}
+  {% if page < total_pages %}
+  {% set query_args = args.copy() %}
+  {% set _ = query_args.update({'page': page+1}) %}
+  <a href="{{ url_for('dashboard_user.index', table_name=table_name) }}?{{ query_args|urlencode }}">Next &raquo;</a>
+  {% endif %}
+  
 
   <script>
     function sortTable(colIndex) {

@@ -31,11 +31,50 @@ def index(table_name):
     if not is_valid_table(table_name):
         abort(400)
 
-    c = get_cursor()
+    # Pagination setup
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1:
+            page = 1
+    except ValueError:
+        page = 1
+    per_page = 20
+    offset = (page - 1) * per_page
 
+    filters = get_filters(table_name)
+    where_clauses = []
+    filter_values = []
+    
+    # Build WHERE clause from filters
+    for col, value in filters.items():
+        if table_name in ('items', 'items_disposal') and col == "Assigned To":
+            where_clauses.append("e.name LIKE %s")
+        elif table_name in ('items', 'items_disposal'):
+            where_clauses.append(f"i.`{col}` LIKE %s")
+        else:
+            where_clauses.append(f"`{col}` LIKE %s")
+        filter_values.append(f"%{value}%")
+    where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+
+    # Sorting (optional)
+    sort_column = request.args.get('sort_column')
+    sort_direction = request.args.get('sort_direction', 'asc')
+    order_sql = ""
+    if sort_column and sort_direction.lower() in ['asc', 'desc']:
+        if table_name in ('items', 'items_disposal'):
+            if sort_column == "Assigned To":
+                order_sql = f" ORDER BY e.name {sort_direction}"
+            else:
+                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
+        else:
+            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
+    
     if table_name == 'items':
         query = get_items_query()
-        c.execute(query)
+        query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', query, flags=re.IGNORECASE)
+        paginated_query = f"{query}{where_sql}{order_sql} LIMIT %s OFFSET %s"
+        c = get_cursor()
+        c.execute(paginated_query, (*filter_values, per_page, offset))
         items = c.fetchall()
         columns = [column[0] for column in c.description if column[0] != 'status']
         # Remove the 'status' value from each row
@@ -43,8 +82,15 @@ def index(table_name):
         if status_idx:
             idx = status_idx[0]
             items = [row[:idx] + row[idx+1:] for row in items]
+
+        # Get total count for pagination
+        count_query = f"SELECT COUNT(*) FROM items LEFT JOIN employees e ON items.employee = e.employee_id" + (where_sql if where_sql else "")
+        c.execute(count_query, tuple(filter_values))
+        total = c.fetchone()[0]
+        c.close()
+
     elif table_name == 'user_accounts':
-        c.execute(f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100")
+        query = f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100"
         columns = [column[0] for column in c.description]
         items = c.fetchall()
     else:
@@ -54,11 +100,14 @@ def index(table_name):
         columns = [column[0] for column in c.description]
     c.close()
 
-    tables = get_tables()
-    filters = get_filters(table_name)
+    total_pages = (total + per_page - 1) // per_page
+    args = request.args.to_dict()
+
+    
     return render_template('dashboard/index.html', items=items, columns=columns, 
-                           table_name=table_name, tables=tables, filters = filters, 
-                           is_index = True)
+                           table_name=table_name, tables = get_tables(), 
+                           filters = filters, page = page, total_pages = total_pages,
+                           args = args, is_index = True)
 
 @bp.route('/<table_name>/filter', methods=('GET', 'POST'))
 @login_required
@@ -67,6 +116,16 @@ def filter_items(table_name):
         abort(400)
     c = get_cursor()
 
+    # Pagination setup
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1:
+            page = 1
+    except ValueError:
+        page = 1
+    per_page = 20
+    offset = (page - 1) * per_page
+
     # Fetch the column names for the table
     if table_name in ('items', 'items_disposal'):
         columns = get_items_columns()
@@ -74,17 +133,14 @@ def filter_items(table_name):
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]
 
-    # Get filter criteria - treat each input as a whole value
+    # Get filter criteria
     filters = {}
     for column in columns:
-        # Handle both + and %20 in column names
         url_encoded_column = column.replace(' ', '+')
         values = request.args.getlist(url_encoded_column)
         if not values:
             url_encoded_column = column.replace(' ', '%20')
             values = request.args.getlist(url_encoded_column)
-        
-        # Only keep non-empty values and join them with spaces if multiple values
         values = [v.strip() for v in values if v.strip()]
         if values:
             filters[column] = ' '.join(values) if len(values) > 1 else values[0]
@@ -92,7 +148,6 @@ def filter_items(table_name):
     # Build the WHERE clause
     where_clauses = []
     filter_values = []
-    
     for col, value in filters.items():
         if col == "Assigned To":
             where_clauses.append("e.name LIKE %s")
@@ -104,44 +159,70 @@ def filter_items(table_name):
     # Build the base query
     if table_name in ('items', 'items_disposal'):
         sql_query = get_items_query()
-        # Remove any trailing LIMIT clause if present
         sql_query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', sql_query, flags=re.IGNORECASE)
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
-        
+
     # Add WHERE clause if we have filters
     if where_clauses:
         sql_query += f" WHERE {' AND '.join(where_clauses)}"
-    
-    # Add single LIMIT clause at the end
-    sql_query += " LIMIT 100"
+
+    # Add ORDER BY if needed (optional)
+    sort_column = request.args.get('sort_column')
+    sort_direction = request.args.get('sort_direction', 'asc')
+    order_sql = ""
+    if sort_column and sort_direction.lower() in ['asc', 'desc']:
+        if table_name in ('items', 'items_disposal'):
+            if sort_column == "Assigned To":
+                order_sql = f" ORDER BY e.name {sort_direction}"
+            else:
+                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
+        else:
+            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
+    sql_query += order_sql
+
+    # Add LIMIT/OFFSET for pagination
+    paginated_query = f"{sql_query} LIMIT %s OFFSET %s"
 
     # Debug output
-    print("Generated SQL:", sql_query)
-    print("Parameters:", filter_values)
+    print("Generated SQL:", paginated_query)
+    print("Parameters:", filter_values + [per_page, offset])
 
-    # Execute query
+    # Execute paginated query
     try:
-        c.execute(sql_query, tuple(filter_values))
+        c.execute(paginated_query, tuple(filter_values) + (per_page, offset))
         items = c.fetchall()
     except Exception as e:
         print(f"SQL Error: {str(e)}")
-        print(f"Query: {sql_query}")
-        print(f"Params: {filter_values}")
+        print(f"Query: {paginated_query}")
+        print(f"Params: {filter_values + [per_page, offset]}")
         flash("An error occurred while filtering items", "error")
         items = []
+    # Get total count for pagination
+    count_query = f"SELECT COUNT(*) FROM {('items LEFT JOIN employees e ON items.employee = e.employee_id') if table_name in ('items', 'items_disposal') else table_name}"
+    if where_clauses:
+        count_query += f" WHERE {' AND '.join(where_clauses)}"
+    try:
+        c.execute(count_query, tuple(filter_values))
+        total = c.fetchone()[0]
+    except Exception as e:
+        total = 0
     finally:
         c.close()
 
-    tables = get_tables()
+    total_pages = (total + per_page - 1) // per_page
     args = request.args.to_dict()
     args.pop('page', None)
-    return render_template('dashboard/index.html', 
-                         items=items, 
-                         columns=columns, 
-                         table_name=table_name, 
-                         tables=tables, 
-                         filters=filters, 
+
+    return render_template('dashboard/index.html',
+                         items=items,
+                         columns=columns,
+                         table_name=table_name,
+                         tables=get_tables(),
+                         filters=filters,
+                         page=page,
+                         total_pages=total_pages,
+                         args=args,
                          is_index=True)
 
 @bp.route('/<table_name>/convert_pdf')
