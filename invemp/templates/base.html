@@ -134,31 +134,33 @@
   </ul>
   {% endif %}
   {% if g.user %}
-  <!-- Filter Form -->
-  <form method="get" action="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}" 
-  id="filter-form">
-    <input type="checkbox" id="filter-toggle" class="filter-toggle">
-    <label for="filter-toggle" id="filter-icon">
-      <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
-    </label>
-    <div id="filter-panel">
-      <div id="filter-fields">
-        {% for column in columns %}
-          {% if column != 'status' %}
-          <label for="{{ column }}">{{ column }}</label>
-          <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
-                value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
-          {% endif %}
-        {% endfor %}
+    {% if is_index %}
+    <!-- Filter Form -->
+    <form method="get" action="{{ url_for('dashboard_user.filter_items', table_name=table_name) }}" 
+    id="filter-form">
+      <input type="checkbox" id="filter-toggle" class="filter-toggle">
+      <label for="filter-toggle" id="filter-icon">
+        <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
+      </label>
+      <div id="filter-panel">
+        <div id="filter-fields">
+          {% for column in columns %}
+            {% if column != 'status' %}
+            <label for="{{ column }}">{{ column }}</label>
+            <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
+                  value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}">
+            {% endif %}
+          {% endfor %}
+        </div>
+        <div id="filter-buttons">
+          <button type="submit" class="apply-btn">Apply Filters</button>
+          <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
+            Clear Filters
+          </a>
+        </div>
       </div>
-      <div id="filter-buttons">
-        <button type="submit" class="apply-btn">Apply Filters</button>
-        <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
-          Clear Filters
-        </a>
-      </div>
-    </div>
-  </form>
+    </form>
+  {% endif %}
   <section class="profile">
     <input type="checkbox" id="profile-toggle">
     <label for="profile-toggle" id="profile-icon">

@@ -44,11 +44,16 @@ def create(table_name):
             c = get_cursor()
             c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
             max_id = c.fetchone()[0]
-            if isinstance(max_id, str) and max_id.startswith('MLQU-'):
-                # Extract numeric part, increment, and format with leading zeros
-                num_part = max_id.split('-')[-1]
-                next_num = int(num_part) + 1 if num_part.isdigit() else 1
-                next_id = f"MLQU-{next_num:07d}"
+            if table_name == 'items':
+                if max_id is None:
+                    next_id = "MLQU-0000001"
+                elif isinstance(max_id, str) and max_id.startswith('MLQU-'):
+                    num_part = max_id.split('-')[-1]
+                    next_num = int(num_part) + 1 if num_part.isdigit() else 1
+                    next_id = f"MLQU-{next_num:07d}"
+                else:
+                    # fallback if max_id is not in expected format
+                    next_id = "MLQU-0000001"
             else:
                 try:
                     next_id = (int(max_id) if max_id is not None else 0) + 1
@@ -106,14 +111,37 @@ def create(table_name):
         placeholders = ', '.join(['%s'] * len(values))
         query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
 
-
-        c = get_cursor()
-        c.execute(query, values)
-        c.connection.commit()
-        c.close()
-
-        flash(f"Successfully created new {table_name[:-1]}")
-        return redirect(url_for('dashboard_user.index', table_name=table_name, filters = filters))
+        try:
+            c = get_cursor()
+            c.execute(query, values)
+            c.connection.commit()
+            c.close()
+            flash(f"Successfully created new {table_name[:-1]}")
+            return redirect(url_for('dashboard_user.index', table_name=table_name, filters = filters))
+        except Exception as e:
+            # Import pymysql.err if not already imported
+            import pymysql
+            if isinstance(e, pymysql.err.IntegrityError):
+                flash(f"Integrity Error: {e}", "error")
+            else:
+                flash(f"Database Error: {e}", "error")
+            if c:
+                c.close()
+            
+            # Prepare entry from form data to keep user input
+            entry = []
+            for column in columns:
+                if column == 'id' or column.endswith('_id') or column == 'ID':
+                    entry.append(id)
+                elif column == 'Assigned To':
+                    entry.append(request.form.get('Assigned To'))
+                elif column == 'last_updated':
+                    entry.append(current_datetime)
+                else:
+                    entry.append(request.form.get(column))
+            return render_template('dashboard/create.html', table_name=table_name, entry=entry,
+                           columns=columns, dropdown_options=dropdown_options, filters = filters)
+        
     return render_template('dashboard/create.html', table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options, filters = filters)
 
