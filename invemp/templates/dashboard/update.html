@@ -41,6 +41,7 @@
   </form>
   <!--- Delete func for items_disposal and employees_archive -->
   <!---Archive_scrap func for items and employees -->
+  <!--
   {% if not (table_name == 'items_disposal' or table_name == 'employees' or table_name == 'user_accounts') %}
   <form action="{{ url_for('dashboard_admin.archive_scrap', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
     {% if table_name == 'items'%}
@@ -54,6 +55,8 @@
     {% endif %}
   </form>
   {% else %}
+  -->
+
   <form action="{{ url_for('dashboard_admin.delete', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
     <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
       <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
@@ -65,6 +68,6 @@
         Reset Password
       </a>
     {% endif %}
-  {% endif %}
+  <!--{% endif %}-->
 </main>
 {% endblock %}

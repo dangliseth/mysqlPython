@@ -69,22 +69,39 @@ def create(table_name):
             elif column == 'last_updated':
                 values.append(current_datetime)
                 insert_columns.append(column)
+            elif column == 'status':
+                continue
             elif column == 'Assigned To':
                 # Convert employee name to employee_id before inserting
-                employee_name = request.form.get('Assigned To')
-                if employee_name:
+                assigned_to_name = request.form.get('Assigned To')
+                # Convert name to employee_id
+                if assigned_to_name:
                     c_lookup = get_cursor()
-                    c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (employee_name,))
+                    c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
                     emp_row = c_lookup.fetchone()
                     c_lookup.close()
-                    employee_id = emp_row[0] if emp_row else None
+                    assigned_to_value = emp_row[0] if emp_row else None
                 else:
-                    employee_id = None
-                values.append(employee_id)
+                    assigned_to_value = None
+                values.append(assigned_to_value)
                 insert_columns.append('employee')
             else:
-                values.append(request.form.get(column))
+                if request.form.get(column) != '':
+                    values.append(request.form.get(column))
+                else:
+                    values.append(None)
                 insert_columns.append(column)
+
+        status_from_form = request.form.get('status', '').strip().lower()
+
+        # Handle status logic
+        if status_from_form in ['for disposal', 'for repair']:
+            values.append(status_from_form)
+        elif assigned_to_value:  # Not empty/None/Null
+            values.append('assigned')
+        else:
+            values.append('active')
+        insert_columns.append('status')
 
         placeholders = ', '.join(['%s'] * len(values))
         query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
@@ -163,11 +180,16 @@ def update(id, table_name):
                 column = 'employee'
                 values.append(assigned_to_value)
                 update_columns.append(column)
+            elif column == 'status':
+                continue
             elif column == 'last_updated':
                 values.append(current_datetime)
                 update_columns.append(column)
             else:
-                values.append(request.form.get(column))
+                if request.form.get(column) != '':
+                    values.append(request.form.get(column))
+                else:
+                    values.append(None)
                 update_columns.append(column)
 
         status_from_form = request.form.get('status', '').strip().lower()
@@ -185,14 +207,44 @@ def update(id, table_name):
         query = f"UPDATE `{table_name}` SET {placeholders} WHERE `{id_column}` = %s"
         values.append(id)
 
-        c = get_cursor()
-        c.execute(query, values)
-        c.connection.commit()
-        c.close()
+        try:
+            c = get_cursor()
+            c.execute(query, values)
+            c.connection.commit()
+            c.close()
+            flash(f"Successfully updated {table_name} id: {entry[0]}")
+            return redirect(url_for('dashboard_user.index', table_name=table_name, filters=filters))
+        except Exception as e:
+            # Import pymysql.err if not already imported
+            import pymysql
+            if isinstance(e, pymysql.err.IntegrityError):
+                flash(f"Integrity Error: {e}", "error")
+            else:
+                flash(f"Database Error: {e}", "error")
+            if c:
+                c.close()
+            
+            # Prepare entry from form data to keep user input
+            entry = []
+            for column in columns:
+                if column == 'id' or column.endswith('_id') or column == 'ID':
+                    entry.append(id)
+                elif column == 'Assigned To':
+                    entry.append(request.form.get('Assigned To'))
+                elif column == 'last_updated':
+                    entry.append(current_datetime)
+                else:
+                    entry.append(request.form.get(column))
+            # Stay on the update page with the user's input preserved
+            return render_template(
+                'dashboard/update.html',
+                entry=entry,
+                table_name=table_name,
+                columns=columns,
+                dropdown_options=dropdown_options,
+                filters=filters
+            )
 
-
-        flash(f"Successfully updated {table_name} id: {entry[0]}")
-        return redirect(url_for('dashboard_user.index', table_name=table_name))
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns, 
                            dropdown_options=dropdown_options, filters = filters)
 

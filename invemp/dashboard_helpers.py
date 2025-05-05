@@ -49,7 +49,7 @@ def get_dropdown_options():
     employee_options = ['-- None --'] + [f"{emp[1]}" for emp in employees]
     c.close()
     return {
-        'category': ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
+        'category': ['Computer', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
         'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
                        'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library'],
         'Assigned To': employee_options,
