@@ -1,7 +1,4 @@
-import os
-
 from flask import (Flask, redirect, url_for)
-
 
 
 def create_app(test_config=None):
@@ -32,6 +29,11 @@ def create_app(test_config=None):
     def favicon():
         return redirect(url_for('static', filename='icons/favicon/favicon.ico'))
     
+    from invemp.dashboard_helpers import get_dropdown_options
+    @app.context_processor
+    def inject_dropdown_options():
+        return dict(get_dropdown_options=get_dropdown_options)
+    
     
     from . import db
 
@@ -40,8 +42,11 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
-    from . import dashboard
-    app.register_blueprint(dashboard.bp)
+    from . import dashboard_user
+    app.register_blueprint(dashboard_user.bp)
     app.add_url_rule('/', endpoint='index')
+
+    from . import dashboard_admin
+    app.register_blueprint(dashboard_admin.bp)
 
     return app

@@ -27,7 +27,7 @@ h1 {
   background: #badff5;
   border: 1px solid #377ba8;
   text-align: center;
-  z-index: 1200;
+  z-index: 12000;
   /* Animation for smooth appearance */
   animation: fadeIn 0.3s ease-in-out;
   transition: opacity 0.5s ease-out;
@@ -44,7 +44,7 @@ nav {
   justify-content: center;
   background-color: black;
   padding-bottom: 0.5rem;
-  gap: 3rem;
+  gap: 4rem;
   position: sticky;
   top: 0;
   z-index: 1100;
@@ -58,12 +58,75 @@ nav h1 {
   align-self: center;
   color: white;
 }
-nav ul li {
-  list-style: none;
-  color: white
+/* Profile Toggle Styling */
+.profile {
+  position: relative;
+  display: inline-block;
+  padding-left: 4rem;
+  align-self: center;
+  align-items: center;
 }
-nav ul li#current-user {
-  text-align: center;
+
+/* Hide the checkbox input */
+#profile-toggle {
+  display: none;
+}
+
+/* Style the profile icon */
+#profile-icon {
+  cursor: pointer;
+  background-color: white;
+  color: black;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+#profile-icon:hover {
+  border-radius: 15px;
+  transform: scale(1.1);
+  background-color: #7f87f7;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide profile dropdown by default */
+ul.profile {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 120%;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  min-width: 160px;
+  z-index: 2000;
+  padding: 0.5rem 0;
+  margin: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+/* Show profile dropdown when checkbox is checked */
+#profile-toggle:checked ~ #profile-icon ~ ul.profile {
+  display: flex;
+}
+
+/* Profile dropdown items */
+ul.profile li {
+  padding: 0.5rem 1rem;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+}
+ul.profile li#current-user {
+  font-weight: bold;
+  color: black;
+  cursor: default;
 }
 /* From Uiverse.io by doniaskima */ 
 nav a.btn-53,
@@ -203,6 +266,9 @@ nav a.btn-53:hover span:nth-child(6) {
   background-color: maroon;
   padding: 0.5rem 0.6rem; /* Subtle hover background */
 }
+#table-link.dropdown:hover .dropdown-content {
+  display: block;
+}
 /* Optional: Add visual indicator for current table */
 #current-table {
   position: relative;
@@ -217,6 +283,69 @@ nav a.btn-53:hover span:nth-child(6) {
   width: 100%;
   height: 2px;
   background-color: #f5bf6f;
+}
+.status-active#current-table::after {
+  background-color: greenyellow;
+}
+.status-assigned#current-table::after {
+  background-color: rgb(106, 106, 248);
+}
+.status-repair#current-table::after {
+  background-color: red;
+}
+.status-disposal#current-table::after {
+  background-color: rgb(168, 168, 168);
+}
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+/* Add this to your style.css or in a <style> tag */
+
+.tables.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-arrow {
+  font-size: 0.8em;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: transform 0.2s;
+}
+
+/* Rotate arrow when hovered */
+.tables.dropdown:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  border-radius: 8px;
+  left: 0;
+  top: 100%;
+  background-color: #f9f9f9;
+  min-width: 120px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.tables.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  font-family: 'Poppins';
+  font-size: 1rem;
+}
+
+.dropdown-content a:hover {
+  background-color: #747474;
 }
 .tables-nav .btn-create {
   text-decoration: none;
@@ -274,8 +403,8 @@ nav a.btn-53:hover span:nth-child(6) {
   background-color: #f34949;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* Hide filter fields by default */
-#filter-fields {
+/* Hide filter panel by default */
+#filter-panel {
   display: none;
   position: absolute;
   top: 100%;
@@ -287,12 +416,56 @@ nav a.btn-53:hover span:nth-child(6) {
   padding: 1rem;
   width: 200px;
   z-index: 1000;
+  flex-direction: column; /* Stack fields and buttons vertically */
+  gap: 0.5rem;
+  overflow-y: auto;
 }
-/* Show filter fields when checkbox is checked */
-.filter-toggle:checked + #filter-icon + #filter-fields {
+
+/* Show filter panel when checkbox is checked */
+.filter-toggle:checked ~ #filter-icon ~ #filter-panel {
+  display: flex;
+}
+
+/* Remove absolute/flex from children */
+#filter-fields, #filter-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: static;
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  width: 100%;
+}
+
+.apply-btn, .clear-btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.apply-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.clear-btn {
+  background-color: #f44336;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  line-height: normal;
+}
+
+.clear-btn:hover {
+  background-color: #d32f2f;
+}
+
+.apply-btn:hover {
+  background-color: #45a049;
 }
 nav #download-btns {
   display: flex;
@@ -671,7 +844,6 @@ div.create-edit {
 main#tables-view {
   display: flex;
   flex-direction: row;
-  padding-top: 1rem;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -716,5 +888,15 @@ table#main-table th:last-child {
 table#main-table th {
   cursor: pointer;
   position: relative;
+}
+.pagination {
+  margin: 1em 0;
+  text-align: center;
+}
+.pagination a {
+  margin: 0 0.5em;
+  text-decoration: none;
+  color: #377ba8;
+  font-weight: bold;
 }
 /******************************************************/

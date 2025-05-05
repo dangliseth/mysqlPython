@@ -7,6 +7,14 @@
 <body>
     <h1>{{ table_name|title }} Report</h1>
     <p>Generated on: <span class="timestamp">{{ current_time }}</span></p>
+    {% if filters %}
+    <div class="filters">
+        <strong>Filters Applied:</strong>
+        {% for col, val in filters.items() if val %}
+            {{ col }}: {{ val }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
     
     <table>
         <thead>

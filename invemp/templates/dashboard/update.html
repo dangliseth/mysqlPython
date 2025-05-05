@@ -11,19 +11,22 @@
         <div class="form-group">
           {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
             <label for="{{ column }}">{{ column }}</label>
-              {% if not (table_name == 'items_disposal' or table_name == 'employees_archive' or column == 'username') %}
+              {% if not (column == 'username') %}
                 {% if column in dropdown_options %}
                   <!-- Render dropdown menu for specific columns -->
-                  <select class="form-control" id="{{ column }}" name="{{ column }}" required>
+                  <select class="form-control" id="{{ column|replace(' ', '-') }}" name="{{ column }}">
                     {% for option in dropdown_options[column] %}
                     <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
-                      {{ option }}
+                      {{ option if option else '-- None --' }}
                     </option>
                     {% endfor %}
                   </select>
+                  {% if column == 'Assigned To' %}
+                  <button type="button" class="btn btn-secondary" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
+                  {% endif %}
                 {% else %}
                   <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
-                  value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" required>
+                  value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" >
                 {% endif %}
               {% else %}
                 <input type="text" class="form-control" id="{{ column }}" name="{{ column }}"
@@ -38,8 +41,8 @@
   </form>
   <!--- Delete func for items_disposal and employees_archive -->
   <!---Archive_scrap func for items and employees -->
-  {% if not (table_name == 'items_disposal' or table_name == 'employees_archive' or table_name == 'user_accounts') %}
-  <form action="{{ url_for('dashboard.archive_scrap', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
+  <!--
+  <form action="{{ url_for('dashboard_admin.archive_scrap', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
     {% if table_name == 'items'%}
     <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
       <img src="{{ url_for('static', filename='icons/delete.svg')}}" class="icon-danger">
@@ -50,8 +53,9 @@
     </button>
     {% endif %}
   </form>
-  {% else %}
-  <form action="{{ url_for('dashboard.delete', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
+  -->
+
+  <form action="{{ url_for('dashboard_admin.delete', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
     <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
       <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
     </button>
@@ -62,6 +66,5 @@
         Reset Password
       </a>
     {% endif %}
-  {% endif %}
 </main>
 {% endblock %}
