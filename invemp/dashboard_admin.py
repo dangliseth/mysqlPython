@@ -8,7 +8,7 @@ import datetime
 from invemp.auth import admin_required
 from invemp.dashboard_helpers import (
     is_valid_table, get_filters, get_dropdown_options, 
-    get_entry, get_items_columns, get_items_query
+    get_entry, get_items_columns, get_items_query, get_preserved_args
 )
 from invemp.db import get_cursor
 
@@ -20,6 +20,7 @@ def create(table_name):
     if not is_valid_table(table_name):
         abort(400)
     c = get_cursor()
+    preserved_args = get_preserved_args()
 
     c.execute(f"DESCRIBE `{table_name}`")
     if table_name == 'items':
@@ -28,7 +29,6 @@ def create(table_name):
         columns = [row[0] for row in c.fetchall()]
     c.close()
 
-    filters = get_filters(table_name)
 
     dropdown_options = get_dropdown_options()
     
@@ -116,8 +116,10 @@ def create(table_name):
             c.execute(query, values)
             c.connection.commit()
             c.close()
+            preserved_args = get_preserved_args()
             flash(f"Successfully created new {table_name[:-1]}")
-            return redirect(url_for('dashboard_user.index', table_name=table_name, filters = filters))
+            return redirect(url_for('dashboard_user.index', table_name=table_name,
+                                    **preserved_args))
         except Exception as e:
             # Import pymysql.err if not already imported
             import pymysql
@@ -140,10 +142,11 @@ def create(table_name):
                 else:
                     entry.append(request.form.get(column))
             return render_template('dashboard/create.html', table_name=table_name, entry=entry,
-                           columns=columns, dropdown_options=dropdown_options, filters = filters)
+                           columns=columns, dropdown_options=dropdown_options, preserved_args=preserved_args)
         
     return render_template('dashboard/create.html', table_name=table_name, 
-                           columns=columns, dropdown_options=dropdown_options, filters = filters)
+                           columns=columns, dropdown_options=dropdown_options,
+                           preserved_args=preserved_args)
 
 @bp.route('/<table_name>/<id>/update', methods=('GET', 'POST'))
 @admin_required
@@ -164,7 +167,6 @@ def update(id, table_name):
     dropdown_options = get_dropdown_options()
     current_datetime = datetime.datetime.now()
 
-    filters = get_filters(table_name)
 
     if 'Assigned To' in columns:
         # Get the index of the employee column in the original data
@@ -184,6 +186,8 @@ def update(id, table_name):
                 c.close()
         else:
             entry[employee_idx] = None  # Ensure None is preserved
+
+    preserved_args = get_preserved_args()
 
     if request.method == 'POST':
         values = []
@@ -241,7 +245,8 @@ def update(id, table_name):
             c.connection.commit()
             c.close()
             flash(f"Successfully updated {table_name} id: {entry[0]}")
-            return redirect(url_for('dashboard_user.index', table_name=table_name, filters=filters))
+            return redirect(url_for('dashboard_user.index', table_name=table_name,
+                                    **preserved_args))
         except Exception as e:
             # Import pymysql.err if not already imported
             import pymysql
@@ -270,11 +275,11 @@ def update(id, table_name):
                 table_name=table_name,
                 columns=columns,
                 dropdown_options=dropdown_options,
-                filters=filters
+                preserved_args=preserved_args
             )
 
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns, 
-                           dropdown_options=dropdown_options, filters = filters)
+                           dropdown_options=dropdown_options, preserved_args=preserved_args)
 
 @bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
 @admin_required
@@ -282,6 +287,7 @@ def archive_scrap(id, table_name):
     if not is_valid_table(table_name):
         abort(400)
     c = get_cursor()
+    preserved_args = get_preserved_args()
 
     c.execute(f"DESCRIBE `{table_name}`")
     columns = [row[0] for row in c.fetchall()]
@@ -324,6 +330,7 @@ def delete(id, table_name):
     c.execute(f"DESCRIBE `{table_name}`")
     columns = [row[0] for row in c.fetchall()]
     c.close()
+    preserved_args = get_preserved_args()
 
     for column in columns:
         if column == 'id' or column.endswith('_id') or column == 'ID':  # Determin id column
@@ -336,7 +343,5 @@ def delete(id, table_name):
         c.execute(delete_query, (id,)) 
         c.connection.commit()
         flash(f"{id_column}: {id} DELETED from {table_name}")
-
-    filters = get_filters(table_name)
     
-    return redirect(url_for('dashboard_user.index', table_name = table_name, filters = filters))
+    return redirect(url_for('dashboard_user.index', table_name = table_name, **preserved_args))
