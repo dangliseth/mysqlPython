@@ -78,8 +78,7 @@ def get_filters(table_name):
 
     # Fetch the column names for the table
     if table_name == 'items':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                   'comment', 'Assigned To', 'department', 'last_updated']
+        columns = get_items_columns()
     else:
         c.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in c.fetchall()]

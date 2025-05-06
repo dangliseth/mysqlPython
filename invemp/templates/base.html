@@ -40,7 +40,7 @@
           {% for status in get_dropdown_options()['status'] %}
             <a href="{{ url_for('dashboard_user.index', 
             table_name='items', 
-            status=status, page='') }}">
+            **dict(request.args, status=status, page='')) }}">
             {{ status }}
           </a>
           {% endfor %}
@@ -56,10 +56,11 @@
             {% for status in get_dropdown_options()['status'] %}
               <a href="{{ url_for('dashboard_user.index', 
               table_name='items', 
-              status=status) }}">{{ status }}</a>
+              **dict(request.args, status=status, page='')) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
-              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name,
+                       **dict(request.args, status='', page=''))}}"> All </a>
             {% endif %}
           </div>
         </h1>
@@ -72,10 +73,11 @@
             {% for status in get_dropdown_options()['status'] %}
               <a href="{{ url_for('dashboard_user.index', 
               table_name='items', 
-              status=status) }}">{{ status }}</a>
+              **dict(request.args, status=status, page='')) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
-              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name,
+                      **dict(request.args, status='', page=''))}}"> All </a>
             {% endif %}
           </div>
         </h1>
@@ -91,7 +93,8 @@
               status=status) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
-              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name,
+                      **dict(request.args, status='', page=''))}}"> All </a>
             {% endif %}
           </div>
         </h1>
@@ -104,10 +107,11 @@
             {% for status in get_dropdown_options()['status'] %}
               <a href="{{ url_for('dashboard_user.index', 
               table_name='items', 
-              status=status) }}">{{ status }}</a>
+              **dict(request.args, status=status, page='')) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
-              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name,
+                      **dict(request.args, status='', page=''))}}"> All </a>
             {% endif %}
           </div>
         </h1>
@@ -120,10 +124,11 @@
             {% for status in get_dropdown_options()['status'] %}
               <a href="{{ url_for('dashboard_user.index', 
               table_name='items', 
-              status=status) }}">{{ status }}</a>
+              **dict(request.args, status=status, page='')) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
-              <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
+              <a href="{{ url_for('dashboard_user.index', table_name = table_name,
+                      **dict(request.args, status='', page=''))}}"> All </a>
             {% endif %}
           </div>
         </h1>
@@ -152,6 +157,11 @@
     <!-- Filter Form -->
     <form method="get" action="{{ url_for('dashboard_user.index', table_name=table_name) }}" 
     id="filter-form">
+      <!-- Hidden field to preserve status -->
+      {% if request.args.get('status') %}
+      <input type="hidden" name="status" value="{{ request.args.get('status') }}">
+      {% endif %}
+      
       <input type="checkbox" id="filter-toggle" class="filter-toggle">
       <label for="filter-toggle" id="filter-icon">
         <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
