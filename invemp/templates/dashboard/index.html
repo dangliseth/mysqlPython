@@ -7,7 +7,7 @@
   <table class="table table-striped" id="main-table">
     <thead>
       <tr>
-        {% for column in columns %}
+        {% for column in columns if column != 'password'%}
           <th onclick="sortTable({{ loop.index0 }})" style="cursor:pointer;">
             {{ column }}
           </th>

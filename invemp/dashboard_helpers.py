@@ -86,16 +86,17 @@ def get_filters(table_name):
     # Improved filter collection to handle multiple values and spaces
     filters = {}
     for column in columns:
-        # Handle both + and %20 encoded spaces
-        url_encoded_column = column.replace(' ', '+')
-        values = request.args.getlist(url_encoded_column)
-        if not values:
-            url_encoded_column = column.replace(' ', '%20')
+        if column != 'password':
+            # Handle both + and %20 encoded spaces
+            url_encoded_column = column.replace(' ', '+')
             values = request.args.getlist(url_encoded_column)
-        
-        values = [v.strip() for v in values if v.strip()]
-        if values:
-            filters[column] = ' '.join(values) if len(values) > 1 else values[0]
+            if not values:
+                url_encoded_column = column.replace(' ', '%20')
+                values = request.args.getlist(url_encoded_column)
+            
+            values = [v.strip() for v in values if v.strip()]
+            if values:
+                filters[column] = ' '.join(values) if len(values) > 1 else values[0]
 
     
     return filters
@@ -116,7 +117,7 @@ def filter_table(table_name, cursor):
     filter_values = []
     
     for col, values in filters.items():
-        if not isinstance(values, list):
+        if not isinstance(values, list) and col != 'password':
             values = [values]
             
         # Handle special case for "Assigned To"
