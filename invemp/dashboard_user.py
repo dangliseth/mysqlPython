@@ -7,7 +7,8 @@ import datetime
 
 from invemp.auth import login_required
 from invemp.dashboard_helpers import (
-    is_valid_table, get_filters, get_tables, calculate_column_widths, get_items_columns, get_items_query
+    is_valid_table, get_filters, get_tables, calculate_column_widths, get_items_columns, get_items_query,
+    filter_table
     )
 from invemp.db import get_cursor
 
@@ -23,125 +24,51 @@ bp = Blueprint('dashboard_user', __name__)
 @bp.route('/<table_name>')
 @login_required
 def index(table_name):
-    # check for admin access
+    # Check for admin access
     if g.user[3] != 'admin' and table_name != 'items':
         flash("You do not have permission to access this table.")
-        return redirect(url_for('dashboard_user.index', table_name))
-    
-    if not is_valid_table(table_name):
-        abort(400)
+        return redirect(url_for('dashboard_user.index'))
 
-    c = get_cursor()
-
-    if table_name == 'items':
-        query = get_items_query()
-        c.execute(query)
-        items = c.fetchall()
-        columns = [column[0] for column in c.description if column[0] != 'status']
-        # Remove the 'status' value from each row
-        status_idx = [i for i, col in enumerate(c.description) if col[0] == 'status']
-        if status_idx:
-            idx = status_idx[0]
-            items = [row[:idx] + row[idx+1:] for row in items]
-    elif table_name == 'user_accounts':
-        c.execute(f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100")
-        columns = [column[0] for column in c.description]
-        items = c.fetchall()
-    else:
-        # Generic query for other tables
-        c.execute(f"SELECT * FROM `{table_name}` LIMIT 100")
-        items = c.fetchall()
-        columns = [column[0] for column in c.description]
-    c.close()
-
-    tables = get_tables()
-    filters = get_filters(table_name)
-    return render_template('dashboard/index.html', items=items, columns=columns, 
-                           table_name=table_name, tables=tables, filters = filters, 
-                           is_index = True)
-
-@bp.route('/<table_name>/filter', methods=('GET', 'POST'))
-@login_required
-def filter_items(table_name):
-    if not is_valid_table(table_name):
-        abort(400)
-    c = get_cursor()
-
-    # Fetch the column names for the table
-    if table_name in ('items', 'items_disposal'):
-        columns = get_items_columns()
-    else:
-        c.execute(f"DESCRIBE `{table_name}`")
-        columns = [row[0] for row in c.fetchall()]
-
-    # Get filter criteria - treat each input as a whole value
-    filters = {}
-    for column in columns:
-        # Handle both + and %20 in column names
-        url_encoded_column = column.replace(' ', '+')
-        values = request.args.getlist(url_encoded_column)
-        if not values:
-            url_encoded_column = column.replace(' ', '%20')
-            values = request.args.getlist(url_encoded_column)
-        
-        # Only keep non-empty values and join them with spaces if multiple values
-        values = [v.strip() for v in values if v.strip()]
-        if values:
-            filters[column] = ' '.join(values) if len(values) > 1 else values[0]
-
-    # Build the WHERE clause
-    where_clauses = []
-    filter_values = []
-    
-    for col, value in filters.items():
-        if col == "Assigned To":
-            where_clauses.append("e.name LIKE %s")
-        else:
-            escaped_col = f"i.`{col}`" if table_name in ('items', 'items_disposal') else f"`{col}`"
-            where_clauses.append(f"{escaped_col} LIKE %s")
-        filter_values.append(f"%{value}%")
-
-    # Build the base query
-    if table_name in ('items', 'items_disposal'):
-        sql_query = get_items_query()
-        # Remove any trailing LIMIT clause if present
-        sql_query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', sql_query, flags=re.IGNORECASE)
-    else:
-        sql_query = f"SELECT * FROM `{table_name}`"
-        
-    # Add WHERE clause if we have filters
-    if where_clauses:
-        sql_query += f" WHERE {' AND '.join(where_clauses)}"
-    
-    # Add single LIMIT clause at the end
-    sql_query += " LIMIT 100"
-
-    # Debug output
-    print("Generated SQL:", sql_query)
-    print("Parameters:", filter_values)
-
-    # Execute query
+    # Pagination setup
     try:
-        c.execute(sql_query, tuple(filter_values))
-        items = c.fetchall()
-    except Exception as e:
-        print(f"SQL Error: {str(e)}")
-        print(f"Query: {sql_query}")
-        print(f"Params: {filter_values}")
-        flash("An error occurred while filtering items", "error")
-        items = []
+        page = int(request.args.get('page', 1))
+        page = max(page, 1)  # Ensure page is at least 1
+    except ValueError:
+        page = 1
+    per_page = 15
+    offset = (page - 1) * per_page
+
+    # Get filtered results using the helper
+    c = get_cursor()
+    try:
+        # Get filtered items and columns
+        filtered_items, columns, filters = filter_table(table_name, c)
+        
+        # Apply pagination to filtered results
+        total_items = len(filtered_items)
+        paginated_items = filtered_items[offset:offset + per_page]
+        total_pages = (total_items + per_page - 1) // per_page
+
     finally:
         c.close()
 
-    tables = get_tables()
-    args = request.args.to_dict()
-    args.pop('page', None)
-    return render_template('dashboard/index.html', 
-                         items=items, 
-                         columns=columns, 
-                         table_name=table_name, 
-                         tables=tables, 
-                         filters=filters, 
+    # For items table, use the display-friendly column names
+    display_columns = get_items_columns() if table_name == 'items' else columns
+    pagination_args = request.args.copy()
+    if 'page' in pagination_args:
+        del pagination_args['page']
+
+    return render_template('dashboard/index.html',
+                         items=paginated_items,
+                         columns=display_columns,
+                         table_name=table_name,
+                         tables=get_tables(),
+                         filters=filters,
+                         page=page,
+                         total_pages=total_pages,
+                         pagination_args=pagination_args,  # Pass filter args without page
+                         total_items=total_items,
+                         args=request.args.to_dict(),
                          is_index=True)
 
 @bp.route('/<table_name>/convert_pdf')

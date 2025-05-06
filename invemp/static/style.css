@@ -843,7 +843,7 @@ div.create-edit {
 /*********************** Index page *****************/
 main#tables-view {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -854,7 +854,8 @@ table#main-table {
   font-size: 1rem; /* Adjust font size for readability */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
   border-radius: 8px; /* Rounded corners */
-  overflow: hidden;
+  overflow: auto;
+  flex: 1;
 }
 table#main-table thead {
   background-color: #8E1616; /* Modern header background color */
@@ -889,14 +890,75 @@ table#main-table th {
   cursor: pointer;
   position: relative;
 }
+/* Pagination Container */
 .pagination {
-  margin: 1em 0;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2rem 0;
+  padding: 0.5rem;
+  width: 100%;
 }
+
+/* Page Links (including Prev/Next) */
 .pagination a {
-  margin: 0 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.5rem;
+  border-radius: 2px;
+  background-color: #f8f9fa;
+  color: #495057;
   text-decoration: none;
-  color: #377ba8;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: 1px solid #dee2e6;
+}
+
+/* Hover State */
+.pagination a:hover:not(.active) {
+  background-color: #b3b4b6;
+  border-color: #ced4da;
+  border-radius: 9px;
+  transition: all ease 0.4s;
+}
+
+/* Active Page */
+.pagination a.active {
+  background-color: rgb(255, 0, 0);
+  color: white;
+  border-radius: 9px;
   font-weight: bold;
+  cursor: default;
+}
+
+/* Disabled State (for Prev/Next when inactive) */
+.pagination a[href="#"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Prev/Next Buttons */
+.pagination a:first-child,
+.pagination a:last-child {
+  padding: 0 1rem;
+  font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .pagination {
+      flex-wrap: wrap;
+      gap: 0.3rem;
+  }
+  
+  .pagination a {
+      min-width: 2rem;
+      height: 2rem;
+      font-size: 0.8rem;
+  }
 }
 /******************************************************/

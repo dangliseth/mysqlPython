@@ -28,7 +28,26 @@
       {% endfor %}
     </tbody>
   </table>
-
+  {% if total_pages > 1 %}
+  <div class="pagination">
+      {% if page > 1 %}
+          <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=page-1, **pagination_args) }}">&laquo; Prev</a>
+      {% endif %}
+      
+      {% for p in range(1, total_pages+1) %}
+          {% if p == page %}
+              <a href="#" class="active">{{ p }}</a>
+          {% else %}
+              <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=p, **pagination_args) }}">{{ p }}</a>
+          {% endif %}
+      {% endfor %}
+      
+      {% if page < total_pages %}
+          <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=page+1, **pagination_args) }}">Next &raquo;</a>
+      {% endif %}
+  </div>
+  {% endif %}
+  
 
   <script>
     function sortTable(colIndex) {
