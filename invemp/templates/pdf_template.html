@@ -85,7 +85,11 @@
             <tr>
                 {% for column, value in zip(columns, item) %}
                 <td class="{% if 'date' in column.lower() or 'time' in column.lower() %}timestamp-cell{% elif value is string and value|length > 50 %}text-cell{% endif %}">
+                    {% if column.lower() != 'password' %}
                     {{ value if value is not none else '' }}
+                    {% else %}
+                    ***********
+                    {% endif %}
                 </td>
                 {% endfor %}
             </tr>

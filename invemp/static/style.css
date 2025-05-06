@@ -854,8 +854,7 @@ table#main-table {
   font-size: 1rem; /* Adjust font size for readability */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
   border-radius: 8px; /* Rounded corners */
-  overflow: auto;
-  flex: 1;
+  overflow: hidden;
 }
 table#main-table thead {
   background-color: #8E1616; /* Modern header background color */

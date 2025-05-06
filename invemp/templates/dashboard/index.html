@@ -21,8 +21,10 @@
         {% else %}
         <tr>
         {% endif %}
-          {% for value in item %}
-          <td>{{ value }}</td>
+        {% for column, value in zip(columns, item) %}
+          {% if column != 'password' %}
+            <td>{{ value }}</td>
+            {% endif %}
           {% endfor %}
         </tr>
       {% endfor %}

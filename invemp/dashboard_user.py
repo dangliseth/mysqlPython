@@ -65,6 +65,7 @@ def index(table_name):
                          tables=get_tables(),
                          filters=filters,
                          page=page,
+                         zip = zip,
                          total_pages=total_pages,
                          pagination_args=pagination_args,  # Pass filter args without page
                          total_items=total_items,
