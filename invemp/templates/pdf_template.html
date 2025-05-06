@@ -3,10 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ table_name }} Report</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+        h1 {
+            font-size: 14pt;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .timestamp {
+            font-weight: normal;
+            color: #666;
+        }
+        .filters {
+            margin: 8px 0;
+            padding: 5px;
+            background-color: #f8f8f8;
+            border-left: 4px solid #ddd;
+            font-size: 8pt;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: auto;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: left;
+            padding: 6px;
+            border: 1px solid #ddd;
+        }
+        td {
+            padding: 6px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            word-break: break-word;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .text-cell {
+            max-width: 300px;
+            white-space: pre-wrap;
+        }
+        .timestamp-cell {
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
     <h1>{{ table_name|title }} Report</h1>
     <p>Generated on: <span class="timestamp">{{ current_time }}</span></p>
+    
     {% if filters %}
     <div class="filters">
         <strong>Filters Applied:</strong>
@@ -20,7 +74,7 @@
         <thead>
             <tr>
                 {% for column in columns %}
-                <th style="width: {{ (column_widths[column] * 10)|round(1) }}%;">
+                <th style="width: {{ (column_widths.get(column, 1) * 8 )}}%;">
                     {{ column }}
                 </th>
                 {% endfor %}
@@ -30,7 +84,7 @@
             {% for item in items %}
             <tr>
                 {% for column, value in zip(columns, item) %}
-                <td class="{% if 'date' in column.lower() or 'time' in column.lower() %}timestamp{% endif %}">
+                <td class="{% if 'date' in column.lower() or 'time' in column.lower() %}timestamp-cell{% elif value is string and value|length > 50 %}text-cell{% endif %}">
                     {{ value if value is not none else '' }}
                 </td>
                 {% endfor %}
