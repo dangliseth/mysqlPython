@@ -156,47 +156,55 @@ def convert_pdf(table_name):
 
     # Generate PDF
     pdf = HTML(
-        string=html,
-        base_url=request.base_url
-    ).write_pdf(stylesheets=[
-        CSS(string='''
-            @page { 
-                size: A4 landscape;
-                margin: 1cm; 
-                @bottom-center {
-                    content: "Page " counter(page) " of " counter(pages);
-                    font-size: 8pt;
-                }
-            }
-            body { 
-                font-family: Arial; 
-                font-size: 9pt;
-                line-height: 1.3;
-            }
-            .header {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                table-layout: fixed;
-            }
-            th, td {
-                padding: 4px;
-                border: 1px solid #ddd;
-            }
-            th {
-                background-color: #f2f2f2;
-                font-weight: bold;
-            }
-            .filters {
+    string=html,
+    base_url=request.base_url
+).write_pdf(stylesheets=[
+    CSS(string='''
+        @page { 
+            size: A4 landscape;
+            margin: 1cm; 
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
                 font-size: 8pt;
-                margin-bottom: 5px;
-                color: #555;
             }
-            ''')
+        }
+        body { 
+            font-family: Arial; 
+            font-size: 9pt;
+            line-height: 1.3;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            padding: 4px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        td {
+            padding: 4px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+            word-break: break-word;
+        }
+        .filters {
+            font-size: 8pt;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        tr {
+            page-break-inside: avoid;
+        }
+        ''')
     ])
 
     response = make_response(pdf)

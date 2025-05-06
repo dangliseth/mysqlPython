@@ -169,22 +169,26 @@ def calculate_column_widths(items, columns):
     if not items:
         return {col: 1 for col in columns}
     
-    # Sample first 10 rows to determine content length
     sample_rows = items[:10]
     width_factors = {}
+    max_content_lengths = {}
     
     for col_idx, column in enumerate(columns):
         max_len = len(column)  # Start with header length
+        max_content_length = 0
+        
         for row in sample_rows:
             value = str(row[col_idx] if row[col_idx] is not None else '')
             max_len = max(max_len, len(value))
+            # Count words rather than characters for better width estimation
+            max_content_length = max(max_content_length, len(value.split()))
         
-        # Special handling for known types
-        if max_len > 50:
-            width_factors[column] = 3
-        elif max_len > 20:
-            width_factors[column] = 2
+        # Dynamic width calculation
+        if max_content_length > 15:  # Long text content
+            width_factors[column] = 2.5
+        elif max_content_length > 8:
+            width_factors[column] = 1.5
         else:
-            width_factors[column] = 0.5
+            width_factors[column] = 1
     
     return width_factors
