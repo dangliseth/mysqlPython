@@ -162,7 +162,14 @@ def filter_table(table_name, cursor):
     except Exception as e:
         print(f"SQL Error: {str(e)}")
         return [], columns, filters
-
+    
+def get_preserved_args():
+    """Returns current filters and pagination as query string"""
+    preserved_args = request.args.copy()
+    # Remove these if you don't want them carried over
+    preserved_args.pop('_flashes', None) 
+    preserved_args.pop('csrf_token', None)
+    return preserved_args
 
 def calculate_column_widths(items, columns):
     """Calculate relative column widths based on content"""
