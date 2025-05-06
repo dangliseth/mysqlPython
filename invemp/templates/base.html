@@ -38,7 +38,11 @@
         <!-- Status Dropdown -->
         <div class="dropdown-content">
           {% for status in get_dropdown_options()['status'] %}
-            <a href="{{ url_for('dashboard_user.filter_items', table_name='items', status=status) }}">{{ status }}</a>
+            <a href="{{ url_for('dashboard_user.index', 
+            table_name='items', 
+            status=status, page='') }}">
+            {{ status }}
+          </a>
           {% endfor %}
         </div>
       </div>
@@ -50,7 +54,9 @@
           <!-- Status Dropdown -->
           <div class="dropdown-content">
             {% for status in get_dropdown_options()['status'] %}
-              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+              <a href="{{ url_for('dashboard_user.index', 
+              table_name='items', 
+              status=status) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
               <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
@@ -64,7 +70,9 @@
           <!-- Status Dropdown -->
           <div class="dropdown-content">
             {% for status in get_dropdown_options()['status'] %}
-              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+              <a href="{{ url_for('dashboard_user.index', 
+              table_name='items', 
+              status=status) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
               <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
@@ -78,7 +86,9 @@
           <!-- Status Dropdown -->
           <div class="dropdown-content">
             {% for status in get_dropdown_options()['status'] %}
-              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+              <a href="{{ url_for('dashboard_user.index', 
+              table_name='items', 
+              status=status) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
               <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
@@ -92,7 +102,9 @@
           <!-- Status Dropdown -->
           <div class="dropdown-content">
             {% for status in get_dropdown_options()['status'] %}
-              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+              <a href="{{ url_for('dashboard_user.index', 
+              table_name='items', 
+              status=status) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
               <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
@@ -106,7 +118,9 @@
           <!-- Status Dropdown -->
           <div class="dropdown-content">
             {% for status in get_dropdown_options()['status'] %}
-              <a href="{{ url_for('dashboard_user.filter_items', table_name=table_name, status=status) }}">{{ status }}</a>
+              <a href="{{ url_for('dashboard_user.index', 
+              table_name='items', 
+              status=status) }}">{{ status }}</a>
             {% endfor %}
             {% if request.args.get('status') %}
               <a href="{{ url_for('dashboard_user.index', table_name = table_name)}}"> All </a>
@@ -159,7 +173,7 @@
         </div>
         <div id="filter-buttons">
           <button type="submit" class="apply-btn">Apply Filters</button>
-          <a href="{{ url_for('dashboard_user.index', table_name=table_name, status=request.args.get('status', '')) }}" class="clear-btn">
+          <a href="{{ url_for('dashboard_user.index', table_name=table_name, status=request.args.get('status')) }}" class="clear-btn">
             Clear Filters
           </a>
         </div>

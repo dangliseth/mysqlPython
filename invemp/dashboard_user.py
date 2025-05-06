@@ -7,7 +7,8 @@ import datetime
 
 from invemp.auth import login_required
 from invemp.dashboard_helpers import (
-    is_valid_table, get_filters, get_tables, calculate_column_widths, get_items_columns, get_items_query
+    is_valid_table, get_filters, get_tables, calculate_column_widths, get_items_columns, get_items_query,
+    filter_table
     )
 from invemp.db import get_cursor
 
@@ -23,93 +24,52 @@ bp = Blueprint('dashboard_user', __name__)
 @bp.route('/<table_name>')
 @login_required
 def index(table_name):
-    # check for admin access
+    # Check for admin access
     if g.user[3] != 'admin' and table_name != 'items':
         flash("You do not have permission to access this table.")
-        return redirect(url_for('dashboard_user.index', table_name))
-    
-    if not is_valid_table(table_name):
-        abort(400)
+        return redirect(url_for('dashboard_user.index'))
 
     # Pagination setup
     try:
         page = int(request.args.get('page', 1))
-        if page < 1:
-            page = 1
+        page = max(page, 1)  # Ensure page is at least 1
     except ValueError:
         page = 1
     per_page = 15
     offset = (page - 1) * per_page
 
-    filters = get_filters(table_name)
-    where_clauses = []
-    filter_values = []
-    
-    # Build WHERE clause from filters
-    for col, value in filters.items():
-        if table_name in ('items', 'items_disposal') and col == "Assigned To":
-            where_clauses.append("e.name LIKE %s")
-        elif table_name in ('items', 'items_disposal'):
-            where_clauses.append(f"i.`{col}` LIKE %s")
-        else:
-            where_clauses.append(f"`{col}` LIKE %s")
-        filter_values.append(f"%{value}%")
-    where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+    # Get filtered results using the helper
+    c = get_cursor()
+    try:
+        # Get filtered items and columns
+        filtered_items, columns, filters = filter_table(table_name, c)
+        
+        # Apply pagination to filtered results
+        total_items = len(filtered_items)
+        paginated_items = filtered_items[offset:offset + per_page]
+        total_pages = (total_items + per_page - 1) // per_page
 
-    # Sorting (optional)
-    sort_column = request.args.get('sort_column')
-    sort_direction = request.args.get('sort_direction', 'asc')
-    order_sql = ""
-    if sort_column and sort_direction.lower() in ['asc', 'desc']:
-        if table_name in ('items', 'items_disposal'):
-            if sort_column == "Assigned To":
-                order_sql = f" ORDER BY e.name {sort_direction}"
-            else:
-                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
-        else:
-            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
-    
-    if table_name == 'items':
-        query = get_items_query()
-        query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', query, flags=re.IGNORECASE)
-        paginated_query = f"{query}{where_sql}{order_sql} LIMIT %s OFFSET %s"
-        c = get_cursor()
-        c.execute(paginated_query, (*filter_values, per_page, offset))
-        items = c.fetchall()
-        columns = [column[0] for column in c.description if column[0] != 'status']
-        # Remove the 'status' value from each row
-        status_idx = [i for i, col in enumerate(c.description) if col[0] == 'status']
-        if status_idx:
-            idx = status_idx[0]
-            items = [row[:idx] + row[idx+1:] for row in items]
-
-        # Get total count for pagination
-        count_query = f"SELECT COUNT(*) FROM items LEFT JOIN employees e ON items.employee = e.employee_id" + (where_sql if where_sql else "")
-        c.execute(count_query, tuple(filter_values))
-        total = c.fetchone()[0]
+    finally:
         c.close()
 
-    elif table_name == 'user_accounts':
-        c = get_cursor()
-        query = f"SELECT id, username, account_type FROM `{table_name}` LIMIT 100"
-        columns = [column[0] for column in c.description]
-        items = c.fetchall()
-        c.close()
-    else:
-        # Generic query for other tables
-        c.execute(f"SELECT * FROM `{table_name}` LIMIT 100")
-        items = c.fetchall()
-        columns = [column[0] for column in c.description]
-        c.close()
+    # For items table, use the display-friendly column names
+    display_columns = get_items_columns() if table_name == 'items' else columns
+    pagination_args = request.args.copy()
+    if 'page' in pagination_args:
+        del pagination_args['page']
 
-    total_pages = (total + per_page - 1) // per_page
-    args = request.args.to_dict()
-
-    
-    return render_template('dashboard/index.html', items=items, columns=columns, 
-                           table_name=table_name, tables = get_tables(), 
-                           filters = filters, page = page, total_pages = total_pages,
-                           args = args, is_index = True)
+    return render_template('dashboard/index.html',
+                         items=paginated_items,
+                         columns=display_columns,
+                         table_name=table_name,
+                         tables=get_tables(),
+                         filters=filters,
+                         page=page,
+                         total_pages=total_pages,
+                         pagination_args=pagination_args,  # Pass filter args without page
+                         total_items=total_items,
+                         args=request.args.to_dict(),
+                         is_index=True)
 
 @bp.route('/<table_name>/filter', methods=('GET', 'POST'))
 @login_required

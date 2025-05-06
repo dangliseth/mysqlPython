@@ -102,45 +102,50 @@ def get_filters(table_name):
     return filters
 
 def filter_table(table_name, cursor):
-    """
-    Enhanced helper function using get_filters()
-    Returns: (filtered_items, columns, applied_filters)
-    """
     if not is_valid_table(table_name):
         abort(400)
 
-    # Get filters and columns through the existing function
     filters = get_filters(table_name)
     
-    # Get column names (either from get_filters or fresh query)
     if table_name == 'items':
-        columns = ['item_id', 'serial_number', 'item_name', 'category', 'description', 
-                   'comment', 'Assigned To', 'department', 'last_updated']
+        columns = get_items_columns()
     else:
         cursor.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in cursor.fetchall()]
 
-    # Rest of the filtering logic remains the same
     where_clauses = []
     filter_values = []
-    for col, value in filters.items():
+    
+    for col, values in filters.items():
+        if not isinstance(values, list):
+            values = [values]
+            
+        # Handle special case for "Assigned To"
         if col == "Assigned To":
-            where_clauses.append("e.name LIKE %s")
+            col_expr = "e.name"
         else:
-            escaped_col = f"i.`{col}`" if table_name in ('items', 'items_disposal') else f"`{col}`"
-            where_clauses.append(f"{escaped_col} LIKE %s")
-        filter_values.append(f"%{value}%")
+            col_expr = f"i.`{col}`" if table_name in ('items', 'items_disposal') else f"`{col}`"
+        
+        # Create OR conditions for multiple values of the same column
+        column_clauses = []
+        for value in values:
+            column_clauses.append(f"{col_expr} LIKE %s")
+            filter_values.append(f"%{value}%")
+        
+        # Combine with OR for the same column, then add to WHERE clauses
+        where_clauses.append(f"({' OR '.join(column_clauses)})")
 
-    # Query building
+    # Build the base query
     if table_name in ('items', 'items_disposal'):
         sql_query = get_items_query()
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
 
+    # Add WHERE conditions if any filters exist
     if where_clauses:
         sql_query += f" WHERE {' AND '.join(where_clauses)}"
 
-    # Sorting logic
+    # Add sorting
     sort_column = request.args.get('sort_column')
     sort_direction = request.args.get('sort_direction', 'asc')
     if sort_column and sort_direction.lower() in ['asc', 'desc']:
@@ -152,7 +157,6 @@ def filter_table(table_name, cursor):
         else:
             sql_query += f" ORDER BY `{sort_column}` {sort_direction}"
 
-    # Execute query
     try:
         cursor.execute(sql_query, tuple(filter_values))
         return cursor.fetchall(), columns, filters
