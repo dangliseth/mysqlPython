@@ -7,7 +7,7 @@
   <table class="table table-striped" id="main-table">
     <thead>
       <tr>
-        {% for column in columns %}
+        {% for column in columns if column != 'password'%}
           <th onclick="sortTable({{ loop.index0 }})" style="cursor:pointer;">
             {{ column }}
           </th>
@@ -21,8 +21,10 @@
         {% else %}
         <tr>
         {% endif %}
-          {% for value in item %}
-          <td>{{ value }}</td>
+        {% for column, value in zip(columns, item) %}
+          {% if column != 'password' %}
+            <td>{{ value }}</td>
+            {% endif %}
           {% endfor %}
         </tr>
       {% endfor %}
