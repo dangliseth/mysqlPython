@@ -7,10 +7,11 @@ import datetime
 
 from invemp.auth import admin_required
 from invemp.dashboard_helpers import (
-    is_valid_table, get_filters, get_dropdown_options, 
-    get_entry, get_items_columns, get_items_query, get_preserved_args
+    is_valid_table, get_dropdown_options, 
+    get_entry, get_items_columns, get_preserved_args
 )
 from invemp.db import get_cursor
+
 
 bp = Blueprint('dashboard_admin', __name__)
 

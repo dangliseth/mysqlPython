@@ -1,5 +1,5 @@
 from flask import (
-    request, flash
+    request
 )
 
 from invemp.db import get_cursor

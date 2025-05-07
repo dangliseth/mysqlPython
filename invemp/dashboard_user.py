@@ -7,7 +7,7 @@ import datetime
 
 from invemp.auth import login_required
 from invemp.dashboard_helpers import (
-    is_valid_table, get_filters, get_tables, calculate_column_widths, get_items_columns, get_items_query,
+    is_valid_table, get_tables, calculate_column_widths, get_items_columns, get_items_query,
     filter_table
     )
 from invemp.db import get_cursor
