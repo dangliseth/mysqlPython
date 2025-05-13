@@ -200,3 +200,20 @@ def calculate_column_widths(items, columns):
             width_factors[column] = 1
     
     return width_factors
+
+def get_item_assignment_history(item_id):
+    """Return assignment history for an item, ordered by assigned_date desc."""
+    c = get_cursor()
+    c.execute(
+        """
+        SELECT h.employee_id, e.name, h.assigned_date, h.removed_date
+        FROM item_assignment_history h
+        LEFT JOIN employees e ON h.employee_id = e.employee_id
+        WHERE h.item_id = %s
+        ORDER BY h.assigned_date DESC
+        """,
+        (item_id,)
+    )
+    history = c.fetchall()
+    c.close()
+    return history

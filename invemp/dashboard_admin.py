@@ -8,7 +8,8 @@ import datetime
 from invemp.auth import admin_required
 from invemp.dashboard_helpers import (
     is_valid_table, get_dropdown_options, 
-    get_entry, get_items_columns, get_preserved_args
+    get_entry, get_items_columns, get_preserved_args,
+    get_item_assignment_history
 )
 from invemp.db import get_cursor
 
@@ -116,6 +117,16 @@ def create(table_name):
             c = get_cursor()
             c.execute(query, values)
             c.connection.commit()
+            # --- Item Assignment History Logic ---
+            if table_name == 'items' and assigned_to_value:
+                c.execute(
+                    """
+                    INSERT INTO item_assignment_history (item_id, employee_id, assigned_date)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (next_id, assigned_to_value, current_datetime)
+                )
+                c.connection.commit()
             c.close()
             preserved_args = get_preserved_args()
             flash(f"Successfully created new {table_name[:-1]}")
@@ -193,6 +204,8 @@ def update(id, table_name):
     if request.method == 'POST':
         values = []
         update_columns = []
+        prev_assigned_to_value = None
+        new_assigned_to_value = None
         for column in columns:
             if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
                 id_column = column
@@ -213,6 +226,7 @@ def update(id, table_name):
                 column = 'employee'
                 values.append(assigned_to_value)
                 update_columns.append(column)
+                new_assigned_to_value = assigned_to_value
             elif column == 'status':
                 continue
             elif column == 'last_updated':
@@ -227,10 +241,19 @@ def update(id, table_name):
 
         status_from_form = request.form.get('status', '').strip().lower()
 
+        # Get previous assigned_to_value (employee_id) from DB
+        if table_name == 'items':
+            c_prev = get_cursor()
+            c_prev.execute("SELECT employee FROM items WHERE item_id = %s", (id,))
+            prev_row = c_prev.fetchone()
+            if prev_row:
+                prev_assigned_to_value = prev_row[0]
+            c_prev.close()
+
         # Handle status logic
         if status_from_form in ['for disposal', 'for repair']:
             values.append(status_from_form)
-        elif assigned_to_value:  # Not empty/None/Null
+        elif new_assigned_to_value:  # Not empty/None/Null
             values.append('assigned')
         else:
             values.append('active')
@@ -243,6 +266,29 @@ def update(id, table_name):
         try:
             c = get_cursor()
             c.execute(query, values)
+            # --- Item Assignment History Logic ---
+            if table_name == 'items':
+                # If assignment changed, close previous and add new
+                if prev_assigned_to_value != new_assigned_to_value:
+                    # Set removed_date for previous assignment
+                    if prev_assigned_to_value:
+                        c.execute(
+                            """
+                            UPDATE item_assignment_history
+                            SET removed_date = %s
+                            WHERE item_id = %s AND employee_id = %s AND removed_date IS NULL
+                            """,
+                            (current_datetime, id, prev_assigned_to_value)
+                        )
+                    # Add new assignment if assigned
+                    if new_assigned_to_value:
+                        c.execute(
+                            """
+                            INSERT INTO item_assignment_history (item_id, employee_id, assigned_date)
+                            VALUES (%s, %s, %s)
+                            """,
+                            (id, new_assigned_to_value, current_datetime)
+                        )
             c.connection.commit()
             c.close()
             flash(f"Successfully updated {table_name} id: {entry[0]}")
@@ -321,7 +367,7 @@ def archive_scrap(id, table_name):
             flash(f"Error archiving entry: {e}")
         finally:
             c.close()
-    return redirect(url_for('dashboard_user.index', table_name = table_name))
+    return redirect(url_for('dashboard_user.index', table_name = table_name, **preserved_args))
 
 @bp.route('/<table_name>/<id>/delete', methods=('GET', 'POST'))
 def delete(id, table_name):
@@ -346,3 +392,20 @@ def delete(id, table_name):
         flash(f"{id_column}: {id} DELETED from {table_name}")
     
     return redirect(url_for('dashboard_user.index', table_name = table_name, **preserved_args))
+
+@bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
+@admin_required
+def history(id, table_name):
+    if not is_valid_table(table_name):
+        abort(400)
+    c = get_cursor()
+    preserved_args = get_preserved_args()
+
+    history_data = get_item_assignment_history(id)
+    columns = ['item_id', 'employee_id', 'assigned_date', 'removed_date']
+    
+    c.close()
+    
+    return render_template('dashboard/history.html', table_name=table_name, 
+                           history_data=history_data, columns=columns, zip=zip, 
+                           preserved_args=preserved_args)

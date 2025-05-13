@@ -27,7 +27,7 @@
       {% elif (g.user[3] == 'admin' and is_index and table_name != 'items_disposal' and table_name != 'employees_archive') %}
       <a href = "{{ url_for ('dashboard_admin.create', table_name = table_name, **request.args) }}" class="btn btn-create">Create Entry</a>
       {% endif %}
-    {% for table in tables %}
+    {% for table in tables if table != 'item_assignment_history' %}
     <li class="nav-item">
       {% if table == 'items' and table != table_name %}
       <div class="tables dropdown" id="table-link">
@@ -220,6 +220,7 @@
   <div class="flash" data-flash>{{ message }}</div>
   {% endfor %}
   {% block content %}{% endblock %}
+  <script src="{{ url_for('static', filename='script/script.js') }}"></script>
 </section>
 
 <script>
