@@ -261,7 +261,7 @@ def update(id, table_name):
             update_columns.append('department')
             values.append(status_from_form)
         elif status_from_form == 'assigned' and assigned_to_value is None:
-            flash("Assigned To cannot be empty when status is 'assigned'.", "error")
+            flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
             entries = preserve_current_entries(columns)
             # Stay on the update page with the user's input preserved
             return render_template(
