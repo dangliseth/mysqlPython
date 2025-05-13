@@ -5,6 +5,8 @@ from flask import (
 from invemp.db import get_cursor
 from werkzeug.exceptions import abort
 
+import datetime
+
 
 def get_tables():
     c = get_cursor()
@@ -172,6 +174,23 @@ def get_preserved_args():
     preserved_args.pop('csrf_token', None)
     return preserved_args
 
+def preserve_current_entries(columns):
+    """Preserve current entries in the form data"""
+    current_datetime = datetime.datetime.now()
+
+    # Prepare entry from form data to keep user input
+    entry = []
+    for column in columns:
+        if column == 'id' or column.endswith('_id') or column == 'ID':
+            entry.append(id)
+        elif column == 'Assigned To':
+            entry.append(request.form.get('Assigned To'))
+        elif column == 'last_updated':
+            entry.append(current_datetime)
+        else:
+            entry.append(request.form.get(column))
+    return entry
+
 def calculate_column_widths(items, columns):
     """Calculate relative column widths based on content"""
     if not items:
@@ -206,7 +225,7 @@ def get_item_assignment_history(item_id):
     c = get_cursor()
     c.execute(
         """
-        SELECT h.employee_id, e.name, h.assigned_date, h.removed_date
+        SELECT h.item_id, e.name, h.assigned_date, h.removed_date
         FROM item_assignment_history h
         LEFT JOIN employees e ON h.employee_id = e.employee_id
         WHERE h.item_id = %s

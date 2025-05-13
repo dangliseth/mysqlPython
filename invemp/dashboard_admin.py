@@ -9,7 +9,7 @@ from invemp.auth import admin_required
 from invemp.dashboard_helpers import (
     is_valid_table, get_dropdown_options, 
     get_entry, get_items_columns, get_preserved_args,
-    get_item_assignment_history
+    get_item_assignment_history, preserve_current_entries
 )
 from invemp.db import get_cursor
 
@@ -212,22 +212,11 @@ def update(id, table_name):
                 continue
             if column == 'password':
                 continue
-            if column == 'Assigned To':
-                assigned_to_name = request.form.get('Assigned To')
-                # Convert name to employee_id
-                if assigned_to_name:
-                    c_lookup = get_cursor()
-                    c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
-                    emp_row = c_lookup.fetchone()
-                    c_lookup.close()
-                    assigned_to_value = emp_row[0] if emp_row else None
-                else:
-                    assigned_to_value = None
-                column = 'employee'
-                values.append(assigned_to_value)
-                update_columns.append(column)
-                new_assigned_to_value = assigned_to_value
             elif column == 'status':
+                continue
+            elif column == 'Assigned To':
+                continue
+            elif column == 'department':
                 continue
             elif column == 'last_updated':
                 values.append(current_datetime)
@@ -239,8 +228,6 @@ def update(id, table_name):
                     values.append(None)
                 update_columns.append(column)
 
-        status_from_form = request.form.get('status', '').strip().lower()
-
         # Get previous assigned_to_value (employee_id) from DB
         if table_name == 'items':
             c_prev = get_cursor()
@@ -250,14 +237,49 @@ def update(id, table_name):
                 prev_assigned_to_value = prev_row[0]
             c_prev.close()
 
-        # Handle status logic
-        if status_from_form in ['for disposal', 'for repair']:
-            values.append(status_from_form)
-        elif new_assigned_to_value:  # Not empty/None/Null
-            values.append('assigned')
+
+        assigned_to_name = request.form.get('Assigned To')
+        department_value = request.form.get('department')
+        status_from_form = request.form.get('status', '').strip().lower()
+        # Convert name to employee_id
+        if assigned_to_name and status_from_form != 'active':
+            c_lookup = get_cursor()
+            c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+            emp_row = c_lookup.fetchone()
+            c_lookup.close()
+            assigned_to_value = emp_row[0] if emp_row else None
         else:
-            values.append('active')
+            assigned_to_value = None
+        employee_column = 'employee'
+        values.append(assigned_to_value)
+        update_columns.append(employee_column)
+        new_assigned_to_value = assigned_to_value
+
+        # Handle status logic
+        if status_from_form == 'active':
+            values.append('MIS')
+            update_columns.append('department')
+            values.append(status_from_form)
+        elif status_from_form == 'assigned' and assigned_to_value is None:
+            flash("Assigned To cannot be empty when status is 'assigned'.", "error")
+            entries = preserve_current_entries(columns)
+            # Stay on the update page with the user's input preserved
+            return render_template(
+                'dashboard/update.html',
+                entry=entry,
+                entries=entries,
+                table_name=table_name,
+                columns=columns,
+                dropdown_options=dropdown_options,
+                preserved_args=preserved_args
+            )
+        else:
+            values.append(department_value)
+            update_columns.append('department')
+            values.append(status_from_form)
         update_columns.append('status')
+
+
 
         placeholders = ', '.join([f"`{col}` = %s" for col in update_columns])
         query = f"UPDATE `{table_name}` SET {placeholders} WHERE `{id_column}` = %s"
@@ -305,20 +327,12 @@ def update(id, table_name):
                 c.close()
             
             # Prepare entry from form data to keep user input
-            entry = []
-            for column in columns:
-                if column == 'id' or column.endswith('_id') or column == 'ID':
-                    entry.append(id)
-                elif column == 'Assigned To':
-                    entry.append(request.form.get('Assigned To'))
-                elif column == 'last_updated':
-                    entry.append(current_datetime)
-                else:
-                    entry.append(request.form.get(column))
+            entries = preserve_current_entries(columns)
             # Stay on the update page with the user's input preserved
             return render_template(
                 'dashboard/update.html',
                 entry=entry,
+                entries=entries,
                 table_name=table_name,
                 columns=columns,
                 dropdown_options=dropdown_options,
