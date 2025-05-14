@@ -380,6 +380,7 @@ nav a.btn-53:hover span:nth-child(6) {
   justify-content: center;
   gap: 0.5em;
   background: none;
+  border: none;
   box-shadow: none;
   position: relative;
 }
@@ -389,13 +390,13 @@ nav a.btn-53:hover span:nth-child(6) {
   font-size: 1em;
   height: 2.5rem;
   outline: none;
-  transition: border 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+  transition: border 0.35s ease-in-out;
   color: white;
   background: none;
   border-top: 2px solid #7f87f7;
 }
 #filter-form input[type="text"]:focus {
-  border-top: none;
+  border: none;
   border-bottom: 2px solid #7f87f7;
 }
 #clear-filters-btn {
