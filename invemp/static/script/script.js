@@ -31,4 +31,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add to the sorted header
         ths[colIndex].classList.add("sorted", isAsc ? "desc" : "asc");
     }
+
+    // Show/hide clear button for filter input
+    const filterInput = document.getElementById('filter-input');
+    const clearBtn = document.getElementById('clear-filters-btn');
+    if (filterInput && clearBtn) {
+        function toggleClearBtn() {
+            if (filterInput.value.length > 0) {
+                clearBtn.classList.add('visible');
+            } else {
+                clearBtn.classList.remove('visible');
+            }
+        }
+        // Initial state
+        toggleClearBtn();
+        // On input
+        filterInput.addEventListener('input', toggleClearBtn);
+    }
 });

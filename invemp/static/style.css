@@ -406,11 +406,17 @@ nav a.btn-53:hover span:nth-child(6) {
   text-decoration: none;
   text-align: center;
   line-height: 1.2;
-  transition: background 0.2s;
+  transition: background 0.2s, opacity 0.2s;
   height: 1.8em;
   display: flex;
   align-items: center;
   box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+}
+#clear-filters-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 #clear-filters-btn:hover {
   background-color: #570000;
