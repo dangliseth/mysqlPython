@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %} {{ id }} from {{ table_name }} {% endblock %}
+
+{% block content %}
+<main id="tables-view">
+    <table class="table table-striped sortable" id="history-table">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                    <th style="cursor:pointer;">
+                        {{ column }}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history_data %}
+                <tr>
+                    {% for column, value in zip(columns, item) %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+{% endblock %}

@@ -1,9 +1,11 @@
 from flask import (
-    request, flash
+    request
 )
 
 from invemp.db import get_cursor
 from werkzeug.exceptions import abort
+
+import datetime
 
 
 def get_tables():
@@ -105,8 +107,10 @@ def filter_table(table_name, cursor):
     if not is_valid_table(table_name):
         abort(400)
 
-    filters = get_filters(table_name)
-    
+    # Get the search term from the query string
+    search_term = request.args.get('search', '').strip()
+    status_filter = request.args.get('status', '').strip() if table_name == 'items' else None
+
     if table_name == 'items':
         columns = get_items_columns()
     else:
@@ -115,25 +119,28 @@ def filter_table(table_name, cursor):
 
     where_clauses = []
     filter_values = []
-    
-    for col, values in filters.items():
-        if not isinstance(values, list) and col != 'password':
-            values = [values]
-            
-        # Handle special case for "Assigned To"
-        if col == "Assigned To":
-            col_expr = "e.name"
-        else:
-            col_expr = f"i.`{col}`" if table_name in ('items', 'items_disposal') else f"`{col}`"
-        
-        # Create OR conditions for multiple values of the same column
-        column_clauses = []
-        for value in values:
-            column_clauses.append(f"{col_expr} LIKE %s")
-            filter_values.append(f"%{value}%")
-        
-        # Combine with OR for the same column, then add to WHERE clauses
-        where_clauses.append(f"({' OR '.join(column_clauses)})")
+
+    # Global search (all columns)
+    if search_term:
+        or_clauses = []
+        for col in columns:
+            if col == 'password':
+                continue
+            if table_name in ('items', 'items_disposal'):
+                if col == "Assigned To":
+                    or_clauses.append("e.name LIKE %s")
+                else:
+                    or_clauses.append(f"i.`{col}` LIKE %s")
+            else:
+                or_clauses.append(f"`{col}` LIKE %s")
+            filter_values.append(f"%{search_term}%")
+        if or_clauses:
+            where_clauses.append(f"({' OR '.join(or_clauses)})")
+
+    # Status filter for items table
+    if table_name == 'items' and status_filter:
+        where_clauses.append("i.status = %s")
+        filter_values.append(status_filter)
 
     # Build the base query
     if table_name in ('items', 'items_disposal'):
@@ -141,7 +148,7 @@ def filter_table(table_name, cursor):
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
 
-    # Add WHERE conditions if any filters exist
+    # Add WHERE conditions if any
     if where_clauses:
         sql_query += f" WHERE {' AND '.join(where_clauses)}"
 
@@ -159,9 +166,16 @@ def filter_table(table_name, cursor):
 
     try:
         cursor.execute(sql_query, tuple(filter_values))
+        # Return filters as {'search': search_term, 'status': status_filter} for template compatibility
+        filters = {'search': search_term}
+        if table_name == 'items':
+            filters['status'] = status_filter
         return cursor.fetchall(), columns, filters
     except Exception as e:
         print(f"SQL Error: {str(e)}")
+        filters = {'search': search_term}
+        if table_name == 'items':
+            filters['status'] = status_filter
         return [], columns, filters
     
 def get_preserved_args():
@@ -171,6 +185,23 @@ def get_preserved_args():
     preserved_args.pop('_flashes', None) 
     preserved_args.pop('csrf_token', None)
     return preserved_args
+
+def preserve_current_entries(columns):
+    """Preserve current entries in the form data"""
+    current_datetime = datetime.datetime.now()
+
+    # Prepare entry from form data to keep user input
+    entry = []
+    for column in columns:
+        if column == 'id' or column.endswith('_id') or column == 'ID':
+            entry.append(id)
+        elif column == 'Assigned To':
+            entry.append(request.form.get('Assigned To'))
+        elif column == 'last_updated':
+            entry.append(current_datetime)
+        else:
+            entry.append(request.form.get(column))
+    return entry
 
 def calculate_column_widths(items, columns):
     """Calculate relative column widths based on content"""
@@ -200,3 +231,20 @@ def calculate_column_widths(items, columns):
             width_factors[column] = 1
     
     return width_factors
+
+def get_item_assignment_history(item_id):
+    """Return assignment history for an item, ordered by assigned_date desc."""
+    c = get_cursor()
+    c.execute(
+        """
+        SELECT h.item_id, e.name, h.assigned_date, h.removed_date
+        FROM item_assignment_history h
+        LEFT JOIN employees e ON h.employee_id = e.employee_id
+        WHERE h.item_id = %s
+        ORDER BY h.assigned_date DESC
+        """,
+        (item_id,)
+    )
+    history = c.fetchall()
+    c.close()
+    return history
