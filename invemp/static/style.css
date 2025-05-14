@@ -287,7 +287,7 @@ nav a.btn-53:hover span:nth-child(6) {
   background-color: greenyellow;
 }
 .status-assigned#current-table::after {
-  background-color: rgb(106, 106, 248);
+  background-color: rgb(7, 197, 245);
 }
 .status-repair#current-table::after {
   background-color: red;
@@ -384,16 +384,19 @@ nav a.btn-53:hover span:nth-child(6) {
   position: relative;
 }
 #filter-form input[type="text"] {
-  width: 160px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  border-radius: 12px;
+  border: none;
   font-size: 1em;
+  height: 2.5rem;
   outline: none;
-  transition: border 0.2s;
-  background: #fff;
+  transition: border 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+  color: white;
+  background: none;
+  border-top: 2px solid #7f87f7;
 }
 #filter-form input[type="text"]:focus {
-  border: 1.5px solid #7f87f7;
+  border-top: none;
+  border-bottom: 2px solid #7f87f7;
 }
 #clear-filters-btn {
   padding: 0.2em 0.7em;
@@ -820,7 +823,6 @@ table#main-table thead {
 table#main-table th, table#main-table td {
   padding: 0.7rem 1rem; /* Add padding for better spacing */
   text-align: left; /* Align text to the left */
-  border-bottom: 1px solid #ddd; /* Subtle border between rows */
 }
 table#main-table tbody tr:nth-child(even) {
   background-color: #d3d3d3; /* Light background for even rows */

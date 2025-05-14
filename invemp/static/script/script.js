@@ -48,4 +48,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // On input
         filterInput.addEventListener('input', toggleClearBtn);
     }
+
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(function() {
+        document.querySelectorAll('.flash').forEach(function(flash) {
+            flash.style.transition = 'opacity 0.5s';
+            flash.style.opacity = '0';
+            setTimeout(function() {
+                if (flash.parentNode) {
+                    flash.parentNode.removeChild(flash);
+                }
+            }, 500);
+        });
+    }, 5000);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('form.delete-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      if (!confirm('Are you sure you want to delete this entry along with its history? This action cannot be undone.')) {
+        e.preventDefault();
+      }
+    });
+  });
 });

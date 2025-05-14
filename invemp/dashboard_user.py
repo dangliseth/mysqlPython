@@ -78,81 +78,22 @@ def convert_pdf(table_name):
     if not is_valid_table(table_name):
         abort(400)
     c = get_cursor()
-    request_args = request.args
-
-    # Fetch the column names for the table
-    if table_name in ('items', 'items_disposal'):
-        columns = get_items_columns()
-        base_query = get_items_query()
-    else:
-        c.execute(f"DESCRIBE `{table_name}`")
-        columns = [row[0] for row in c.fetchall()]
-        base_query = f"SELECT * FROM `{table_name}`"
-
-    # --- Handle Filters ---
-    where_clauses = []
-    filter_values = []
-    
-    # Process each possible filter parameter
-    for column in columns:
-        # Handle both single values and lists of values
-        values = request_args.getlist(column) or ([request_args[column]] if column in request_args else [])
-        values = [v for v in values if v.strip()]  # Filter out empty values
-        
-        if values:
-            # Join multiple values with spaces for LIKE matching
-            search_value = ' '.join(values)
-            
-            if table_name in ('items', 'items_disposal') and column == "Assigned To":
-                where_clauses.append("e.name LIKE %s")
-            elif table_name in ('items', 'items_disposal'):
-                where_clauses.append(f"i.`{column}` LIKE %s")
-            else:
-                where_clauses.append(f"`{column}` LIKE %s")
-                
-            filter_values.append(f"%{search_value}%")
-    
-    where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
-
-    # --- Handle Sorting ---
-    sort_column = request_args.get('sort_column') or request_args.get('column')
-    sort_direction = request_args.get('sort_direction', 'asc')
-    
-    order_sql = ""
-    if sort_column and sort_column in columns and sort_direction.lower() in ['asc', 'desc']:
-        if table_name in ('items', 'items_disposal'):
-            if sort_column == "Assigned To":
-                order_sql = f" ORDER BY e.name {sort_direction}"
-            else:
-                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
-        else:
-            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
-
-    # --- Final Query ---
-    sql_query = re.sub(r'\s+LIMIT\s+\d+\s*$', '', base_query, flags=re.IGNORECASE) + where_sql + order_sql
-
-    # Execute the query
     try:
-        c.execute(sql_query, tuple(filter_values))
-        items = c.fetchall()
-    except Exception as e:
-        print(f"PDF Generation Error: {str(e)}")
-        print(f"Query: {sql_query}")
-        print(f"Params: {filter_values}")
-        flash("Error generating PDF", "error")
-        return redirect(url_for('dashboard_user.index', table_name=table_name))
+        # Use the same filter logic as the main dashboard
+        filtered_items, columns, filters = filter_table(table_name, c)
     finally:
         c.close()
 
     html = render_template(
         'pdf_template.html',
-        items=items,
+        items=filtered_items,
         columns=columns,
         table_name=table_name,
         current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
-        column_widths=calculate_column_widths(items, columns),
+        column_widths=calculate_column_widths(filtered_items, columns),
         zip=zip,
-        filters=request_args  # Pass filters for header display
+        filters=filters,  # Pass filters for header display
+        total_items=len(filtered_items)  # Add total number of items
     )
 
     # Generate PDF
@@ -219,54 +160,13 @@ def convert_pdf_qr(table_name):
     if not is_valid_table(table_name):
         abort(400)
     c = get_cursor()
-    request_args = request.args.to_dict()
-
-    # Columns and base query (same as your convert_pdf)
-    if table_name == 'items':
-        columns = get_items_columns()
-        base_query = get_items_query()
-    else:
-        c.execute(f"DESCRIBE `{table_name}`")
-        columns = [row[0] for row in c.fetchall()]
-        base_query = f"SELECT * FROM `{table_name}`"
-
-    # --- Handle Filters ---
-    where_clauses = []
-    filter_values = []
-    for column in columns:
-        if column in request_args and request_args[column]:
-            value = request_args[column]
-            if table_name in ['items', 'items_disposal']:
-                if column == "Assigned To":
-                    where_clauses.append("e.name LIKE %s")
-                else:
-                    where_clauses.append(f"i.`{column}` LIKE %s")
-            else:
-                where_clauses.append(f"`{column}` LIKE %s")
-            filter_values.append(f"%{value}%")
-    where_sql = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
-
-    # --- Handle Sorting ---
-    sort_column = request_args.get('sort_column') or request_args.get('column')
-    sort_direction = request_args.get('sort_direction', 'asc')
-    order_sql = ""
-    if sort_column and sort_column in columns and sort_direction.lower() in ['asc', 'desc']:
-        if table_name in ['items', 'items_disposal']:
-            if sort_column == "Assigned To":
-                order_sql = f" ORDER BY e.name {sort_direction}"
-            else:
-                order_sql = f" ORDER BY i.`{sort_column}` {sort_direction}"
-        else:
-            order_sql = f" ORDER BY `{sort_column}` {sort_direction}"
-
-    sql_query = base_query + where_sql + order_sql
-
-    c.execute(sql_query, tuple(filter_values))
-    items = c.fetchall()
-    c.close()
+    try:
+        # Use the same filter logic as the main dashboard
+        filtered_items, columns, filters = filter_table(table_name, c)
+    finally:
+        c.close()
 
     if table_name == 'items' or table_name == 'items_disposal':
-        # --- Only include these columns in the QR code ---
         qr_columns = ['item_id', 'item_name', 'serial_number']  # Change as needed
     else:
         qr_columns = columns
@@ -279,8 +179,8 @@ def convert_pdf_qr(table_name):
     pdf.add_page()
     pdf.set_font("Arial", size=8)
 
-    # Add header with generation date and time
-    generated_str = f"Generated on {datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')}"
+    # Add header with generation date, time, and total items
+    generated_str = f"Generated on {datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')} | Total items: {len(filtered_items)}"
     pdf.cell(0, 10, generated_str, ln=1, align='C')
 
     page_width = 190
@@ -294,7 +194,7 @@ def convert_pdf_qr(table_name):
     y = y_start
 
     import tempfile
-    for idx, row in enumerate(items):
+    for idx, row in enumerate(filtered_items):
         # Build QR data string with only the selected columns
         qr_data = "\n".join(f"{col}: {row[col_indices[col]]}" for col in qr_columns)
         qr_img = qrcode.make(qr_data)
