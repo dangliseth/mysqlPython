@@ -287,7 +287,7 @@ nav a.btn-53:hover span:nth-child(6) {
   background-color: greenyellow;
 }
 .status-assigned#current-table::after {
-  background-color: rgb(106, 106, 248);
+  background-color: rgb(7, 197, 245);
 }
 .status-repair#current-table::after {
   background-color: red;
@@ -380,20 +380,24 @@ nav a.btn-53:hover span:nth-child(6) {
   justify-content: center;
   gap: 0.5em;
   background: none;
+  border: none;
   box-shadow: none;
   position: relative;
 }
 #filter-form input[type="text"] {
-  width: 160px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  border-radius: 12px;
+  border: none;
   font-size: 1em;
+  height: 2.5rem;
   outline: none;
-  transition: border 0.2s;
-  background: #fff;
+  transition: border 0.35s ease-in-out;
+  color: white;
+  background: none;
+  border-top: 2px solid #7f87f7;
 }
 #filter-form input[type="text"]:focus {
-  border: 1.5px solid #7f87f7;
+  border: none;
+  border-bottom: 2px solid #7f87f7;
 }
 #clear-filters-btn {
   padding: 0.2em 0.7em;
@@ -406,11 +410,17 @@ nav a.btn-53:hover span:nth-child(6) {
   text-decoration: none;
   text-align: center;
   line-height: 1.2;
-  transition: background 0.2s;
+  transition: background 0.2s, opacity 0.2s;
   height: 1.8em;
   display: flex;
   align-items: center;
   box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+}
+#clear-filters-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 #clear-filters-btn:hover {
   background-color: #570000;
@@ -814,7 +824,6 @@ table#main-table thead {
 table#main-table th, table#main-table td {
   padding: 0.7rem 1rem; /* Add padding for better spacing */
   text-align: left; /* Align text to the left */
-  border-bottom: 1px solid #ddd; /* Subtle border between rows */
 }
 table#main-table tbody tr:nth-child(even) {
   background-color: #d3d3d3; /* Light background for even rows */

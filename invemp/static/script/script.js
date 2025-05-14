@@ -31,4 +31,44 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add to the sorted header
         ths[colIndex].classList.add("sorted", isAsc ? "desc" : "asc");
     }
+
+    // Show/hide clear button for filter input
+    const filterInput = document.getElementById('filter-input');
+    const clearBtn = document.getElementById('clear-filters-btn');
+    if (filterInput && clearBtn) {
+        function toggleClearBtn() {
+            if (filterInput.value.length > 0) {
+                clearBtn.classList.add('visible');
+            } else {
+                clearBtn.classList.remove('visible');
+            }
+        }
+        // Initial state
+        toggleClearBtn();
+        // On input
+        filterInput.addEventListener('input', toggleClearBtn);
+    }
+
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(function() {
+        document.querySelectorAll('.flash').forEach(function(flash) {
+            flash.style.transition = 'opacity 0.5s';
+            flash.style.opacity = '0';
+            setTimeout(function() {
+                if (flash.parentNode) {
+                    flash.parentNode.removeChild(flash);
+                }
+            }, 500);
+        });
+    }, 5000);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('form.delete-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      if (!confirm('Are you sure you want to delete this entry along with its history? This action cannot be undone.')) {
+        e.preventDefault();
+      }
+    });
+  });
 });

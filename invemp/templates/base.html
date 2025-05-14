@@ -155,11 +155,11 @@
   {% if g.user %}
     {% if is_index %}
     <!-- Filter Form -->
-    <form method="get" action="{{ url_for('dashboard_user.index', table_name=table_name) }}" id="filter-form" autocomplete="off" style="position:relative;">
+    <form method="get" action="{{ url_for('dashboard_user.index', table_name=table_name) }}" id="filter-form" autocomplete="off">
       {% if request.args.get('status') %}
         <input type="hidden" name="status" value="{{ request.args.get('status') }}">
       {% endif %}
-      <input type="text" name="search" value="{{ filters.get('search', '') }}" placeholder="Search..." id="filter-input" style="width:180px; padding:0.4em; border-radius:4px; border:1px solid #ccc;">
+      <input type="text" name="search" value="{{ filters.get('search', '') }}" placeholder="Search..." id="filter-input">
       <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=page, status=request.args.get('status')) }}" class="clear-btn" id="clear-filters-btn">Clear</a>
     </form>
   {% endif %}

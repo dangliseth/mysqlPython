@@ -60,6 +60,7 @@
 <body>
     <h1>{{ table_name|title }} Report</h1>
     <p>Generated on: <span class="timestamp">{{ current_time }}</span></p>
+    <p> Number of items in this report: {{ total_items }}</p>
     
     {% if filters %}
     <div class="filters">

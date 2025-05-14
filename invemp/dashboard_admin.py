@@ -79,19 +79,9 @@ def create(table_name):
             elif column == 'status':
                 continue
             elif column == 'Assigned To':
-                # Convert employee name to employee_id before inserting
-                assigned_to_name = request.form.get('Assigned To')
-                # Convert name to employee_id
-                if assigned_to_name:
-                    c_lookup = get_cursor()
-                    c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
-                    emp_row = c_lookup.fetchone()
-                    c_lookup.close()
-                    assigned_to_value = emp_row[0] if emp_row else None
-                else:
-                    assigned_to_value = None
-                values.append(assigned_to_value)
-                insert_columns.append('employee')
+                continue
+            elif column == 'department':
+                continue
             else:
                 if request.form.get(column) != '':
                     values.append(request.form.get(column))
@@ -99,15 +89,45 @@ def create(table_name):
                     values.append(None)
                 insert_columns.append(column)
 
+
         status_from_form = request.form.get('status', '').strip().lower()
+        department_value = request.form.get('department')
+        # Convert employee name to employee_id before inserting
+        assigned_to_name = request.form.get('Assigned To')
+
+        # Convert name to employee_id
+        if assigned_to_name and status_from_form != 'active':
+            c_lookup = get_cursor()
+            c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+            emp_row = c_lookup.fetchone()
+            c_lookup.close()
+            assigned_to_value = emp_row[0] if emp_row else None
+        else:
+            assigned_to_value = None
+        values.append(assigned_to_value)
+        insert_columns.append('employee')
 
         # Handle status logic
-        if status_from_form in ['for disposal', 'for repair']:
+        if status_from_form == 'active':
+            values.append('MIS')
+            insert_columns.append('department')
             values.append(status_from_form)
-        elif assigned_to_value:  # Not empty/None/Null
-            values.append('assigned')
+        elif status_from_form == 'assigned' and assigned_to_value is None:
+            flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
+            entries = preserve_current_entries(columns)
+            # Stay on the update page with the user's input preserved
+            return render_template(
+                'dashboard/create.html',
+                entries=entries,
+                table_name=table_name,
+                columns=columns,
+                dropdown_options=dropdown_options,
+                preserved_args=preserved_args
+            )
         else:
-            values.append('active')
+            values.append(department_value)
+            insert_columns.append('department')
+            values.append(status_from_form)
         insert_columns.append('status')
 
         placeholders = ', '.join(['%s'] * len(values))
@@ -237,7 +257,7 @@ def update(id, table_name):
                 prev_assigned_to_value = prev_row[0]
             c_prev.close()
 
-
+        # Handle status, 'Assigned To', and department logic
         assigned_to_name = request.form.get('Assigned To')
         department_value = request.form.get('department')
         status_from_form = request.form.get('status', '').strip().lower()
@@ -255,7 +275,6 @@ def update(id, table_name):
         update_columns.append(employee_column)
         new_assigned_to_value = assigned_to_value
 
-        # Handle status logic
         if status_from_form == 'active':
             values.append('MIS')
             update_columns.append('department')
@@ -394,17 +413,19 @@ def delete(id, table_name):
     preserved_args = get_preserved_args()
 
     for column in columns:
-        if column == 'id' or column.endswith('_id') or column == 'ID':  # Determin id column
+        if column == 'id' or column.endswith('_id') or column == 'ID':  # Determine id column
             id_column = column
             break
 
     if request.method == 'POST':
         c = get_cursor()
+        if table_name == 'items':
+            # Delete all assignment history for this item
+            c.execute("DELETE FROM item_assignment_history WHERE item_id = %s", (id,))
         delete_query = f"DELETE FROM `{table_name}` WHERE `{id_column}` = %s"
         c.execute(delete_query, (id,)) 
         c.connection.commit()
         flash(f"{id_column}: {id} DELETED from {table_name}")
-    
     return redirect(url_for('dashboard_user.index', table_name = table_name, **preserved_args))
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
