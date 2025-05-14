@@ -155,39 +155,12 @@
   {% if g.user %}
     {% if is_index %}
     <!-- Filter Form -->
-    <form method="get" action="{{ url_for('dashboard_user.index', table_name=table_name) }}" 
-    id="filter-form">
-      <!-- Hidden field to preserve status -->
+    <form method="get" action="{{ url_for('dashboard_user.index', table_name=table_name) }}" id="filter-form" autocomplete="off" style="position:relative;">
       {% if request.args.get('status') %}
-      <input type="hidden" name="status" value="{{ request.args.get('status') }}">
+        <input type="hidden" name="status" value="{{ request.args.get('status') }}">
       {% endif %}
-      
-      <input type="checkbox" id="filter-toggle" class="filter-toggle">
-      <label for="filter-toggle" id="filter-icon">
-        <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search" class="filter-icon-img">
-      </label>
-      <div id="filter-panel">
-        <div id="filter-fields">
-          {% for column in columns %}
-            {% if column != 'status' %}
-            <label for="{{ column }}">{{ column }}</label>
-            <input type="text" id="{{ column }}" name="{{ column }}" class="filter-column" 
-                  value="{{ filters.get(column, '') }}" placeholder="Filter by {{ column }}"
-                  {% if column == sort_column %}data-sorted="true"{% endif %}>
-            {% endif %}
-          {% endfor %}
-          {% if sort_column %}
-            <input type="hidden" name="sort_column" value="{{ sort_column }}">
-            <input type="hidden" name="sort_direction" value="{{ sort_direction }}">
-          {% endif %}
-        </div>
-        <div id="filter-buttons">
-          <button type="submit" class="apply-btn">Apply Filters</button>
-          <a href="{{ url_for('dashboard_user.index', table_name=table_name, status=request.args.get('status')) }}" class="clear-btn">
-            Clear Filters
-          </a>
-        </div>
-      </div>
+      <input type="text" name="search" value="{{ filters.get('search', '') }}" placeholder="Search..." id="filter-input" style="width:180px; padding:0.4em; border-radius:4px; border:1px solid #ccc;">
+      <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=page, status=request.args.get('status')) }}" class="clear-btn" id="clear-filters-btn">Clear</a>
     </form>
   {% endif %}
   <section class="profile">
@@ -222,17 +195,3 @@
   {% block content %}{% endblock %}
   <script src="{{ url_for('static', filename='script/script.js') }}"></script>
 </section>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const flashMessages = document.querySelectorAll('[data-flash]');
-    
-    flashMessages.forEach(message => {
-      // Remove after 5 seconds (5000ms)
-      setTimeout(() => {
-        message.style.opacity = '0';
-        setTimeout(() => message.remove(), 500); // Match this with CSS transition
-      }, 5000);
-    });
-  });
-  </script>

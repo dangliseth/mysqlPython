@@ -62,7 +62,6 @@ nav h1 {
 .profile {
   position: relative;
   display: inline-block;
-  padding-left: 4rem;
   align-self: center;
   align-items: center;
 }
@@ -105,7 +104,6 @@ ul.profile {
   min-width: 160px;
   z-index: 2000;
   padding: 0.5rem 0;
-  margin: 0;
   flex-direction: column;
   gap: 0.5rem;
   list-style: none;
@@ -239,6 +237,7 @@ nav a.btn-53:hover span:nth-child(6) {
   display: flex;
   gap: 1.4rem; /* Space between items */
   list-style: none;
+  padding: 0 5.5rem;
   align-self: center;
   flex-wrap: wrap;
   justify-self: center;
@@ -376,96 +375,45 @@ nav a.btn-53:hover span:nth-child(6) {
 }
 /* Filter Form Styling */
 #filter-form {
-  position: relative;
-  display: inline-block;
-  align-self: center;
-}
-/* Hide the checkbox input */
-.filter-toggle {
-  display: none;
-}
-/* Style the filter icon */
-#filter-icon {
-  cursor: pointer;
-  background-color: white;
-  color: black;
-  padding: 0.5rem;
-  border-radius: 50%;
   display: flex;
-  align-content: center;
+  align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-#filter-icon:hover {
-  border-radius: 15px;
-  transform: scale(1.1);
-  background-color: #f34949;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-/* Hide filter panel by default */
-#filter-panel {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 20%;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  width: 200px;
-  z-index: 1000;
-  flex-direction: column; /* Stack fields and buttons vertically */
-  gap: 0.5rem;
-  overflow-y: auto;
-}
-
-/* Show filter panel when checkbox is checked */
-.filter-toggle:checked ~ #filter-icon ~ #filter-panel {
-  display: flex;
-}
-
-/* Remove absolute/flex from children */
-#filter-fields, #filter-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  position: static;
+  gap: 0.5em;
   background: none;
-  border: none;
   box-shadow: none;
-  padding: 0;
-  width: 100%;
+  position: relative;
 }
-
-.apply-btn, .clear-btn {
-  padding: 8px 15px;
+#filter-form input[type="text"] {
+  width: 160px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+  outline: none;
+  transition: border 0.2s;
+  background: #fff;
+}
+#filter-form input[type="text"]:focus {
+  border: 1.5px solid #7f87f7;
+}
+#clear-filters-btn {
+  padding: 0.2em 0.7em;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 14px;
-}
-
-.apply-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.clear-btn {
-  background-color: #f44336;
+  font-size: 0.92em;
+  background-color: #ff1100;
   color: white;
   text-decoration: none;
   text-align: center;
-  line-height: normal;
+  line-height: 1.2;
+  transition: background 0.2s;
+  height: 1.8em;
+  display: flex;
+  align-items: center;
+  box-shadow: none;
 }
-
-.clear-btn:hover {
-  background-color: #d32f2f;
-}
-
-.apply-btn:hover {
-  background-color: #45a049;
+#clear-filters-btn:hover {
+  background-color: #570000;
 }
 nav #download-btns {
   display: flex;
@@ -888,6 +836,36 @@ table#main-table th:last-child {
 table#main-table th {
   cursor: pointer;
   position: relative;
+}
+/* ID cell with action buttons aligned right */
+.id-cell {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.action-btns {
+  display: flex;
+  gap: 0.2rem;
+}
+.action-btns .btn-table {
+  padding: 0.1rem 0.2rem;
+  font-size: 0.92em;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: 9px;
+  transition: background 0.45s ease-out, box-shadow 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.action-btns .btn-table img.icon {
+  width: 1.5em;
+  height: 1.5em;
+}
+.action-btns .btn-table:hover {
+  background: #ff4e4e;
+  box-shadow: 0 2px 8px rgba(127,135,247,0.13);
 }
 /* Pagination Container */
 .pagination {

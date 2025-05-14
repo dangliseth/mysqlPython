@@ -20,16 +20,18 @@
         {% for column, value in zip(columns, item) %}
           {% if column != 'password' %}
             {% if loop.index0 == 0 %}
-            <td>
+            <td class="id-cell">
               {{ value }}
-              <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0], **request.args) }}" class="btn btn-create">
-                <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="Edit" class="icon">
-              </a>
-              {% if table_name == 'items' %}
-              <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item[0], **request.args)}}">
-                <img src="{{ url_for('static', filename='icons/history.svg') }}" alt="History" class="icon">
-              </a>
-              {% endif %}
+              <span class="action-btns">
+                <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0], **request.args) }}" class="btn btn-table">
+                  <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="Edit" class="icon">
+                </a>
+                {% if table_name == 'items' %}
+                <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item[0], **request.args)}}" class="btn btn-table">
+                  <img src="{{ url_for('static', filename='icons/history.svg') }}" alt="History" class="icon">
+                </a>
+                {% endif %}
+              </span>
             </td>
             {% else %}
             <td>{{ value }}</td>
