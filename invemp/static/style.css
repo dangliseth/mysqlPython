@@ -43,7 +43,7 @@ nav {
   align-content: center;
   justify-content: center;
   background-color: black;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem 0;
   gap: 4rem;
   position: sticky;
   top: 0;
@@ -221,7 +221,8 @@ nav h1 {
   background: none;
   border-top: 2px solid #7f87f7;
 }
-#filter-form input[type="text"]:focus {
+#filter-form input[type="text"]:focus,
+#filter-form input[type="text"]:not(:placeholder-shown) {
   border: none;
   border-bottom: 2px solid #7f87f7;
 }
