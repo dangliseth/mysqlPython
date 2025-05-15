@@ -58,6 +58,199 @@ nav h1 {
   align-self: center;
   color: white;
 }
+.tables-nav {
+  display: flex;
+  gap: 1.4rem; /* Space between items */
+  list-style: none;
+  padding: 0 5.5rem;
+  align-self: center;
+  flex-wrap: wrap;
+  justify-self: center;
+  align-items: center; /* Allows wrapping on small screens */
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+}
+#current-table {
+  margin: 0;
+  font-size: 1.5rem;
+  color: white;
+}
+#table-link {
+  text-decoration: none;
+  font-size: 1.2rem;
+  color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+#table-link:hover {
+  color: white; /* Highlight color */
+  background-color: maroon;
+  padding: 0.5rem 0.6rem; /* Subtle hover background */
+}
+#table-link.dropdown:hover .dropdown-content {
+  display: block;
+}
+/* Optional: Add visual indicator for current table */
+#current-table {
+  position: relative;
+  padding-bottom: 0.25rem;
+  justify-content: center;
+}
+#current-table::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #f5bf6f;
+}
+.status-active#current-table::after {
+  background-color: greenyellow;
+}
+.status-assigned#current-table::after {
+  background-color: rgb(7, 197, 245);
+}
+.status-repair#current-table::after {
+  background-color: red;
+}
+.status-disposal#current-table::after {
+  background-color: rgb(168, 168, 168);
+}
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+/* Add this to your style.css or in a <style> tag */
+
+.tables.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-arrow {
+  font-size: 0.8em;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: transform 0.2s;
+}
+
+/* Rotate arrow when hovered */
+.tables.dropdown:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  border-radius: 8px;
+  left: 0;
+  top: 100%;
+  background-color: #f9f9f9;
+  min-width: 120px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.tables.dropdown:hover .dropdown-content {
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  font-family: 'Poppins';
+  font-size: 1rem;
+}
+
+.dropdown-content a:hover {
+  background-color: #747474;
+}
+.tables-nav .btn-create {
+  text-decoration: none;
+  color: white;
+  background-color: #D84040;
+  padding: 0.6rem 0.3rem;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+.tables-nav .btn-create:hover {
+  background-color: #ff4e4e; /* Slightly darker shade for hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+  transform: translateY(-3px); /* Slight lift effect */
+  transition: all 0.2s ease-in-out;
+}
+.tables-nav .btn-create:active {
+  background-color: #752323; /* Even darker shade for active state */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
+  transform: translateY(2px); /* Slight press effect */
+}
+.nav-icon {
+  height: 1.2em;
+  width: 1.2em;
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
+}
+/* Filter Form Styling */
+#filter-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: none;
+  border: none;
+  box-shadow: none;
+  position: relative;
+}
+#filter-form input[type="text"] {
+  border-radius: 12px;
+  border: none;
+  font-size: 1em;
+  height: 2.5rem;
+  outline: none;
+  transition: border 0.35s ease-in-out;
+  color: white;
+  background: none;
+  border-top: 2px solid #7f87f7;
+}
+#filter-form input[type="text"]:focus {
+  border: none;
+  border-bottom: 2px solid #7f87f7;
+}
+#clear-filters-btn {
+  padding: 0.2em 0.7em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.92em;
+  background-color: #ff1100;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  line-height: 1.2;
+  transition: background 0.2s, opacity 0.2s;
+  height: 1.8em;
+  display: flex;
+  align-items: center;
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+}
+#clear-filters-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+#clear-filters-btn:hover {
+  background-color: #570000;
+}
 /* Profile Toggle Styling */
 .profile {
   position: relative;
@@ -232,198 +425,6 @@ nav a.btn-53:hover span:nth-child(5) {
 nav a.btn-53:hover span:nth-child(6) {
   transition-delay: 0.5s;
   text-decoration: none;
-}
-.tables-nav {
-  display: flex;
-  gap: 1.4rem; /* Space between items */
-  list-style: none;
-  padding: 0 5.5rem;
-  align-self: center;
-  flex-wrap: wrap;
-  justify-self: center;
-  align-items: center; /* Allows wrapping on small screens */
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  justify-items: center;
-}
-#current-table {
-  margin: 0;
-  font-size: 1.5rem;
-  color: white;
-}
-#table-link {
-  text-decoration: none;
-  font-size: 1.2rem;
-  color: rgb(139, 139, 139); /* Slightly muted for non-active tables */
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-#table-link:hover {
-  color: white; /* Highlight color */
-  background-color: maroon;
-  padding: 0.5rem 0.6rem; /* Subtle hover background */
-}
-#table-link.dropdown:hover .dropdown-content {
-  display: block;
-}
-/* Optional: Add visual indicator for current table */
-#current-table {
-  position: relative;
-  padding-bottom: 0.25rem;
-  justify-content: center;
-}
-#current-table::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #f5bf6f;
-}
-.status-active#current-table::after {
-  background-color: greenyellow;
-}
-.status-assigned#current-table::after {
-  background-color: rgb(7, 197, 245);
-}
-.status-repair#current-table::after {
-  background-color: red;
-}
-.status-disposal#current-table::after {
-  background-color: rgb(168, 168, 168);
-}
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-/* Add this to your style.css or in a <style> tag */
-
-.tables.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-arrow {
-  font-size: 0.8em;
-  margin-left: 6px;
-  vertical-align: middle;
-  transition: transform 0.2s;
-}
-
-/* Rotate arrow when hovered */
-.tables.dropdown:hover .dropdown-arrow {
-  transform: rotate(180deg);
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  border-radius: 8px;
-  left: 0;
-  top: 100%;
-  background-color: #f9f9f9;
-  min-width: 120px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.tables.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 8px 12px;
-  text-decoration: none;
-  display: block;
-  font-family: 'Poppins';
-  font-size: 1rem;
-}
-
-.dropdown-content a:hover {
-  background-color: #747474;
-}
-.tables-nav .btn-create {
-  text-decoration: none;
-  color: white;
-  background-color: #D84040;
-  padding: 0.6rem 0.3rem;
-  border-radius: 6px;
-  font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-.tables-nav .btn-create:hover {
-  background-color: #ff4e4e; /* Slightly darker shade for hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
-  transform: translateY(-3px); /* Slight lift effect */
-  transition: all 0.2s ease-in-out;
-}
-.tables-nav .btn-create:active {
-  background-color: #752323; /* Even darker shade for active state */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); /* Inset shadow for pressed effect */
-  transform: translateY(2px); /* Slight press effect */
-}
-.nav-icon {
-  height: 1.2em;
-  width: 1.2em;
-  display: inline-block;
-  vertical-align: middle;
-  object-fit: contain;
-}
-/* Filter Form Styling */
-#filter-form {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  background: none;
-  border: none;
-  box-shadow: none;
-  position: relative;
-}
-#filter-form input[type="text"] {
-  border-radius: 12px;
-  border: none;
-  font-size: 1em;
-  height: 2.5rem;
-  outline: none;
-  transition: border 0.35s ease-in-out;
-  color: white;
-  background: none;
-  border-top: 2px solid #7f87f7;
-}
-#filter-form input[type="text"]:focus {
-  border: none;
-  border-bottom: 2px solid #7f87f7;
-}
-#clear-filters-btn {
-  padding: 0.2em 0.7em;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.92em;
-  background-color: #ff1100;
-  color: white;
-  text-decoration: none;
-  text-align: center;
-  line-height: 1.2;
-  transition: background 0.2s, opacity 0.2s;
-  height: 1.8em;
-  display: flex;
-  align-items: center;
-  box-shadow: none;
-  opacity: 0;
-  pointer-events: none;
-}
-#clear-filters-btn.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-#clear-filters-btn:hover {
-  background-color: #570000;
 }
 nav #download-btns {
   display: flex;
@@ -803,7 +804,7 @@ main#tables-view {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  overflow: auto;
+  overflow: hidden;
 }
 table#main-table {
   width: 100%; /* Make the table span the full width */
@@ -812,7 +813,6 @@ table#main-table {
   font-size: 1rem; /* Adjust font size for readability */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a modern look */
   border-radius: 8px; /* Rounded corners */
-  overflow: hidden;
 }
 table#main-table thead {
   background-color: #8E1616; /* Modern header background color */
@@ -946,5 +946,47 @@ table#main-table th {
       height: 2rem;
       font-size: 0.8rem;
   }
+}
+/******************************************************/
+
+/*******Item History Page***********************/
+
+/* History Table Styling */
+#history-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  overflow: hidden;
+  margin: 2rem auto 1.5rem auto;
+  font-family: 'Bahnschrift', 'Cambria', serif;
+}
+#history-table th, #history-table td {
+  padding: 0.85em 1.2em;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1em;
+}
+#history-table th {
+  background: #f7f8fa;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+  user-select: none;
+}
+#history-table tbody tr:nth-child(even) {
+  background: #f7f8fa;
+}
+#history-table tbody tr:hover {
+  background: #e6f0ff;
+  transition: background 0.2s;
+}
+#history-table td {
+  color: #222;
+}
+#history-table tr:last-child td {
+  border-bottom: none;
 }
 /******************************************************/
