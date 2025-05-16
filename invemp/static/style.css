@@ -43,8 +43,8 @@ nav {
   align-content: center;
   justify-content: center;
   background-color: black;
-  padding: 0.5rem 0;
-  gap: 4rem;
+  padding: clamp(0.15rem, 2vh, 0.5rem) 0;
+  gap: clamp(0.7rem, 3vw, 4rem);
   position: sticky;
   top: 0;
   z-index: 1100;
@@ -72,6 +72,7 @@ nav h1 {
   display: flex;
   align-items: center;
   justify-items: center;
+  font-size: 2rem;
 }
 #current-table {
   margin: 0;
@@ -934,20 +935,6 @@ table#main-table th {
   padding: 0 1rem;
   font-weight: 500;
 }
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .pagination {
-      flex-wrap: wrap;
-      gap: 0.3rem;
-  }
-  
-  .pagination a {
-      min-width: 2rem;
-      height: 2rem;
-      font-size: 0.8rem;
-  }
-}
 /******************************************************/
 
 /*******Item History Page***********************/
@@ -991,3 +978,17 @@ table#main-table th {
   border-bottom: none;
 }
 /******************************************************/
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+  .pagination {
+      flex-wrap: wrap;
+      gap: 0.3rem;
+  }
+  
+  .pagination a {
+      min-width: 2rem;
+      height: 2rem;
+      font-size: 0.8rem;
+  }
+}
