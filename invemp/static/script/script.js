@@ -84,6 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
       debounceTimeout = setTimeout(() => {
         // Use AJAX to submit the form and update the table
         const formData = new FormData(filterForm);
+        // Always reset page to 1 when filtering
+        formData.set('page', '1');
         const params = new URLSearchParams(formData).toString();
         fetch(filterForm.action + '?' + params, {
           method: 'GET',
