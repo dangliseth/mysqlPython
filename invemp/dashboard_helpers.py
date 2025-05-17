@@ -103,7 +103,7 @@ def get_filters(table_name):
     
     return filters
 
-def filter_table(table_name, cursor):
+def filter_table(table_name, cursor, page=1, per_page=15):
     if not is_valid_table(table_name):
         abort(400)
 
@@ -145,12 +145,15 @@ def filter_table(table_name, cursor):
     # Build the base query
     if table_name in ('items', 'items_disposal'):
         sql_query = get_items_query()
+        count_query = "SELECT COUNT(*) FROM items i LEFT JOIN employees e ON i.employee = e.employee_id"
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
+        count_query = f"SELECT COUNT(*) FROM `{table_name}`"
 
     # Add WHERE conditions if any
     if where_clauses:
         sql_query += f" WHERE {' AND '.join(where_clauses)}"
+        count_query += f" WHERE {' AND '.join(where_clauses)}"
 
     # Add sorting
     sort_column = request.args.get('sort_column')
@@ -164,19 +167,27 @@ def filter_table(table_name, cursor):
         else:
             sql_query += f" ORDER BY `{sort_column}` {sort_direction}"
 
+    # Add pagination
+    offset = (page - 1) * per_page
+    sql_query += f" LIMIT %s OFFSET %s"
+    query_values = tuple(filter_values) + (per_page, offset)
+
     try:
-        cursor.execute(sql_query, tuple(filter_values))
-        # Return filters as {'search': search_term, 'status': status_filter} for template compatibility
+        # Get total count for pagination
+        cursor.execute(count_query, tuple(filter_values))
+        total_items = cursor.fetchone()[0]
+        # Get paginated results
+        cursor.execute(sql_query, query_values)
         filters = {'search': search_term}
         if table_name == 'items':
             filters['status'] = status_filter
-        return cursor.fetchall(), columns, filters
+        return cursor.fetchall(), columns, filters, total_items
     except Exception as e:
         print(f"SQL Error: {str(e)}")
         filters = {'search': search_term}
         if table_name == 'items':
             filters['status'] = status_filter
-        return [], columns, filters
+        return [], columns, filters, 0
     
 def get_preserved_args():
     """Returns current filters and pagination as query string"""

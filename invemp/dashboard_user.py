@@ -36,19 +36,13 @@ def index(table_name):
     except ValueError:
         page = 1
     per_page = 15
-    offset = (page - 1) * per_page
 
     # Get filtered results using the helper
     c = get_cursor()
     try:
-        # Get filtered items and columns
-        filtered_items, columns, filters = filter_table(table_name, c)
-        
-        # Apply pagination to filtered results
-        total_items = len(filtered_items)
-        paginated_items = filtered_items[offset:offset + per_page]
+        # Get filtered items and columns, and total filtered count
+        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
         total_pages = (total_items + per_page - 1) // per_page
-
     finally:
         c.close()
 
@@ -59,7 +53,7 @@ def index(table_name):
         del pagination_args['page']
 
     return render_template('dashboard/index.html',
-                         items=paginated_items,
+                         items=filtered_items,
                          columns=display_columns,
                          table_name=table_name,
                          tables=get_tables(),

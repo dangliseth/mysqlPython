@@ -72,3 +72,53 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  const filterInput = document.getElementById('filter-input');
+  const filterForm = document.getElementById('filter-form');
+  let debounceTimeout = null;
+
+  if (filterInput && filterForm) {
+    filterInput.addEventListener('input', function(e) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        // Use AJAX to submit the form and update the table
+        const formData = new FormData(filterForm);
+        const params = new URLSearchParams(formData).toString();
+        fetch(filterForm.action + '?' + params, {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.text())
+        .then(html => {
+          // Parse the returned HTML and replace the table
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const newTable = doc.querySelector('#main-table');
+          const newPagination = doc.querySelector('.pagination');
+          const main = document.getElementById('tables-view');
+          if (newTable && main) {
+            const oldTable = main.querySelector('#main-table');
+            if (oldTable) oldTable.replaceWith(newTable);
+          }
+          if (main && newPagination) {
+            const oldPagination = main.querySelector('.pagination');
+            if (oldPagination) {
+              oldPagination.replaceWith(newPagination);
+            } else {
+              main.appendChild(newPagination);
+            }
+          }
+          // Re-focus the input
+          filterInput.focus();
+        });
+      }, 300); // 300ms debounce
+    });
+    // Prevent default form submit
+    filterForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+    });
+  }
+});
