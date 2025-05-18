@@ -51,6 +51,19 @@ def index(table_name):
     pagination_args = request.args.copy()
     if 'page' in pagination_args:
         del pagination_args['page']
+    merged_args = dict(pagination_args)
+    merged_args.update(filters)
+
+    # AJAX partial rendering for table and pagination
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('dashboard/_table.html',
+                             items=filtered_items,
+                             columns=display_columns,
+                             table_name=table_name,
+                             page=page,
+                             total_pages=total_pages,
+                             merged_args=merged_args,
+                             zip=zip)
 
     return render_template('dashboard/index.html',
                          items=filtered_items,
@@ -74,7 +87,7 @@ def convert_pdf(table_name):
     c = get_cursor()
     try:
         # Use the same filter logic as the main dashboard
-        filtered_items, columns, filters = filter_table(table_name, c)
+        filtered_items, columns, filters, total_items = filter_table(table_name, c)
     finally:
         c.close()
 
@@ -156,7 +169,7 @@ def convert_pdf_qr(table_name):
     c = get_cursor()
     try:
         # Use the same filter logic as the main dashboard
-        filtered_items, columns, filters = filter_table(table_name, c)
+        filtered_items, columns, filters, total_items = filter_table(table_name, c)
     finally:
         c.close()
 
