@@ -72,3 +72,131 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+function makeTablesSortable() {
+    document.querySelectorAll("table.sortable").forEach(function(table) {
+        const ths = table.querySelectorAll("thead th");
+        ths.forEach((th, colIndex) => {
+            th.onclick = null; // Remove previous listeners
+            th.addEventListener("click", function() {
+                sortTable(table, colIndex);
+            });
+        });
+    });
+}
+
+let loaderStartTime = null;
+function showLoader() {
+  loaderStartTime = Date.now();
+  document.getElementById('global-loader').style.display = 'flex';
+}
+function hideLoader() {
+  const minDuration = 5000; // 1.2 seconds
+  const elapsed = Date.now() - loaderStartTime;
+  if (elapsed < minDuration) {
+    setTimeout(() => {
+      document.getElementById('global-loader').style.display = 'none';
+    }, minDuration - elapsed);
+  } else {
+    document.getElementById('global-loader').style.display = 'none';
+  }
+}
+
+// Function to update table content via AJAX
+function updateTableContent(url) {
+    showLoader();
+    return fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newTable = doc.querySelector('#main-table');
+        const newPagination = doc.querySelector('.pagination');
+        const main = document.getElementById('tables-view');
+
+        if (newTable && main) {
+            const oldTable = main.querySelector('#main-table');
+            if (oldTable) oldTable.replaceWith(newTable);
+        }
+        if (main && newPagination) {
+            const oldPagination = main.querySelector('.pagination');
+            if (oldPagination) {
+                oldPagination.replaceWith(newPagination);
+            } else {
+                main.appendChild(newPagination);
+            }
+        }
+
+        // Re-attach event listeners
+        setupAjaxPagination();
+        makeTablesSortable();
+    })
+    .finally(() => {
+        hideLoader();
+    });
+}
+
+// Setup AJAX pagination
+function setupAjaxPagination() {
+    const main = document.getElementById('tables-view');
+    if (!main) return;
+
+    main.querySelectorAll('.pagination a').forEach(function(link) {
+        if (link.classList.contains('active') || link.getAttribute('href') === '#') return;
+        
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            updateTableContent(link.href);
+            // Update URL without page reload
+            history.pushState({}, '', link.href);
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupAjaxPagination();
+    makeTablesSortable();
+});
+
+// Handle filtering
+document.addEventListener('DOMContentLoaded', function() {
+    const filterInput = document.getElementById('filter-input');
+    const filterForm = document.getElementById('filter-form');
+    let debounceTimeout = null;
+    let fullReloadTimeout = null;
+
+    if (filterInput && filterForm) {
+        filterInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimeout);
+            clearTimeout(fullReloadTimeout);
+            debounceTimeout = setTimeout(() => {
+                const formData = new FormData(filterForm);
+                formData.set('page', '1'); // Reset to first page when filtering
+                const params = new URLSearchParams(formData).toString();
+                const url = filterForm.action + '?' + params;
+                updateTableContent(url).then(() => {
+                    // Update URL without page reload
+                    history.pushState({}, '', url);
+                    filterInput.focus();
+                });
+            }, 600);
+            // After 2 seconds of no typing, do a full page reload
+            fullReloadTimeout = setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        });
+
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+});
+
+// Re-attach event listeners when back/forward buttons are used
+window.addEventListener('popstate', function() {
+    updateTableContent(window.location.href);
+});

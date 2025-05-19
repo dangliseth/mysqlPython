@@ -194,4 +194,9 @@
   {% endfor %}
   {% block content %}{% endblock %}
   <script src="{{ url_for('static', filename='script/script.js') }}"></script>
+  <div id="global-loader" style="display:none;">
+    <div class="loader-spinner">
+      <img class="loader-logo" src="/static/images/MLQU-logo-1.png" alt="Loading...">
+    </div>
+  </div>
 </section>

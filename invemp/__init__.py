@@ -4,14 +4,6 @@ from flask import (Flask, redirect, url_for)
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    
-    app.config.from_mapping(
-        SECRET_KEY="dev",
-        MYSQL_DATABASE_HOST='localhost',
-        MYSQL_DATABASE_USER='app_user',
-        MYSQL_DATABASE_PASSWORD='test',
-        MYSQL_DATABASE_DB='inventory_database',
-    )
 
     if test_config is None:
         # load the instance config, if it exists, when not testing

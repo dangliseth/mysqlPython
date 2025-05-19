@@ -6,6 +6,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from invemp.db import get_cursor
+from invemp.dashboard_helpers import get_preserved_args
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -38,6 +39,7 @@ def admin_required(view):
 @admin_required
 def register():
     dropdown_options = {'admin', 'user'}
+    preserved_args = get_preserved_args()
     """Register a new user."""
     if request.method == 'POST':
         username = request.form['username']
@@ -62,11 +64,11 @@ def register():
             )
             c.connection.commit()
             c.close()
-            return redirect(url_for('dashboard_user.index', table_name = 'user_accounts'))
+            return redirect(url_for('dashboard_user.index', table_name = 'user_accounts', **preserved_args))
 
         flash(error)
 
-    return render_template('auth/register.html', dropdown_options=dropdown_options)
+    return render_template('auth/register.html', dropdown_options=dropdown_options, preserved_args=preserved_args)
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():

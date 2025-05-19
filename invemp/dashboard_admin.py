@@ -27,8 +27,12 @@ def create(table_name):
     c.execute(f"DESCRIBE `{table_name}`")
     if table_name == 'items':
         columns = get_items_columns()
+        describe_rows = [row for row in c.fetchall()]
     else:
-        columns = [row[0] for row in c.fetchall()]
+        describe_rows = c.fetchall()
+        columns = [row[0] for row in describe_rows]
+    # Build not_null_columns dict
+    not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
     c.close()
 
 
@@ -174,11 +178,11 @@ def create(table_name):
                 else:
                     entry.append(request.form.get(column))
             return render_template('dashboard/create.html', table_name=table_name, entry=entry,
-                           columns=columns, dropdown_options=dropdown_options, preserved_args=preserved_args)
-        
+                           columns=columns, dropdown_options=dropdown_options, preserved_args=preserved_args, not_null_columns=not_null_columns)
+    
     return render_template('dashboard/create.html', table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options,
-                           preserved_args=preserved_args)
+                           preserved_args=preserved_args, not_null_columns=not_null_columns)
 
 @bp.route('/<table_name>/<id>/update', methods=('GET', 'POST'))
 @admin_required
@@ -192,8 +196,12 @@ def update(id, table_name):
     c.execute(f"DESCRIBE `{table_name}`")
     if table_name == 'items':
         columns = get_items_columns()
+        describe_rows = [row for row in c.fetchall()]
     else:
-        columns = [row[0] for row in c.fetchall()]
+        describe_rows = c.fetchall()
+        columns = [row[0] for row in describe_rows]
+    # Build not_null_columns dict
+    not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
     c.close()
 
     dropdown_options = get_dropdown_options()
@@ -311,25 +319,7 @@ def update(id, table_name):
             if table_name == 'items':
                 # If assignment changed, close previous and add new
                 if prev_assigned_to_value != new_assigned_to_value:
-                    # Set removed_date for previous assignment
-                    if prev_assigned_to_value:
-                        c.execute(
-                            """
-                            UPDATE item_assignment_history
-                            SET removed_date = %s
-                            WHERE item_id = %s AND employee_id = %s AND removed_date IS NULL
-                            """,
-                            (current_datetime, id, prev_assigned_to_value)
-                        )
-                    # Add new assignment if assigned
-                    if new_assigned_to_value:
-                        c.execute(
-                            """
-                            INSERT INTO item_assignment_history (item_id, employee_id, assigned_date)
-                            VALUES (%s, %s, %s)
-                            """,
-                            (id, new_assigned_to_value, current_datetime)
-                        )
+                    pass
             c.connection.commit()
             c.close()
             flash(f"Successfully updated {table_name} id: {entry[0]}")
@@ -355,11 +345,11 @@ def update(id, table_name):
                 table_name=table_name,
                 columns=columns,
                 dropdown_options=dropdown_options,
-                preserved_args=preserved_args
+                preserved_args=preserved_args,
+                not_null_columns=not_null_columns
             )
-
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns, 
-                           dropdown_options=dropdown_options, preserved_args=preserved_args)
+                           dropdown_options=dropdown_options, preserved_args=preserved_args, not_null_columns=not_null_columns)
 
 @bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
 @admin_required
