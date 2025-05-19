@@ -10,7 +10,7 @@
       {% for column in columns  if column != 'password' %}
         <div class="form-group">
           {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
-            <label for="{{ column }}">{{ column }}</label>
+            <label for="{{ column }}">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span style="color:red">*</span>{% endif %}</label>
               {% if not (column == 'username') %}
                 {% if column in dropdown_options %}
                   <!-- Render dropdown menu for specific columns -->

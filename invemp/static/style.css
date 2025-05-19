@@ -992,3 +992,35 @@ table#main-table th {
       font-size: 0.8rem;
   }
 }
+
+/* Global Loader Styles */
+#global-loader {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loader-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+}
+.loader-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  animation: loader-scale-pop 1.2s cubic-bezier(0.4,0,0.2,1) infinite;
+  box-shadow: 0 4px 24px 0 rgba(127,135,247,0.13);
+  border-radius: 18px;
+  padding: 8px;
+}
+@keyframes loader-scale-pop {
+  0% { transform: scale(1); opacity: 0.85; }
+  30% { transform: scale(1.15); opacity: 1; }
+  60% { transform: scale(0.95); opacity: 0.95; }
+  100% { transform: scale(1); opacity: 0.85; }
+}

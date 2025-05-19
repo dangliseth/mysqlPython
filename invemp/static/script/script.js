@@ -85,8 +85,26 @@ function makeTablesSortable() {
     });
 }
 
+let loaderStartTime = null;
+function showLoader() {
+  loaderStartTime = Date.now();
+  document.getElementById('global-loader').style.display = 'flex';
+}
+function hideLoader() {
+  const minDuration = 5000; // 1.2 seconds
+  const elapsed = Date.now() - loaderStartTime;
+  if (elapsed < minDuration) {
+    setTimeout(() => {
+      document.getElementById('global-loader').style.display = 'none';
+    }, minDuration - elapsed);
+  } else {
+    document.getElementById('global-loader').style.display = 'none';
+  }
+}
+
 // Function to update table content via AJAX
 function updateTableContent(url) {
+    showLoader();
     return fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
@@ -116,6 +134,9 @@ function updateTableContent(url) {
         // Re-attach event listeners
         setupAjaxPagination();
         makeTablesSortable();
+    })
+    .finally(() => {
+        hideLoader();
     });
 }
 
@@ -162,8 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     history.pushState({}, '', url);
                     filterInput.focus();
                 });
-            }, 300);
-            // After 4 seconds of no typing, do a full page reload
+            }, 600);
+            // After 2 seconds of no typing, do a full page reload
             fullReloadTimeout = setTimeout(() => {
                 window.location.reload();
             }, 2000);
