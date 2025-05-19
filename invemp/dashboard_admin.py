@@ -409,9 +409,6 @@ def delete(id, table_name):
 
     if request.method == 'POST':
         c = get_cursor()
-        if table_name == 'items':
-            # Delete all assignment history for this item
-            c.execute("DELETE FROM item_assignment_history WHERE item_id = %s", (id,))
         delete_query = f"DELETE FROM `{table_name}` WHERE `{id_column}` = %s"
         c.execute(delete_query, (id,)) 
         c.connection.commit()

@@ -5,26 +5,25 @@
 {% endblock %}
 
 {% block content %}
-<div class="create-edit">
-  <form method="post">
+<div class="form-compact create-bg">
+  <form method="post" class="form-compact-form">
     {% for column in columns %}
-      <div class="form-group">
-        {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
-        <label for="{{ column }}">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span style="color:red">*</span>{% endif %}</label>
+      {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
+      <div class="form-row">
+        <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
         {% if column in dropdown_options %}
-          <!-- Render dropdown menu for specific columns -->
-          <select class="form-control" id="{{ column }}" name="{{ column }}">
+          <select class="form-input" id="{{ column }}" name="{{ column }}">
             {% for option in dropdown_options[column] %}
             <option value="{{ option }}">{{ option }}</option>
             {% endfor %}
           </select>
-          {% else %}
-          <input type="text" class="form-control" id="{{ column }}" name="{{ column }}">
-          {% endif %}
+        {% else %}
+          <input type="text" class="form-input" id="{{ column }}" name="{{ column }}">
+        {% endif %}
       </div>
-    {% endif %}
+      {% endif %}
     {% endfor %}
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary btn-compact">Submit</button>
   </form>
 </div>
 {% endblock %}

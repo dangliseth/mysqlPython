@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('form.delete-form').forEach(function(form) {
     form.addEventListener('submit', function(e) {
-      if (!confirm('Are you sure you want to delete this entry along with its history? This action cannot be undone.')) {
+      if (!confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
         e.preventDefault();
       }
     });
