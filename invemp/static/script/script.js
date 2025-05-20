@@ -91,7 +91,7 @@ function showLoader() {
   document.getElementById('global-loader').style.display = 'flex';
 }
 function hideLoader() {
-  const minDuration = 5000; // 1.2 seconds
+  const minDuration = 1200; // 1.2 seconds
   const elapsed = Date.now() - loaderStartTime;
   if (elapsed < minDuration) {
     setTimeout(() => {
@@ -200,3 +200,78 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('popstate', function() {
     updateTableContent(window.location.href);
 });
+
+// Loader on every page reload
+window.addEventListener('beforeunload', function() {
+  showLoader();
+});
+
+/*
+// Dark mode toggle logic with icon swap
+(function() {
+  const toggleBtn = document.getElementById('dark-mode-toggle');
+  const icon = document.getElementById('dark-mode-icon');
+  const html = document.documentElement;
+  const darkModeKey = 'invemp-dark-mode';
+
+  // List of icon selectors and their base filenames (without _dark)
+  const iconMap = [
+    { selector: '#pdf-icon-img', base: 'pdf_icon.svg' },
+    { selector: '#qr-icon-img', base: 'qr_code.svg' },
+    { selector: '.nav-icon', base: 'manage_accounts.svg', altBase: 'manage_accounts_dark.svg' },
+    { selector: '.btn-back-icon', base: 'arrow_back.svg' },
+    { selector: '.btn-back-icon2', base: 'arrow_back_2.svg' },
+    { selector: '.profile-icon-img', base: 'profile_icon.svg' },
+    // Add more selectors and base filenames as needed
+  ];
+
+  function swapIcons(dark) {
+    iconMap.forEach(({ selector, base, altBase }) => {
+      document.querySelectorAll(selector).forEach(img => {
+        // Determine the dark variant filename
+        let darkSrc = base.replace('.svg', '_dark.svg');
+        // If altBase is provided, use it for dark mode
+        if (dark && altBase) darkSrc = altBase;
+        // Get current src filename
+        const src = img.getAttribute('src');
+        if (dark) {
+          if (!src.endsWith('_dark.svg')) {
+            img.setAttribute('src', src.replace(base, darkSrc));
+          }
+        } else {
+          if (src.endsWith('_dark.svg')) {
+            img.setAttribute('src', src.replace('_dark.svg', '.svg'));
+          }
+        }
+      });
+    });
+  }
+
+  function setDarkMode(on) {
+    if (on) {
+      html.classList.add('dark-mode');
+      icon.textContent = '☀️';
+      swapIcons(true);
+    } else {
+      html.classList.remove('dark-mode');
+      icon.textContent = '🌙';
+      swapIcons(false);
+    }
+    localStorage.setItem(darkModeKey, on ? '1' : '0');
+  }
+
+  // Restore preference
+  const saved = localStorage.getItem(darkModeKey);
+  if (saved === '1' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    setDarkMode(true);
+  } else {
+    setDarkMode(false);
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      setDarkMode(!html.classList.contains('dark-mode'));
+    });
+  }
+})();
+*/

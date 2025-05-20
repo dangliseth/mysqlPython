@@ -76,31 +76,35 @@ def login():
         return redirect(url_for('dashboard_user.index'))
     """Log in a user."""
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        c = get_cursor()
-        error = None
-        c.execute(
-            'SELECT * FROM user_accounts WHERE username = %s', (username,)
-        )
-        user = c.fetchone()
-        c.close()
+        try:
+            username = request.form['username']
+            password = request.form['password']
+            c = get_cursor()
+            error = None
+            c.execute(
+                'SELECT * FROM user_accounts WHERE username = %s', (username,)
+            )
+            user = c.fetchone()
+            c.close()
 
-        if user is None:
-            error = 'Incorrect username.'
-        elif not check_password_hash(user[2], password):
-            error = 'Incorrect password.'
+            if user is None:
+                error = 'Incorrect username.'
+            elif not check_password_hash(user[2], password):
+                error = 'Incorrect password.'
 
-        if error is None:
-            session.clear()
-            session['user_id'] = user[0]
-            response = redirect(url_for('index'))
-            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
-            response.headers['Pragma'] = 'no-cache'
-            response.headers['Expires'] = '0'
-            return response
+            if error is None:
+                session.clear()
+                session['user_id'] = user[0]
+                response = redirect(url_for('index'))
+                response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+                response.headers['Pragma'] = 'no-cache'
+                response.headers['Expires'] = '0'
+                return response
 
-        flash(error)
+            flash(error)
+        except Exception as e:
+            print(f"Error during login: {e}")
+            flash(f"An error occurred during login. Please try again. {e}")
 
     response = make_response(render_template('auth/login.html'))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -119,6 +123,9 @@ def logout():
 @bp.route('/<int:id>/reset_password', methods=('GET', 'POST'))
 @admin_required
 def reset_password(id):
+    preserved_args = get_preserved_args()
+    # Remove table_name if present to avoid double passing
+    preserved_args.pop('table_name', None)
     # Fetch user entry for display
     c = get_cursor()
     c.execute("SELECT * FROM user_accounts WHERE id = %s", (id,))
@@ -146,11 +153,11 @@ def reset_password(id):
             c.connection.commit()
             c.close()
             flash("Password reset successful.")
-            return redirect(url_for('dashboard_user.index', table_name='user_accounts'))
+            return redirect(url_for('dashboard_user.index', table_name='user_accounts', **preserved_args))
 
         flash(error)
 
-    return render_template('auth/reset_password.html', entry=entry)
+    return render_template('auth/reset_password.html', entry=entry, preserved_args=preserved_args, table_name='user_accounts')
 
 def login_required(view):
     @functools.wraps(view)
