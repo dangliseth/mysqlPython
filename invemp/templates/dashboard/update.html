@@ -12,15 +12,20 @@
       <div class="form-row">
         <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
         {% if not (column == 'username') %}
-          {% if column in dropdown_options %}
+          {% if column == 'Assigned To' %}
+            <input type="text" class="form-input" id="Assigned-To" name="Assigned To" list="assigned-to-list" value="{{ entry[columns.index(column)] if entry[columns.index(column)] is not none else '' }}">
+            <datalist id="assigned-to-list">
+              {% for option in dropdown_options[column] %}
+              <option value="{{ option }}">{{ option }}</option>
+              {% endfor %}
+            </datalist>
+            <button type="button" class="btn btn-secondary btn-clear" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
+          {% elif column in dropdown_options %}
             <select class="form-input" id="{{ column|replace(' ', '-') }}" name="{{ column }}">
               {% for option in dropdown_options[column] %}
               <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>{{ option if option else '-- None --' }}</option>
               {% endfor %}
             </select>
-            {% if column == 'Assigned To' %}
-            <button type="button" class="btn btn-secondary btn-clear" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
-            {% endif %}
           {% else %}
             <input type="text" class="form-input" id="{{ column }}" name="{{ column }}" value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}">
           {% endif %}
