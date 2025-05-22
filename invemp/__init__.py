@@ -1,4 +1,12 @@
-from flask import (Flask, redirect, url_for)
+"""
+Flask app factory for invemp package.
+"""
+
+from flask import Flask, redirect, url_for
+
+from invemp.dashboard_helpers import get_dropdown_options
+
+from . import db, auth, dashboard_user, dashboard_admin
 
 
 def create_app(test_config=None):
@@ -17,28 +25,21 @@ def create_app(test_config=None):
         if 'Cache-Control' not in response.headers:
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
         return response
+
     @app.route('/favicon.ico')
     def favicon():
         return redirect(url_for('static', filename='icons/favicon/favicon.ico'))
-    
-    from invemp.dashboard_helpers import get_dropdown_options
+
     @app.context_processor
     def inject_dropdown_options():
         return dict(get_dropdown_options=get_dropdown_options)
-    
-    
-    from . import db
 
     db.init_app(app)
 
-    from . import auth
+    # Register blueprints
     app.register_blueprint(auth.bp)
-
-    from . import dashboard_user
     app.register_blueprint(dashboard_user.bp)
     app.add_url_rule('/', endpoint='index')
-
-    from . import dashboard_admin
     app.register_blueprint(dashboard_admin.bp)
 
     return app
