@@ -204,6 +204,12 @@ window.addEventListener('popstate', function() {
 // Loader on every page reload
 window.addEventListener('beforeunload', function() {
   showLoader();
+  // Hide loader if page is still visible after 2 seconds (e.g., for downloads)
+  setTimeout(function() {
+    if (document.visibilityState === 'visible') {
+      hideLoader();
+    }
+  }, 2000);
 });
 
 /*
