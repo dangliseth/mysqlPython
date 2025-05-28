@@ -84,10 +84,16 @@ def index(table_name):
 def convert_pdf(table_name):
     if not is_valid_table(table_name):
         abort(400)
+    # Get current page and per_page from request (default to 1 and 15)
+    try:
+        page = int(request.args.get('page', 1))
+        page = max(page, 1)
+    except ValueError:
+        page = 1
+    per_page = 15
     c = get_cursor()
     try:
-        # Use the same filter logic as the main dashboard
-        filtered_items, columns, filters, total_items = filter_table(table_name, c)
+        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
     finally:
         c.close()
 
@@ -203,10 +209,16 @@ def convert_pdf(table_name):
 def convert_pdf_qr(table_name):
     if not is_valid_table(table_name):
         abort(400)
+    # Get current page and per_page from request (default to 1 and 15)
+    try:
+        page = int(request.args.get('page', 1))
+        page = max(page, 1)
+    except ValueError:
+        page = 1
+    per_page = 15
     c = get_cursor()
     try:
-        # Use the same filter logic as the main dashboard
-        filtered_items, columns, filters, total_items = filter_table(table_name, c)
+        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
     finally:
         c.close()
 

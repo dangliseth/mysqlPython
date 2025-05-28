@@ -134,10 +134,40 @@ function updateTableContent(url) {
         // Re-attach event listeners
         setupAjaxPagination();
         makeTablesSortable();
+        updateExportLinks();
     })
     .finally(() => {
         hideLoader();
     });
+}
+
+// Update export links to match current URL (page, filters)
+function updateExportLinks() {
+    const pdfBtn = document.getElementById('btn-pdf');
+    const qrBtn = document.getElementById('btn-qr');
+    if (!pdfBtn && !qrBtn) return;
+    // Get current URL and query params
+    const url = new URL(window.location.href);
+    const params = url.search;
+    // Extract table_name from pathname (e.g., /items)
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    let tableName = null;
+    if (pathParts.length > 0) {
+        // If first part is dashboard_user or similar, skip it
+        if (pathParts[0] === 'dashboard_user') {
+            tableName = pathParts[1] || 'items';
+        } else {
+            tableName = pathParts[0];
+        }
+    }
+    if (!tableName) tableName = 'items';
+    // Build new export URLs
+    if (pdfBtn) {
+        pdfBtn.href = `/${tableName}/convert_pdf${params}`;
+    }
+    if (qrBtn) {
+        qrBtn.href = `/${tableName}/convert_pdf_qr${params}`;
+    }
 }
 
 // Setup AJAX pagination
@@ -160,6 +190,7 @@ function setupAjaxPagination() {
 document.addEventListener('DOMContentLoaded', function() {
     setupAjaxPagination();
     makeTablesSortable();
+    updateExportLinks();
 });
 
 // Handle filtering
@@ -181,6 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTableContent(url).then(() => {
                     // Update URL without page reload
                     history.pushState({}, '', url);
+                    updateExportLinks();
                     filterInput.focus();
                 });
             }, 600);
@@ -199,17 +231,18 @@ document.addEventListener('DOMContentLoaded', function() {
 // Re-attach event listeners when back/forward buttons are used
 window.addEventListener('popstate', function() {
     updateTableContent(window.location.href);
+    updateExportLinks();
 });
 
 // Loader on every page reload
 window.addEventListener('beforeunload', function() {
   showLoader();
-  // Hide loader if page is still visible after 2 seconds (e.g., for downloads)
+  // Hide loader if page is still visible after 1.1 second (e.g., for downloads)
   setTimeout(function() {
     if (document.visibilityState === 'visible') {
       hideLoader();
     }
-  }, 2000);
+  }, 1100);
 });
 
 /*
