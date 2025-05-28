@@ -6,6 +6,7 @@ from invemp.db import get_cursor
 from werkzeug.exceptions import abort
 
 import datetime
+import os
 
 
 def get_tables():
@@ -42,22 +43,33 @@ def is_valid_table(table_name):
     return table_name in allowed_tables
 
 def get_dropdown_options():
+    base_dir = os.path.join(os.path.dirname(__file__), 'static', 'options')
+    def load_options(filename, fallback):
+        path = os.path.join(base_dir, filename)
+        try:
+            with open(path, encoding='utf-8') as f:
+                return [line.strip() for line in f if line.strip()]
+        except Exception:
+            return fallback
+
+    # Fallbacks in case files are missing
+    fallback_category = ['Computer', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6']
+    fallback_department = ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
+                       'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library', 'MIS', 'GenServ']
+    fallback_account_type = ['user', 'admin']
+    fallback_status = ['active', 'assigned', 'for repair', 'for disposal']
+
     c = get_cursor()
-    
-    # Get all employees
     c.execute("SELECT employee_id, name FROM employees")
     employees = c.fetchall()
-    
-    # Format as list of "ID - Name" strings
     employee_options = ['-- None --'] + [f"{emp[1]}" for emp in employees]
     c.close()
     return {
-        'category': ['Computer', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6'],
-        'department': ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
-                       'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library', 'MIS', 'GenServ'],
+        'category': load_options('category.txt', fallback_category),
+        'department': load_options('department.txt', fallback_department),
         'Assigned To': employee_options,
-        'account_type': ['user', 'admin'],
-        'status': ['active', 'assigned', 'for repair', 'for disposal']
+        'account_type': load_options('account_type.txt', fallback_account_type),
+        'status': load_options('status.txt', fallback_status)
     }
 
 def get_items_columns():

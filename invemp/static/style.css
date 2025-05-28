@@ -9,12 +9,6 @@ body {
 section.content {
   width: 100%;
 }
-h1 {
-  font-family: 'Oswald', 'OCR A', monospace;
-  user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-}
 .flash {
   position: fixed; /* or 'absolute' if inside a positioned container */
   top: 0;
@@ -617,6 +611,10 @@ div#title h1 {
   text-transform: uppercase;
   line-height: 2;
   margin: 0; /* Remove fixed margin */
+  font-family: monospace;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 /********************************************************/
 
