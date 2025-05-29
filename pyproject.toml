@@ -1,6 +1,6 @@
 [project]
 name = "invemp"
-version = "1.0.0"
+version = "1.1.0"
 description = "The basic inventory management app built with Flask."
 dependencies = [
     "flask",
