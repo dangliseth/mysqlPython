@@ -1,5 +1,4 @@
 import os
-import keyring
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-insecure-key')
 MYSQL_DATABASE_HOST = 'localhost'
