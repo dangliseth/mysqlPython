@@ -12,7 +12,6 @@ from invemp.dashboard_helpers import (
     )
 from invemp.db import get_cursor
 
-import re
 import qrcode
 from fpdf import FPDF
 from weasyprint import CSS, HTML

@@ -15,8 +15,13 @@ def create_app(test_config=None):
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
+        config_path = 'config.py'
+        app.config.from_pyfile(config_path, silent=True)
+        print(f"Loaded config from: {config_path}")
         print("Loaded DB user:", app.config.get("MYSQL_DATABASE_USER"))
+        print("Loaded SECRET_KEY:", app.config.get("SECRET_KEY"))
+        if not app.config.get("SECRET_KEY"):
+            raise RuntimeError("SECRET_KEY is missing or empty after config load! Check instance/config.py and db.txt.")
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)

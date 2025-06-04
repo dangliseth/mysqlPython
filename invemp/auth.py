@@ -8,7 +8,6 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 from invemp.db import get_cursor
 from invemp.dashboard_helpers import get_preserved_args
-import pymysql
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 

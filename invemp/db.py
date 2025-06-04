@@ -1,5 +1,3 @@
-import os
-
 from flaskext.mysql import MySQL
 
 from flask import g
