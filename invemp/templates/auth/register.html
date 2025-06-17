@@ -5,19 +5,25 @@
 {% endblock %}
 
 {% block content %}
-<main class="auth-page" id="reg-page">
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <label for="type">Account type</label>
-    <select name="type" id="type" required>
-      {% for option in dropdown_options %}
-      <option value="{{ option }}">{{ option }}</option>
-      {% endfor %}
-    </select>
-    <input type="submit" value="Register">
+<main class="register-modern-bg">
+  <form method="post" class="register-modern-form">
+    <div class="register-row">
+      <label for="username" class="register-label">Username</label>
+      <input name="username" id="username" class="register-input" required>
+    </div>
+    <div class="register-row">
+      <label for="password" class="register-label">Password</label>
+      <input type="password" name="password" id="password" class="register-input" required>
+    </div>
+    <div class="register-row">
+      <label for="type" class="register-label">Account type</label>
+      <select name="type" id="type" class="register-input" required>
+        {% for option in dropdown_options %}
+        <option value="{{ option }}">{{ option }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="register-btn">Register</button>
   </form>
 </main>
 {% endblock %}

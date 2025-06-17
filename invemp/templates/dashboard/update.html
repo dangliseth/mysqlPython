@@ -5,66 +5,52 @@
 {% endblock %}
 
 {% block content %}
-<main id="update-view">
-  <form method="post">
-      {% for column in columns  if column != 'password' %}
-        <div class="form-group">
-          {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
-            <label for="{{ column }}">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span style="color:red">*</span>{% endif %}</label>
-              {% if not (column == 'username') %}
-                {% if column in dropdown_options %}
-                  <!-- Render dropdown menu for specific columns -->
-                  <select class="form-control" id="{{ column|replace(' ', '-') }}" name="{{ column }}">
-                    {% for option in dropdown_options[column] %}
-                    <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>
-                      {{ option if option else '-- None --' }}
-                    </option>
-                    {% endfor %}
-                  </select>
-                  {% if column == 'Assigned To' %}
-                  <button type="button" class="btn btn-secondary" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
-                  {% endif %}
-                {% else %}
-                  <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
-                  value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" >
-                {% endif %}
-              {% else %}
-                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}"
-                value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" readonly>
-              {% endif %}
-            {% endif %}
-        </div>
-      {% endfor %}
-      {% if not (table_name == 'items_disposal' or table_name == 'employees_archive') %}
-      <button type="submit" class="btn btn-primary">Update</button>
+<div class="form-compact update-bg">
+  <form method="post" class="form-compact-form">
+    {% for column in columns if column != 'password' %}
+      {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated') %}
+      <div class="form-row">
+        <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
+        {% if not (column == 'username') %}
+          {% if column == 'Assigned To' %}
+            <input type="text" class="form-input" id="Assigned-To" name="Assigned To" list="assigned-to-list" value="{{ entry[columns.index(column)] if entry[columns.index(column)] is not none else '' }}">
+            <datalist id="assigned-to-list">
+              {% for option in dropdown_options[column] %}
+              <option value="{{ option }}">{{ option }}</option>
+              {% endfor %}
+            </datalist>
+            <button type="button" class="btn btn-secondary btn-clear" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
+          {% elif column in dropdown_options %}
+            <select class="form-input" id="{{ column|replace(' ', '-') }}" name="{{ column }}">
+              {% for option in dropdown_options[column] %}
+              <option value="{{ option }}" {% if entry[columns.index(column)] == option %}selected{% endif %}>{{ option if option else '-- None --' }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="text" class="form-input" id="{{ column }}" name="{{ column }}" value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}">
+          {% endif %}
+        {% else %}
+          <input type="text" class="form-input" id="{{ column }}" name="{{ column }}" value="{{ entry[loop.index0] if entry[loop.index0] is not none else '' }}" readonly>
+        {% endif %}
+      </div>
       {% endif %}
-  </form>
-  <!--- Delete func for items_disposal and employees_archive -->
-  <!---Archive_scrap func for items and employees -->
-  <!--
-  <form action="{{ url_for('dashboard_admin.archive_scrap', table_name = table_name, id = entry[0]) }}" method="post" id="archive-scrap">
-    {% if table_name == 'items'%}
-    <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
-      <img src="{{ url_for('static', filename='icons/delete.svg')}}" class="icon-danger">
-    </button>
-    {% else %}
-    <button type="submit" class="btn-danger" onclick="return confirm('Are you sure?')">
-      <img src="{{ url_for('static', filename='icons/archive.svg')}}" class="icon-danger">
-    </button>
+    {% endfor %}
+    {% if not (table_name == 'items_disposal' or table_name == 'employees_archive') %}
+    <button type="submit" class="btn btn-primary btn-compact">Update</button>
     {% endif %}
   </form>
-  -->
-
+  {% if table_name == 'items' %}
   <form action="{{ url_for('dashboard_admin.delete', table_name = table_name, id = entry[0], **request.args) }}" method="post" id="delete" class="delete-form">
     <button type="submit" class="btn-danger">
       <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">
     </button>
   </form>
-    {% if table_name == 'user_accounts' %}
-      <a href="{{ url_for('auth.reset_password', id = entry[0], table_name=table_name) }}" class="btn btn-primary" id="btn-reset-password">
-        <img src="{{ url_for('static', filename='icons/password_reset.svg')}}" class="icon-reset">
-        Reset Password
-      </a>
-    {% endif %}
-</main>
+  {% endif %}
+  {% if table_name == 'user_accounts' %}
+    <a href="{{ url_for('auth.reset_password', id = entry[0], table_name=table_name) }}" class="btn btn-primary btn-compact" id="btn-reset-password">
+      <img src="{{ url_for('static', filename='icons/password_reset.svg')}}" class="icon-reset">
+      Reset Password
+    </a>
+  {% endif %}
+</div>
 {% endblock %}

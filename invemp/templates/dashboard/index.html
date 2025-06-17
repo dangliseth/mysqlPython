@@ -7,10 +7,12 @@
   <table class="table table-striped sortable" id="main-table">
     <thead>
       <tr>
-        {% for column in columns if column != 'password'%}
-          <th style="cursor:pointer;">
-            {{ column }}
-          </th>
+        {% for column in columns %}
+          {% if column != 'password' and not (table_name == 'items' and (column == 'category' or column == 'department')) %}
+            <th style="cursor:pointer;">
+              {{ column }}
+            </th>
+          {% endif %}
         {% endfor %}
       </tr>
     </thead>
@@ -33,6 +35,22 @@
                 {% endif %}
               </span>
             </td>
+            {% elif table_name == 'items' and column == 'item_name' %}
+            <td>
+              <div>{{ value }}</div>
+              <div style="font-size:0.85em; color:#242424; font-style:italic; margin-top:2px;">
+                {{ item[columns.index('category')] }}
+              </div>
+            </td>
+            {% elif table_name == 'items' and column == 'Assigned To' %}
+            <td>
+              <div>{{ value }}</div>
+              <div style="font-size:0.85em; color:#242424; font-style:italic; margin-top:2px;">
+                {{ item[columns.index('department')] }}
+              </div>
+            </td>
+            {% elif table_name == 'items' and (column == 'category' or column == 'department') %}
+              {# skip category and department columns, already shown with item_name/Assigned To #}
             {% else %}
             <td>{{ value }}</td>
             {% endif %}

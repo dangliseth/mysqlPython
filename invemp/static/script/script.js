@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('form.delete-form').forEach(function(form) {
     form.addEventListener('submit', function(e) {
-      if (!confirm('Are you sure you want to delete this entry along with its history? This action cannot be undone.')) {
+      if (!confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
         e.preventDefault();
       }
     });
@@ -91,7 +91,7 @@ function showLoader() {
   document.getElementById('global-loader').style.display = 'flex';
 }
 function hideLoader() {
-  const minDuration = 5000; // 1.2 seconds
+  const minDuration = 1200; // 1.2 seconds
   const elapsed = Date.now() - loaderStartTime;
   if (elapsed < minDuration) {
     setTimeout(() => {
@@ -134,10 +134,40 @@ function updateTableContent(url) {
         // Re-attach event listeners
         setupAjaxPagination();
         makeTablesSortable();
+        updateExportLinks();
     })
     .finally(() => {
         hideLoader();
     });
+}
+
+// Update export links to match current URL (page, filters)
+function updateExportLinks() {
+    const pdfBtn = document.getElementById('btn-pdf');
+    const qrBtn = document.getElementById('btn-qr');
+    if (!pdfBtn && !qrBtn) return;
+    // Get current URL and query params
+    const url = new URL(window.location.href);
+    const params = url.search;
+    // Extract table_name from pathname (e.g., /items)
+    const pathParts = url.pathname.split('/').filter(Boolean);
+    let tableName = null;
+    if (pathParts.length > 0) {
+        // If first part is dashboard_user or similar, skip it
+        if (pathParts[0] === 'dashboard_user') {
+            tableName = pathParts[1] || 'items';
+        } else {
+            tableName = pathParts[0];
+        }
+    }
+    if (!tableName) tableName = 'items';
+    // Build new export URLs
+    if (pdfBtn) {
+        pdfBtn.href = `/${tableName}/convert_pdf${params}`;
+    }
+    if (qrBtn) {
+        qrBtn.href = `/${tableName}/convert_pdf_qr${params}`;
+    }
 }
 
 // Setup AJAX pagination
@@ -160,6 +190,7 @@ function setupAjaxPagination() {
 document.addEventListener('DOMContentLoaded', function() {
     setupAjaxPagination();
     makeTablesSortable();
+    updateExportLinks();
 });
 
 // Handle filtering
@@ -181,6 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTableContent(url).then(() => {
                     // Update URL without page reload
                     history.pushState({}, '', url);
+                    updateExportLinks();
                     filterInput.focus();
                 });
             }, 600);
@@ -199,4 +231,86 @@ document.addEventListener('DOMContentLoaded', function() {
 // Re-attach event listeners when back/forward buttons are used
 window.addEventListener('popstate', function() {
     updateTableContent(window.location.href);
+    updateExportLinks();
 });
+
+// Loader on every page reload
+window.addEventListener('beforeunload', function() {
+  showLoader();
+  // Hide loader if page is still visible after 1.1 second (e.g., for downloads)
+  setTimeout(function() {
+    if (document.visibilityState === 'visible') {
+      hideLoader();
+    }
+  }, 1100);
+});
+
+/*
+// Dark mode toggle logic with icon swap
+(function() {
+  const toggleBtn = document.getElementById('dark-mode-toggle');
+  const icon = document.getElementById('dark-mode-icon');
+  const html = document.documentElement;
+  const darkModeKey = 'invemp-dark-mode';
+
+  // List of icon selectors and their base filenames (without _dark)
+  const iconMap = [
+    { selector: '#pdf-icon-img', base: 'pdf_icon.svg' },
+    { selector: '#qr-icon-img', base: 'qr_code.svg' },
+    { selector: '.nav-icon', base: 'manage_accounts.svg', altBase: 'manage_accounts_dark.svg' },
+    { selector: '.btn-back-icon', base: 'arrow_back.svg' },
+    { selector: '.btn-back-icon2', base: 'arrow_back_2.svg' },
+    { selector: '.profile-icon-img', base: 'profile_icon.svg' },
+    // Add more selectors and base filenames as needed
+  ];
+
+  function swapIcons(dark) {
+    iconMap.forEach(({ selector, base, altBase }) => {
+      document.querySelectorAll(selector).forEach(img => {
+        // Determine the dark variant filename
+        let darkSrc = base.replace('.svg', '_dark.svg');
+        // If altBase is provided, use it for dark mode
+        if (dark && altBase) darkSrc = altBase;
+        // Get current src filename
+        const src = img.getAttribute('src');
+        if (dark) {
+          if (!src.endsWith('_dark.svg')) {
+            img.setAttribute('src', src.replace(base, darkSrc));
+          }
+        } else {
+          if (src.endsWith('_dark.svg')) {
+            img.setAttribute('src', src.replace('_dark.svg', '.svg'));
+          }
+        }
+      });
+    });
+  }
+
+  function setDarkMode(on) {
+    if (on) {
+      html.classList.add('dark-mode');
+      icon.textContent = '☀️';
+      swapIcons(true);
+    } else {
+      html.classList.remove('dark-mode');
+      icon.textContent = '🌙';
+      swapIcons(false);
+    }
+    localStorage.setItem(darkModeKey, on ? '1' : '0');
+  }
+
+  // Restore preference
+  const saved = localStorage.getItem(darkModeKey);
+  if (saved === '1' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    setDarkMode(true);
+  } else {
+    setDarkMode(false);
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      setDarkMode(!html.classList.contains('dark-mode'));
+    });
+  }
+})();
+*/

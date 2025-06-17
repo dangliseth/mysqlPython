@@ -1,0 +1,4 @@
+active
+assigned
+for repair
+for disposal

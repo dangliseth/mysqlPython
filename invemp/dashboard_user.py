@@ -12,7 +12,6 @@ from invemp.dashboard_helpers import (
     )
 from invemp.db import get_cursor
 
-import re
 import qrcode
 from fpdf import FPDF
 from weasyprint import CSS, HTML
@@ -84,12 +83,55 @@ def index(table_name):
 def convert_pdf(table_name):
     if not is_valid_table(table_name):
         abort(400)
+    # Get current page and per_page from request (default to 1 and 15)
+    try:
+        page = int(request.args.get('page', 1))
+        page = max(page, 1)
+    except ValueError:
+        page = 1
+    per_page = 15
     c = get_cursor()
     try:
-        # Use the same filter logic as the main dashboard
-        filtered_items, columns, filters, total_items = filter_table(table_name, c)
+        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
     finally:
         c.close()
+
+    # --- PDF COLUMN/ROW TRANSFORM FOR 'items' TABLE ---
+    if table_name == 'items':
+        # Build new columns: replace 'item_name' and 'Assigned To' with combined columns, remove 'category' and 'department'
+        new_columns = []
+        for col in columns:
+            if col == 'item_name':
+                new_columns.append('Item (Category)')
+            elif col == 'Assigned To':
+                new_columns.append('Assigned To (Department)')
+            elif col in ('category', 'department'):
+                continue
+            else:
+                new_columns.append(col)
+        # Build new rows
+        new_items = []
+        for row in filtered_items:
+            row = list(row)
+            new_row = []
+            for idx, col in enumerate(columns):
+                if col == 'item_name':
+                    item_name = row[columns.index('item_name')]
+                    category = row[columns.index('category')]
+                    combined = f"{item_name}\n({category})" if category else str(item_name)
+                    new_row.append(combined)
+                elif col == 'Assigned To':
+                    assigned_to = row[columns.index('Assigned To')]
+                    department = row[columns.index('department')]
+                    combined = f"{assigned_to}\n({department})" if department else str(assigned_to)
+                    new_row.append(combined)
+                elif col in ('category', 'department'):
+                    continue
+                else:
+                    new_row.append(row[idx])
+            new_items.append(new_row)
+        columns = new_columns
+        filtered_items = new_items
 
     html = render_template(
         'pdf_template.html',
@@ -166,10 +208,16 @@ def convert_pdf(table_name):
 def convert_pdf_qr(table_name):
     if not is_valid_table(table_name):
         abort(400)
+    # Get current page and per_page from request (default to 1 and 15)
+    try:
+        page = int(request.args.get('page', 1))
+        page = max(page, 1)
+    except ValueError:
+        page = 1
+    per_page = 15
     c = get_cursor()
     try:
-        # Use the same filter logic as the main dashboard
-        filtered_items, columns, filters, total_items = filter_table(table_name, c)
+        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
     finally:
         c.close()
 
