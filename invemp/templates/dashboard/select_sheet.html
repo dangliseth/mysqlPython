@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Select Excel Sheet to Import</h2>
+  <form method="post" action="{{ url_for('dashboard_admin.import_data_select_sheet', table_name=table_name) }}">
+    <div class="form-group">
+      <label for="sheet">Choose a sheet:</label>
+      <select class="form-control" id="sheet" name="sheet" required>
+        {% for sheet in sheets %}
+        <option value="{{ sheet }}">{{ sheet }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Import Selected Sheet</button>
+  </form>
+</div>
+{% endblock %}
