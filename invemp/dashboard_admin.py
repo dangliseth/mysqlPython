@@ -20,7 +20,7 @@ from invemp.db import get_cursor
 
 bp = Blueprint('dashboard_admin', __name__)
 
-@bp.route('/<table_name>/create', methods=('GET', 'POST'))
+@bp.route('/<table_name>/create', methods=['GET', 'POST'])
 @admin_required
 def create(table_name):
     if not is_valid_table(table_name):
@@ -195,7 +195,7 @@ def create(table_name):
                            columns=columns, dropdown_options=dropdown_options,
                            preserved_args=preserved_args, not_null_columns=not_null_columns)
 
-@bp.route('/<table_name>/<id>/update', methods=('GET', 'POST'))
+@bp.route('/<table_name>/<id>/update', methods=['GET', 'POST'])
 @admin_required
 def update(id, table_name):
     if not is_valid_table(table_name):
@@ -276,46 +276,46 @@ def update(id, table_name):
                 prev_assigned_to_value = prev_row[0]
             c_prev.close()
 
-        # Handle status, 'Assigned To', and department logic
-        assigned_to_name = request.form.get('Assigned To')
-        department_value = request.form.get('department')
-        status_from_form = request.form.get('status', '').strip().lower()
-        # Convert name to employee_id
-        if assigned_to_name and status_from_form != 'active':
-            c_lookup = get_cursor()
-            c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
-            emp_row = c_lookup.fetchone()
-            c_lookup.close()
-            assigned_to_value = emp_row[0] if emp_row else None
-        else:
-            assigned_to_value = None
-        employee_column = 'employee'
-        values.append(assigned_to_value)
-        update_columns.append(employee_column)
-        new_assigned_to_value = assigned_to_value
+            # Handle status, 'Assigned To', and department logic
+            assigned_to_name = request.form.get('Assigned To')
+            department_value = request.form.get('department')
+            status_from_form = request.form.get('status', '').strip().lower()
+            # Convert name to employee_id
+            if assigned_to_name and status_from_form != 'active':
+                c_lookup = get_cursor()
+                c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+                emp_row = c_lookup.fetchone()
+                c_lookup.close()
+                assigned_to_value = emp_row[0] if emp_row else None
+            else:
+                assigned_to_value = None
+            employee_column = 'employee'
+            values.append(assigned_to_value)
+            update_columns.append(employee_column)
+            new_assigned_to_value = assigned_to_value
 
-        if status_from_form == 'active':
-            values.append('MIS')
-            update_columns.append('department')
-            values.append(status_from_form)
-        elif status_from_form == 'assigned' and assigned_to_value is None:
-            flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
-            entries = preserve_current_entries(columns)
-            # Stay on the update page with the user's input preserved
-            return render_template(
-                'dashboard/update.html',
-                entry=entry,
-                entries=entries,
-                table_name=table_name,
-                columns=columns,
-                dropdown_options=dropdown_options,
-                preserved_args=preserved_args
-            )
-        else:
-            values.append(department_value)
-            update_columns.append('department')
-            values.append(status_from_form)
-        update_columns.append('status')
+            if status_from_form == 'active':
+                values.append('MIS')
+                update_columns.append('department')
+                values.append(status_from_form)
+            elif status_from_form == 'assigned' and assigned_to_value is None:
+                flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
+                entries = preserve_current_entries(columns)
+                # Stay on the update page with the user's input preserved
+                return render_template(
+                    'dashboard/update.html',
+                    entry=entry,
+                    entries=entries,
+                    table_name=table_name,
+                    columns=columns,
+                    dropdown_options=dropdown_options,
+                    preserved_args=preserved_args
+                )
+            else:
+                values.append(department_value)
+                update_columns.append('department')
+                values.append(status_from_form)
+            update_columns.append('status')
 
 
 
@@ -461,421 +461,365 @@ def history(id, table_name):
                            history_data=history_data, columns=columns, zip=zip, 
                            preserved_args=preserved_args)
 
-@bp.route('/import_data', methods=['POST'])
-@admin_required
-def import_data():
-    file = request.files.get('file')
-    if not file:
-        flash('No file uploaded.', 'error')
-        return redirect(url_for('dashboard_user.index', table_name='items'))
+
+def normalize_column_name(column):
+    """Normalize column name for comparison by removing special characters and converting to lowercase"""
+    # Convert to lowercase and replace spaces/special chars with underscores
+    normalized = str(column).lower().strip()
+    normalized = re.sub(r'[\s\(\)\[\]\{\}]+', '_', normalized)  # Replace spaces and brackets with underscore
+    normalized = re.sub(r'[^a-z0-9_]', '', normalized)  # Remove any other special characters
+    normalized = re.sub(r'_+', '_', normalized)  # Replace multiple underscores with single
+    normalized = normalized.strip('_')  # Remove leading/trailing underscores
+    return normalized
+
+def load_options_from_file(filename):
+    """Helper function to load allowed options from a text file"""
+    file_path = os.path.join('invemp', 'static', 'options', filename)
+    print(f"\nTrying to load options from: {file_path}")  # Debug print
     try:
-        c = get_cursor()
-        table_name = 'items'
-        c.execute(f"DESCRIBE `{table_name}`")
-        describe_rows = c.fetchall()
-        db_columns = [row[0] for row in describe_rows]
-        not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
-        c.close()
-        def normalize(col):
-            return re.sub(r'[^a-z0-9]', '', str(col).lower())
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp:
-            file.save(tmp.name)
-            with pd.ExcelFile(tmp.name) as xl:
-                if len(xl.sheet_names) > 1:
-                    session['import_tempfile'] = tmp.name
-                    session['import_sheets'] = xl.sheet_names
-                    return render_template('dashboard/select_sheet.html', sheets=xl.sheet_names, table_name=table_name)
-                df = xl.parse(xl.sheet_names[0])
-        # Now safe to delete temp file
-        os.unlink(tmp.name)
-        if df.empty:
-            flash('Excel file is empty.', 'error')
-            return redirect(url_for('dashboard_user.index', table_name=table_name))
-        headers = list(df.columns)
-        normalized_headers = [normalize(h) for h in headers]
-        db_norm_map = {normalize(col): col for col in db_columns}
-        excel_to_db = {}
-        # Always map 'Assigned To' (if present) to 'employee' DB column
-        for idx, norm in enumerate(normalized_headers):
-            if norm == 'assignedto' and 'employee' in db_columns:
-                excel_to_db[idx] = 'employee'
-            elif norm in db_norm_map and db_norm_map[norm] not in ['id', 'item_id', 'employee_id', 'employee']:
-                excel_to_db[idx] = db_norm_map[norm]
-        # Debug: show mapping and required columns
-        flash(f"Excel-to-DB mapping: {excel_to_db}", 'info')
-        flash(f"Required columns: {[col for col, required in not_null_columns.items() if required]}", 'info')
-        # Check for required columns (except id types)
-        id_types = ['id', 'item_id', 'employee_id']
-        missing_required = [col for col, required in not_null_columns.items() if required and col not in excel_to_db.values() and col not in id_types]
-        if missing_required:
-            flash(f"Missing required columns: {', '.join(missing_required)}", 'error')
-            # Debug: show what headers were found
-            flash(f"Excel headers found: {headers}", 'info')
-            return redirect(url_for('dashboard_user.index', table_name=table_name))
-        # Insert each row
-        c = get_cursor()
-        inserted = 0
-        # --- ID generation logic (supporting id, item_id, employee_id) ---
-        # Find which id column exists in db_columns
-        id_column = None
-        for possible_id in ['item_id', 'employee_id', 'id']:
-            if possible_id in db_columns:
-                id_column = possible_id
-                break
-        # Generate next_id based on id_column type
-        if id_column == 'item_id':
-            c.execute(f"SELECT MAX(item_id) AS max_id FROM `{table_name}`")
-            max_id = c.fetchone()[0]
+        with open(file_path, 'r', encoding='utf-8') as f:
+            options = set()
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('//'):  # Skip empty lines and comments
+                    print(f"Found option: {line}")  # Debug print
+                    options.add(line)
+            print(f"Loaded {len(options)} options from {filename}")  # Debug print
+            return options
+    except FileNotFoundError:
+        print(f"Warning: Could not find file {file_path}")  # Debug print
+        return set()
+    except Exception as e:
+        print(f"Error reading {file_path}: {str(e)}")  # Debug print
+        return set()
+
+def bulk_insert_rows(c, table_name, valid_rows, current_datetime):
+    """Helper function to handle bulk insertion with proper ID generation and relationships"""
+    inserted = 0
+    
+    # Find ID column
+    c.execute(f"DESCRIBE `{table_name}`")
+    db_columns = [row[0] for row in c.fetchall()]
+    id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id')), None)
+
+    if id_column:
+        # Get current max ID
+        c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
+        max_id = c.fetchone()[0]
+
+        if table_name == 'items':
+            # Special format for items: MLQU-0000001
             if max_id is None:
                 next_id = "MLQU-0000001"
+                next_num = 1
             elif isinstance(max_id, str) and max_id.startswith('MLQU-'):
                 num_part = max_id.split('-')[-1]
                 next_num = int(num_part) + 1 if num_part.isdigit() else 1
-                next_id = f"MLQU-{next_num:07d}"
             else:
                 next_id = "MLQU-0000001"
-        elif id_column == 'employee_id':
-            c.execute(f"SELECT MAX(CAST(employee_id AS UNSIGNED)) AS max_id FROM `{table_name}`")
-            max_id = c.fetchone()[0]
-            next_id = (int(max_id) if max_id is not None else 0) + 1
-        elif id_column == 'id':
-            c.execute(f"SELECT MAX(CAST(id AS UNSIGNED)) AS max_id FROM `{table_name}`")
-            max_id = c.fetchone()[0]
-            next_id = (int(max_id) if max_id is not None else 0) + 1
+                next_num = 1
+
+            # Assign IDs to all valid rows
+            for row_data in valid_rows:
+                row_data[id_column] = f"MLQU-{next_num:07d}"
+                next_num += 1
         else:
-            next_id = None
-        # Track unrecognized headers for each row
-        recognized_norms = set([normalize(v) for v in excel_to_db.values()])
-        # Find the actual column name for 'description' if present
-        description_col = None
-        for col in db_columns:
-            if normalize(col) == 'description':
-                description_col = col
-                break
-        for _, row in df.iterrows():
-            values = []
-            insert_columns = []
-            row_id = next_id
-            if id_column == 'item_id':
-                num_part = int(str(row_id).split('-')[-1])
-                next_id = f"MLQU-{num_part+1:07d}"
-            elif id_column in ['employee_id', 'id']:
+            # Simple incremental IDs for other tables
+            next_id = (int(max_id) if max_id is not None else 0) + 1
+            for row_data in valid_rows:
+                row_data[id_column] = next_id
                 next_id += 1
-            row_data = {}
+
+    # Process each row
+    for row_data in valid_rows:
+        try:
+            # Add last_updated timestamp if it exists
+            if 'last_updated' in db_columns:
+                row_data['last_updated'] = current_datetime
+
+            # Handle special case for items table: department = 'MIS' when status = 'active'
+            if table_name == 'items' and row_data.get('status') == 'active':
+                row_data['department'] = 'MIS'
+
+            # Handle the case where status is 'assigned' but no valid employee
+            if (table_name == 'items' and 
+                row_data.get('status') == 'assigned' and 
+                not row_data.get('employee')):
+                continue  # Skip this row since it's invalid
+
+            # Prepare and execute insert
+            columns = list(row_data.keys())
+            placeholders = ', '.join(['%s'] * len(columns))
+            query = f"INSERT INTO `{table_name}` ({', '.join(columns)}) VALUES ({placeholders})"
+            values = [row_data[col] for col in columns]
+
+            c.execute(query, values)
+            inserted += 1
+
+            # Handle item assignment history if needed
+            if (table_name == 'items' and 
+                row_data.get('employee') and 
+                row_data.get('status') != 'active'):
+                c.execute(
+                    """
+                    INSERT INTO item_assignment_history (item_id, employee_id, assigned_date)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (row_data[id_column], row_data['employee'], current_datetime)
+                )
+
+        except Exception as e:
+            flash(f"Error importing row with ID {row_data.get(id_column)}: {str(e)}", 'error')
+            continue
+
+    return inserted
+
+@bp.route('/<table_name>/import', methods=['GET', 'POST'])
+@admin_required
+def import_data(table_name):
+    if not is_valid_table(table_name):
+        abort(400)
+
+    # Load allowed options for dropdowns
+    allowed_options = {
+        'category': load_options_from_file('category.txt'),
+        'department': load_options_from_file('department.txt'),
+        'account_type': load_options_from_file('account_type.txt'),
+        'status': load_options_from_file('status.txt')
+    }
+    
+    print("\nDEBUG - Loaded department options:", sorted([opt for opt in allowed_options['department'] if not opt.startswith('//')]))
+        
+    # Check if file was uploaded
+    if 'file' not in request.files:
+        flash('No file uploaded', 'error')
+        return redirect(url_for('dashboard_user.index', table_name=table_name))
+        
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file', 'error')
+        return redirect(url_for('dashboard_user.index', table_name=table_name))
+        
+    # Check file extension
+    if not file.filename.endswith('.xlsx'):
+        flash('Please upload an Excel (.xlsx) file', 'error')
+        return redirect(url_for('dashboard_user.index', table_name=table_name))
+        
+    temp_file = None
+    xl = None
+    try:
+        # Create temporary file to store upload
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
+        file.save(temp_file.name)
+        temp_file.close()  # Close the file before pandas reads it
+            
+        # Read Excel file with pandas
+        xl = pd.ExcelFile(temp_file.name)
+            
+        # If multiple sheets, store minimal info in session
+        if len(xl.sheet_names) > 1:
+            session['import_tempfile'] = temp_file.name
+            session['import_sheets'] = xl.sheet_names
+            xl.close()
+            xl = None
+            return render_template('dashboard/select_sheet.html', 
+                               sheets=xl.sheet_names, 
+                               table_name=table_name)
+                                    
+        # If single sheet, read it directly
+        df = pd.read_excel(temp_file.name)
+        xl.close()
+        xl = None
+            
+        if df.empty:
+            flash('Excel file is empty', 'error')
+            return redirect(url_for('dashboard_user.index', table_name=table_name))
+
+        # Get database columns and NOT NULL constraints
+        c = get_cursor()
+        try:
+            c.execute(f"DESCRIBE `{table_name}`")
+            describe_rows = c.fetchall()
+            db_columns = [row[0] for row in describe_rows]
+            not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
+            
+            print("\nTable structure:")
+            print("All columns:", db_columns)
+            print("NOT NULL columns:", {col: req for col, req in not_null_columns.items() if req})
+            
+            # Process the data and insert immediately
+            valid_rows = []
+            total_rows = 0
+            skipped_count = 0
+            
+            # Map Excel columns to database columns
+            headers = list(df.columns)
+            print("\nAllowed options:")  # Debug allowed options
+            for opt_type, opt_values in allowed_options.items():
+                print(f"{opt_type}: {sorted(opt_values)}")  # Show all values including case variations
+            
+            normalized_headers = [normalize_column_name(h) for h in headers]
+            print("Normalized Headers:", normalized_headers)
+            
+            db_norm_map = {normalize_column_name(col): col for col in db_columns}
+            print("DB Column Map:", db_norm_map)
+            
+            excel_to_db = {}
+            
+            # Map Excel columns to database columns with special cases
+            for idx, norm_header in enumerate(normalized_headers):
+                mapped = False
+                # Handle special cases first
+                if norm_header in ('assigned_to', 'assignedto') and 'employee' in db_columns:
+                    excel_to_db[idx] = 'employee'
+                    mapped = True
+                elif norm_header in ('item_name', 'itemname') and 'name' in db_columns:
+                    excel_to_db[idx] = 'name'
+                    mapped = True
+                elif norm_header in ('hard_drive', 'harddrive') and 'hard_drive' in db_columns:
+                    excel_to_db[idx] = 'hard_drive'
+                    mapped = True
+                elif norm_header == 'avr' and 'avr' in db_columns:
+                    excel_to_db[idx] = 'avr'
+                    mapped = True
+                
+                # Try standard mapping if no special case matched
+                if not mapped and norm_header in db_norm_map:
+                    db_col = db_norm_map[norm_header]
+                    if db_col not in ['id', 'item_id', 'employee_id']:
+                        excel_to_db[idx] = db_col
+                
+                # Debug print for each mapping
+                print(f"Header '{headers[idx]}' -> Normalized '{norm_header}' -> DB Column '{excel_to_db.get(idx, 'Not mapped')}'")
+
+            # Show mapping in flash messages
+            flash("Column mapping:", 'info')
             for idx, db_col in excel_to_db.items():
-                val = row[headers[idx]]
-                row_data[db_col] = val if pd.notnull(val) else None
-            extra_texts = []
-            mapped_headers = set([headers[idx] for idx in excel_to_db.keys()])
-            # Only treat as unrecognized if header is not mapped to any DB column (by normalized name or by excel_to_db mapping)
-            for header in headers:
-                norm_header = normalize(header)
-                # Check if header is mapped to a DB column (either by excel_to_db or by normalized name)
-                is_mapped = False
-                # Check excel_to_db mapping
-                for idx, db_col in excel_to_db.items():
-                    if headers[idx] == header:
-                        is_mapped = True
-                        break
-                # Check normalized name against db_columns
-                if not is_mapped:
-                    for db_col in db_columns:
-                        if normalize(db_col) == norm_header:
-                            is_mapped = True
-                            break
-                if not is_mapped:
-                    val = row[header]
-                    if pd.notnull(val) and str(val).strip() != '':
-                        extra_texts.append(f"{header}: {val}")
-            row_values = []
-            row_columns = []
-            required_check = {}
-            for db_col in db_columns:
-                if db_col == id_column:
-                    row_values.append(row_id)
-                    row_columns.append(db_col)
-                elif db_col == 'last_updated':
-                    row_values.append(datetime.datetime.now())
-                    row_columns.append(db_col)
-                elif db_col == 'employee':
-                    assigned_to = row_data.get('employee')
-                    if assigned_to:
-                        c_lookup = get_cursor()
-                        c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to,))
-                        emp_row = c_lookup.fetchone()
-                        c_lookup.close()
-                        assigned_to_value = emp_row[0] if emp_row else None
-                    else:
-                        assigned_to_value = None
-                    row_values.append(assigned_to_value)
-                    row_columns.append(db_col)
-                elif db_col == 'department':
-                    department_value = row_data.get('department')
-                    row_values.append(department_value)
-                    row_columns.append(db_col)
-                elif db_col == 'status':
-                    status_value = row_data.get('status')
-                    row_values.append(status_value)
-                    row_columns.append(db_col)
-                elif db_col == description_col:
-                    desc_val = row_data.get(description_col)
-                    if desc_val is None:
-                        desc_val = ''
-                    # Always append unrecognized headers if present
-                    if extra_texts:
-                        if desc_val and str(desc_val).strip() != '':
-                            desc_val = str(desc_val).strip() + ' | ' + ' | '.join(extra_texts)
-                        else:
-                            desc_val = ' | '.join(extra_texts)
-                    # Only skip if both description and unrecognized headers are empty
-                    if not_null_columns.get(db_col, False) and (desc_val is None or str(desc_val).strip() == ''):
-                        skip_row = True
-                    row_values.append(desc_val)
-                    row_columns.append(db_col)
-                    required_check[db_col] = desc_val
-                else:
-                    val = row_data.get(db_col)
-                    row_values.append(val)
-                    row_columns.append(db_col)
-                    required_check[db_col] = val
-            # After building the row, check all required columns
-            skip_row = False
+                flash(f"{headers[idx]} → {db_col}", 'info')
+
+            # Check for missing required columns
+            missing_required = []
             for col, required in not_null_columns.items():
-                if required:
-                    try:
-                        idx = row_columns.index(col)
-                        val = row_values[idx]
-                        if val is None or str(val).strip() == '':
+                if required and col not in excel_to_db.values() and col not in ['id', 'item_id', 'employee_id', 'last_updated']:
+                    missing_required.append(col)
+            
+            if missing_required:
+                flash(f"Error: Missing required columns: {', '.join(missing_required)}", 'error')
+                flash("Excel headers found: " + ", ".join(headers), 'info')
+                return redirect(url_for('dashboard_user.index', table_name=table_name))
+
+            # Process rows in batches to avoid memory issues
+            batch_size = 100
+            current_batch = []
+            
+            print("\nProcessing rows:")  # Debug header
+            for idx, row in df.iterrows():
+                total_rows += 1
+                row_data = {}
+                skip_row = False
+                print(f"\nRow {idx}:")  # Debug for current row
+                
+                for excel_idx, db_col in excel_to_db.items():
+                    value = row[headers[excel_idx]]
+                    print(f"  Column '{db_col}': {value}")  # Debug column value
+                    
+                    # Handle employee lookup
+                    if db_col == 'employee' and pd.notna(value):
+                        assigned_to_name = str(value).strip()
+                        status_value = None
+                        
+                        # Get status if it exists
+                        for idx2, col in excel_to_db.items():
+                            if col == 'status':
+                                status_value = str(row[headers[idx2]]).strip().lower() if pd.notna(row[headers[idx2]]) else None
+                                break
+                        print(f"  Found status: {status_value}")  # Debug status
+                        
+                        # Only look up employee if status is not 'active'
+                        if not status_value or status_value != 'active':
+                            c.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+                            emp_row = c.fetchone()
+                            value = emp_row[0] if emp_row else None
+                            print(f"  Employee lookup for '{assigned_to_name}': {value}")  # Debug employee lookup
+                        else:
+                            value = None
+                    
+                    # Validate dropdown values
+                    if db_col in allowed_options and pd.notna(value):
+                        value_str = str(value).strip()
+                        value_lower = value_str.lower()
+                        
+                        # Print debug info
+                        print(f"  Validating {db_col}: '{value_str}'")
+                        print(f"  Allowed values: {sorted(allowed_options[db_col])}")
+                        
+                        # Try exact match first
+                        if value_str in allowed_options[db_col]:
+                            value = value_str
+                            print(f"  Exact match found")
+                        else:
+                            # Try case-insensitive match
+                            matches = [opt for opt in allowed_options[db_col] 
+                                     if opt.lower() == value_lower]
+                            if matches:
+                                value = matches[0]
+                                print(f"  Case-insensitive match found: {value}")
+                            else:
+                                print(f"  No match found for {value_str} in {sorted(allowed_options[db_col])}")
+                                skip_row = True
+                                break
+                    
+                    # Check NOT NULL constraints
+                    if not_null_columns.get(db_col, False):
+                        if pd.isna(value) or str(value).strip() == '':
+                            print(f"  Row {idx} skipped: Required column '{db_col}' is empty or NULL")  # Debug NULL constraint
                             skip_row = True
                             break
-                    except ValueError:
-                        skip_row = True
-                        break
-            if skip_row:
-                continue
-            values = row_values
-            insert_columns = row_columns
-            placeholders = ', '.join(['%s'] * len(values))
-            query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
-            try:
-                c.execute(query, values)
-                inserted += 1
-            except Exception as e:
-                flash(f"Error importing row: {e}", 'error')
-        c.connection.commit()
-        c.close()
-        flash(f"Successfully imported {inserted} rows.", 'success')
-        return redirect(url_for('dashboard_user.index', table_name=table_name))
-    except Exception as e:
-        flash(f"Error processing Excel file: {e}", 'error')
-        return redirect(url_for('dashboard_user.index', table_name='items'))
-    
-@bp.route('/import_data_select_sheet', methods=['POST'])
-@admin_required
-def import_data_select_sheet():
-    table_name = request.args.get('table_name', 'items')
-    sheet = request.form.get('sheet')
-    temp_path = session.get('import_tempfile')
-    sheets = session.get('import_sheets')
-    if not temp_path or not sheet or not sheets or sheet not in sheets:
-        flash('Invalid sheet selection or session expired.', 'error')
-        return redirect(url_for('dashboard_user.index', table_name=table_name))
-    try:
-        c = get_cursor()
-        c.execute(f"DESCRIBE `{table_name}`")
-        describe_rows = c.fetchall()
-        db_columns = [row[0] for row in describe_rows]
-        not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
-        c.close()
-        def normalize(col):
-            return re.sub(r'[^a-z0-9]', '', str(col).lower())
-        with pd.ExcelFile(temp_path) as xl:
-            df = xl.parse(sheet)
-        # Now safe to delete temp file
-        os.unlink(temp_path)
-        session.pop('import_tempfile', None)
-        session.pop('import_sheets', None)
-        if df.empty:
-            flash('Excel sheet is empty.', 'error')
-            return redirect(url_for('dashboard_user.index', table_name=table_name))
-        headers = list(df.columns)
-        normalized_headers = [normalize(h) for h in headers]
-        db_norm_map = {normalize(col): col for col in db_columns}
-        excel_to_db = {}
-        # Always map 'Assigned To' (if present) to 'employee' DB column
-        for idx, norm in enumerate(normalized_headers):
-            if norm == 'assignedto' and 'employee' in db_columns:
-                excel_to_db[idx] = 'employee'
-            elif norm in db_norm_map and db_norm_map[norm] not in ['id', 'item_id', 'employee_id', 'employee']:
-                excel_to_db[idx] = db_norm_map[norm]
-        id_types = ['id', 'item_id', 'employee_id']
-        missing_required = [col for col, required in not_null_columns.items() if required and col not in excel_to_db.values() and col not in id_types]
-        if missing_required:
-            flash(f"Missing required columns: {', '.join(missing_required)}", 'error')
-            return redirect(url_for('dashboard_user.index', table_name=table_name))
-        c = get_cursor()
-        inserted = 0
-        id_column = None
-        for possible_id in ['item_id', 'employee_id', 'id']:
-            if possible_id in db_columns:
-                id_column = possible_id
-                break
-        if id_column == 'item_id':
-            c.execute(f"SELECT MAX(item_id) AS max_id FROM `{table_name}`")
-            max_id = c.fetchone()[0]
-            if max_id is None:
-                next_id = "MLQU-0000001"
-            elif isinstance(max_id, str) and max_id.startswith('MLQU-'):
-                num_part = max_id.split('-')[-1]
-                next_num = int(num_part) + 1 if num_part.isdigit() else 1
-                next_id = f"MLQU-{next_num:07d}"
-            else:
-                next_id = "MLQU-0000001"
-        elif id_column == 'employee_id':
-            c.execute(f"SELECT MAX(CAST(employee_id AS UNSIGNED)) AS max_id FROM `{table_name}`")
-            max_id = c.fetchone()[0]
-            next_id = (int(max_id) if max_id is not None else 0) + 1
-        elif id_column == 'id':
-            c.execute(f"SELECT MAX(CAST(id AS UNSIGNED)) AS max_id FROM `{table_name}`")
-            max_id = c.fetchone()[0]
-            next_id = (int(max_id) if max_id is not None else 0) + 1
-        else:
-            next_id = None
-        description_col = None
-        for col in db_columns:
-            if normalize(col) == 'description':
-                description_col = col
-                break
-        for _, row in df.iterrows():
-            values = []
-            insert_columns = []
-            row_id = next_id
-            if id_column == 'item_id':
-                num_part = int(str(row_id).split('-')[-1])
-                next_id = f"MLQU-{num_part+1:07d}"
-            elif id_column in ['employee_id', 'id']:
-                next_id += 1
-            assigned_to_value = None
-            status_value = None
-            department_value = None
-            # Collect unrecognized headers/values (only non-empty values)
-            mapped_headers = set([headers[idx] for idx in excel_to_db.keys()])
-            unrec_data = []
-            for header in headers:
-                if header not in mapped_headers:
-                    val = row[header]
-                    if pd.notna(val) and str(val).strip() != '':
-                        unrec_data.append(f"{header}: {val}")
-            header_map = {}
-            for idx, header in enumerate(headers):
-                norm = normalize(header)
-                header_map.setdefault(norm, []).append((header, idx))
-            duplicate_values = {}
-            for norm, header_list in header_map.items():
-                if len(header_list) > 1:
-                    vals = []
-                    for header, idx in header_list:
-                        val = row[header]
-                        if not pd.isna(val) and str(val).strip() != '':
-                            vals.append(str(val).strip())
-                    if vals:
-                        duplicate_values[norm] = ' | '.join(vals)
-            for db_col in db_columns:
-                norm_db_col = normalize(db_col)
-                if db_col == id_column:
-                    values.append(row_id)
-                    insert_columns.append(db_col)
-                    continue
-                # Handle 'employee' (from 'Assigned To')
-                if db_col == 'Assigned To':
-                    assigned_to_idx = None
-                    for idx, v in excel_to_db.items():
-                        if v.lower() == 'assigned to':
-                            assigned_to_idx = idx
-                            break
-                    assigned_to_name = row[headers[assigned_to_idx]] if assigned_to_idx is not None else None
-                    if pd.isna(assigned_to_name) or not assigned_to_name:
-                        assigned_to_value = None
-                    else:
-                        c_lookup = get_cursor()
-                        c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
-                        emp_row = c_lookup.fetchone()
-                        c_lookup.close()
-                        assigned_to_value = emp_row[0] if emp_row else None
-                    values.append(assigned_to_value)
-                    insert_columns.append(db_col)
-                    continue
-                if db_col == 'status':
-                    status_idx = None
-                    for idx, v in excel_to_db.items():
-                        if v.lower() == 'status':
-                            status_idx = idx
-                            break
-                    status_value = row[headers[status_idx]].strip().lower() if status_idx is not None and not pd.isna(row[headers[status_idx]]) else None
-                    values.append(status_value)
-                    insert_columns.append(db_col)
-                    continue
-                if db_col == 'department':
-                    department_idx = None
-                    for idx, v in excel_to_db.items():
-                        if v.lower() == 'department':
-                            department_idx = idx
-                            break
-                    department_value = row[headers[department_idx]] if department_idx is not None and not pd.isna(row[headers[department_idx]]) else None
-                    values.append(department_value)
-                    insert_columns.append(db_col)
-                    continue
-                # If this is the description column, append unrecognized data
-                if description_col and db_col == description_col:
-                    desc_val = ''
-                    desc_norm = normalize('description')
-                    if desc_norm in duplicate_values:
-                        desc_val = duplicate_values[desc_norm]
-                    else:
-                        desc_idx = None
-                        for idx, v in excel_to_db.items():
-                            if v.lower() == 'description':
-                                desc_idx = idx
-                                break
-                        if desc_idx is not None:
-                            val = row[headers[desc_idx]]
-                            if not pd.isna(val):
-                                desc_val = str(val).strip()
-                    # Always append unrecognized headers if present
-                    if unrec_data:
-                        if desc_val and str(desc_val).strip() != '':
-                            desc_val = str(desc_val).strip() + ' | ' + ' | '.join(unrec_data)
-                        else:
-                            desc_val = ' | '.join(unrec_data)
-                    values.append(desc_val)
-                    insert_columns.append(db_col)
-                    continue
-                norm_db_col = normalize(db_col)
-                if norm_db_col in duplicate_values:
-                    val = duplicate_values[norm_db_col]
-                elif db_col in excel_to_db.values():
-                    idx = [k for k, v in excel_to_db.items() if v == db_col][0]
-                    val = row[headers[idx]]
-                    if pd.isna(val):
-                        val = None
+                    
+                    row_data[db_col] = value
+                
+                if not skip_row:
+                    print(f"  Row {idx} accepted with data: {row_data}")  # Debug accepted row
+                    current_batch.append(row_data)
+                    if len(current_batch) >= batch_size:
+                        # Insert batch
+                        inserted = bulk_insert_rows(c, table_name, current_batch, datetime.datetime.now())
+                        valid_rows.extend(current_batch)
+                        current_batch = []
                 else:
-                    val = None
-                if not_null_columns[db_col] and (val is None or str(val).strip() == ''):
-                    break
-                values.append(val)
-                insert_columns.append(db_col)
-            else:
-                placeholders = ', '.join(['%s'] * len(values))
-                query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
-                try:
-                    c.execute(query, values)
-                    inserted += 1
-                except Exception as e:
-                    continue
-        c.connection.commit()
-        c.close()
-        flash(f"Imported {inserted} rows from Excel.", 'success')
+                    print(f"  Row {idx} skipped!")  # Debug skipped row
+                    skipped_count += 1
+            
+            # Insert any remaining rows
+            if current_batch:
+                inserted = bulk_insert_rows(c, table_name, current_batch, datetime.datetime.now())
+                valid_rows.extend(current_batch)
+            
+            c.connection.commit()
+            flash(f"Successfully imported {len(valid_rows)} out of {total_rows} rows. {skipped_count} rows were skipped.", 'success')
+            
+        except Exception as e:
+            c.connection.rollback()
+            flash(f"Error during import: {str(e)}", 'error')
+        finally:
+            c.close()
+            
         return redirect(url_for('dashboard_user.index', table_name=table_name))
+        
     except Exception as e:
-        flash(f'Error importing Excel file: {e}', 'error')
-        return redirect(url_for('dashboard_user.index', table_name='items'))
+        flash(f'Error processing Excel file: {str(e)}', 'error')
+        return redirect(url_for('dashboard_user.index', table_name=table_name))
+    finally:
+        # Clean up resources
+        if xl is not None:
+            xl.close()
+        if temp_file is not None:
+            try:
+                os.unlink(temp_file.name)
+            except (PermissionError, OSError):
+                try:
+                    import ctypes
+                    MOVEFILE_DELAY_UNTIL_REBOOT = 4
+                    ctypes.windll.kernel32.MoveFileExW(temp_file.name, None, MOVEFILE_DELAY_UNTIL_REBOOT)
+                except:
+                    pass

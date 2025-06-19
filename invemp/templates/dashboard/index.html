@@ -17,7 +17,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for item in items %}
+      {% for item in items if item[1] != g.user[1] %}
         <tr>
         {% for column, value in zip(columns, item) %}
           {% if column != 'password' %}
