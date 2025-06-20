@@ -6,3 +6,4 @@ instance/config.py
 /invemp/__pycache__
 *.pyc
 instance/db.txt
+mysqlDumps/~$Book1.xlsx
