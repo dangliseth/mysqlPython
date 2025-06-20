@@ -7,13 +7,13 @@ import datetime
 import os
 import tempfile
 import pandas as pd
-import re
 
 from invemp.auth import admin_required
 from invemp.dashboard_helpers import (
     is_valid_table, get_dropdown_options, 
     get_entry, get_items_columns, get_preserved_args,
-    get_item_assignment_history, preserve_current_entries
+    get_item_assignment_history, preserve_current_entries,
+    load_options_from_file, normalize_column_name, bulk_insert_rows
 )
 from invemp.db import get_cursor
 
@@ -460,107 +460,6 @@ def history(id, table_name):
     return render_template('dashboard/history.html', table_name=table_name, 
                            history_data=history_data, columns=columns, zip=zip, 
                            preserved_args=preserved_args)
-
-
-def normalize_column_name(column):
-    """Normalize column name for comparison by removing special characters and converting to lowercase"""
-    # Convert to lowercase and replace spaces/special chars with underscores
-    normalized = str(column).lower().strip()
-    normalized = re.sub(r'[\s\(\)\[\]\{\}]+', '_', normalized)  # Replace spaces and brackets with underscore
-    normalized = re.sub(r'[^a-z0-9_]', '', normalized)  # Remove any other special characters
-    normalized = re.sub(r'_+', '_', normalized)  # Replace multiple underscores with single
-    normalized = normalized.strip('_')  # Remove leading/trailing underscores
-    return normalized
-
-def load_options_from_file(filename):
-    """Helper function to load allowed options from a text file"""
-    file_path = os.path.join('invemp', 'static', 'options', filename)
-    print(f"\nTrying to load options from: {file_path}")  # Debug print
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            options = set()
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('//'):  # Skip empty lines and comments
-                    print(f"Found option: {line}")  # Debug print
-                    options.add(line)
-            print(f"Loaded {len(options)} options from {filename}")  # Debug print
-            return options
-    except FileNotFoundError:
-        print(f"Warning: Could not find file {file_path}")  # Debug print
-        return set()
-    except Exception as e:
-        print(f"Error reading {file_path}: {str(e)}")  # Debug print
-        return set()
-
-def bulk_insert_rows(c, table_name, valid_rows, current_datetime):
-    """Helper function to handle bulk insertion with proper ID generation and relationships"""
-    inserted = 0
-    
-    # Find ID column
-    c.execute(f"DESCRIBE `{table_name}`")
-    db_columns = [row[0] for row in c.fetchall()]
-    
-    # Prepare for ID generation (must be before row loop)
-    id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id')), None)
-    next_num = None
-    if id_column:
-        c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
-        max_id = c.fetchone()[0]
-        if table_name == 'items':
-            if max_id is None:
-                next_num = 1
-            elif isinstance(max_id, str) and max_id.startswith('MLQU-'):
-                num_part = max_id.split('-')[-1]
-                next_num = int(num_part) + 1 if num_part.isdigit() else 1
-            else:
-                next_num = 1
-        else:
-            next_num = (int(max_id) if max_id is not None else 0) + 1
-
-    # Process each row
-    for row_data in valid_rows:
-        try:
-            # Add last_updated timestamp if it exists
-            if 'last_updated' in db_columns:
-                row_data['last_updated'] = current_datetime
-
-            # Handle special case for items table: department = 'MIS' when status = 'active'
-            if table_name == 'items' and row_data.get('status') == 'active':
-                row_data['department'] = 'MIS'
-
-            # Handle the case where status is 'assigned' but no valid employee
-            if (table_name == 'items' and 
-                row_data.get('status') == 'assigned' and 
-                not row_data.get('employee')):
-                continue  # Skip this row since it's invalid
-
-            # Prepare and execute insert
-            columns = list(row_data.keys())
-            placeholders = ', '.join(['%s'] * len(columns))
-            query = f"INSERT INTO `{table_name}` ({', '.join(columns)}) VALUES ({placeholders})"
-            values = [row_data[col] for col in columns]
-
-            c.execute(query, values)
-            inserted += 1
-
-            # Handle item assignment history if needed
-            if (table_name == 'items' and 
-                row_data.get('employee') and 
-                row_data.get('status') != 'active'):
-                c.execute(
-                    """
-                    INSERT INTO item_assignment_history (item_id, employee_id, assigned_date)
-                    VALUES (%s, %s, %s)
-                    """,
-                    (row_data[id_column], row_data['employee'], current_datetime)
-                )
-
-        except Exception as e:
-            flash(f"Error importing row with ID {row_data.get(id_column)}: {str(e)}", 'error')
-            continue
-
-    return inserted
 
 @bp.route('/<table_name>/import', methods=['GET', 'POST'])
 @admin_required
