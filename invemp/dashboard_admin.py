@@ -500,35 +500,23 @@ def bulk_insert_rows(c, table_name, valid_rows, current_datetime):
     # Find ID column
     c.execute(f"DESCRIBE `{table_name}`")
     db_columns = [row[0] for row in c.fetchall()]
+    
+    # Prepare for ID generation (must be before row loop)
     id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id')), None)
-
+    next_num = None
     if id_column:
-        # Get current max ID
         c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
         max_id = c.fetchone()[0]
-
         if table_name == 'items':
-            # Special format for items: MLQU-0000001
             if max_id is None:
-                next_id = "MLQU-0000001"
                 next_num = 1
             elif isinstance(max_id, str) and max_id.startswith('MLQU-'):
                 num_part = max_id.split('-')[-1]
                 next_num = int(num_part) + 1 if num_part.isdigit() else 1
             else:
-                next_id = "MLQU-0000001"
                 next_num = 1
-
-            # Assign IDs to all valid rows
-            for row_data in valid_rows:
-                row_data[id_column] = f"MLQU-{next_num:07d}"
-                next_num += 1
         else:
-            # Simple incremental IDs for other tables
-            next_id = (int(max_id) if max_id is not None else 0) + 1
-            for row_data in valid_rows:
-                row_data[id_column] = next_id
-                next_id += 1
+            next_num = (int(max_id) if max_id is not None else 0) + 1
 
     # Process each row
     for row_data in valid_rows:
@@ -708,6 +696,32 @@ def import_data(table_name):
                 flash("Excel headers found: " + ", ".join(headers), 'info')
                 return redirect(url_for('dashboard_user.index', table_name=table_name))
 
+            # Identify unrecognized columns and description column index
+            description_idx = None
+            unrecognized_indices = []
+            for idx, norm_header in enumerate(normalized_headers):
+                if norm_header == 'description' and 'description' in db_columns:
+                    description_idx = idx
+                if idx not in excel_to_db:
+                    unrecognized_indices.append(idx)
+
+            # Prepare for ID generation (must be before row loop)
+            id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id')), None)
+            next_num = None
+            if id_column:
+                c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
+                max_id = c.fetchone()[0]
+                if table_name == 'items':
+                    if max_id is None:
+                        next_num = 1
+                    elif isinstance(max_id, str) and max_id.startswith('MLQU-'):
+                        num_part = max_id.split('-')[-1]
+                        next_num = int(num_part) + 1 if num_part.isdigit() else 1
+                    else:
+                        next_num = 1
+                else:
+                    next_num = (int(max_id) if max_id is not None else 0) + 1
+
             # Process rows in batches to avoid memory issues
             batch_size = 100
             current_batch = []
@@ -718,23 +732,38 @@ def import_data(table_name):
                 row_data = {}
                 skip_row = False
                 print(f"\nRow {idx}:")  # Debug for current row
-                
+
+                # --- Build description from original and unrecognized columns ---
+                description_parts = []
+                # Add original description if present
+                if description_idx is not None:
+                    desc_val = row[headers[description_idx]]
+                    if pd.notna(desc_val) and str(desc_val).strip():
+                        description_parts.append(str(desc_val).strip())
+                # Add unrecognized columns' values
+                for uidx in unrecognized_indices:
+                    val = row[headers[uidx]]
+                    if pd.notna(val) and str(val).strip():
+                        description_parts.append(f"{headers[uidx]}: {str(val).strip()}")
+                # Combine for final description
+                final_description = ' | '.join(description_parts).strip()
+
+                # --- Your original row processing logic starts here ---
                 for excel_idx, db_col in excel_to_db.items():
+                    if db_col == 'description':
+                        continue  # We'll set this at the end
                     value = row[headers[excel_idx]]
-                    print(f"  Column '{db_col}': {value}")  # Debug column value
-                    
+                    # --- employee lookup, validation, etc. ---
                     # Handle employee lookup
                     if db_col == 'employee' and pd.notna(value):
                         assigned_to_name = str(value).strip()
                         status_value = None
-                        
                         # Get status if it exists
                         for idx2, col in excel_to_db.items():
                             if col == 'status':
                                 status_value = str(row[headers[idx2]]).strip().lower() if pd.notna(row[headers[idx2]]) else None
                                 break
                         print(f"  Found status: {status_value}")  # Debug status
-                        
                         # Only look up employee if status is not 'active'
                         if not status_value or status_value != 'active':
                             c.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
@@ -743,24 +772,19 @@ def import_data(table_name):
                             print(f"  Employee lookup for '{assigned_to_name}': {value}")  # Debug employee lookup
                         else:
                             value = None
-                    
                     # Validate dropdown values
                     if db_col in allowed_options and pd.notna(value):
                         value_str = str(value).strip()
                         value_lower = value_str.lower()
-                        
-                        # Print debug info
                         print(f"  Validating {db_col}: '{value_str}'")
                         print(f"  Allowed values: {sorted(allowed_options[db_col])}")
-                        
                         # Try exact match first
                         if value_str in allowed_options[db_col]:
                             value = value_str
                             print(f"  Exact match found")
                         else:
                             # Try case-insensitive match
-                            matches = [opt for opt in allowed_options[db_col] 
-                                     if opt.lower() == value_lower]
+                            matches = [opt for opt in allowed_options[db_col] if opt.lower() == value_lower]
                             if matches:
                                 value = matches[0]
                                 print(f"  Case-insensitive match found: {value}")
@@ -768,21 +792,34 @@ def import_data(table_name):
                                 print(f"  No match found for {value_str} in {sorted(allowed_options[db_col])}")
                                 skip_row = True
                                 break
-                    
                     # Check NOT NULL constraints
                     if not_null_columns.get(db_col, False):
                         if pd.isna(value) or str(value).strip() == '':
                             print(f"  Row {idx} skipped: Required column '{db_col}' is empty or NULL")  # Debug NULL constraint
                             skip_row = True
                             break
-                    
                     row_data[db_col] = value
-                
+                # Set the description field
+                if 'description' in db_columns:
+                    row_data['description'] = final_description
+                # ID generation logic (restore original)
+                if id_column is not None and next_num is not None:
+                    if table_name == 'items':
+                        row_data[id_column] = f"MLQU-{next_num:07d}"
+                        next_num += 1
+                    else:
+                        row_data[id_column] = next_num
+                        next_num += 1
+                # Check NOT NULL for description
+                if not_null_columns.get('description', False):
+                    if not final_description:
+                        print(f"  Row {idx} skipped: Required column 'description' is empty after combining.")
+                        skip_row = True
+                        skipped_count += 1
                 if not skip_row:
                     print(f"  Row {idx} accepted with data: {row_data}")  # Debug accepted row
                     current_batch.append(row_data)
                     if len(current_batch) >= batch_size:
-                        # Insert batch
                         inserted = bulk_insert_rows(c, table_name, current_batch, datetime.datetime.now())
                         valid_rows.extend(current_batch)
                         current_batch = []
