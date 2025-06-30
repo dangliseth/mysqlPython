@@ -580,20 +580,8 @@ def import_data(table_name):
                 print(f"Header '{headers[idx]}' -> Normalized '{norm_header}' -> DB Column '{excel_to_db.get(idx, 'Not mapped')}'")
 
             # Show mapping in flash messages
-            flash("Column mapping:", 'info')
             for idx, db_col in excel_to_db.items():
                 flash(f"{headers[idx]} → {db_col}", 'info')
-
-            # Check for missing required columns
-            missing_required = []
-            for col, required in not_null_columns.items():
-                if required and col not in excel_to_db.values() and col not in ['id', 'item_id', 'employee_id', 'last_updated']:
-                    missing_required.append(col)
-            
-            if missing_required:
-                flash(f"Error: Missing required columns: {', '.join(missing_required)}", 'error')
-                flash("Excel headers found: " + ", ".join(headers), 'info')
-                return redirect(url_for('dashboard_user.index', table_name=table_name))
 
             # Identify unrecognized columns and description column index
             description_idx = None
@@ -603,6 +591,18 @@ def import_data(table_name):
                     description_idx = idx
                 if idx not in excel_to_db:
                     unrecognized_indices.append(idx)
+
+            # Check for missing required columns AFTER handling description
+            missing_required = []
+            for col, required in not_null_columns.items():
+                # Skip description check here as we'll handle it during row processing
+                if required and col != 'description' and col not in excel_to_db.values() and col not in ['id', 'item_id', 'employee_id', 'last_updated']:
+                    missing_required.append(col)
+            
+            if missing_required:
+                flash(f"Error: Missing required columns: {', '.join(missing_required)}", 'error')
+                print("Excel headers found: " + ", ".join(headers), 'info')
+                return redirect(url_for('dashboard_user.index', table_name=table_name))
 
             # Prepare for ID generation (must be before row loop)
             id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id')), None)
@@ -647,12 +647,12 @@ def import_data(table_name):
                 # Combine for final description
                 final_description = ' | '.join(description_parts).strip()
 
-                # --- Your original row processing logic starts here ---
+                # Process mapped columns
                 for excel_idx, db_col in excel_to_db.items():
                     if db_col == 'description':
-                        continue  # We'll set this at the end
+                        continue  # We'll set this after processing all columns
                     value = row[headers[excel_idx]]
-                    # --- employee lookup, validation, etc. ---
+                    # --- Your original column processing logic ---
                     # Handle employee lookup
                     if db_col == 'employee' and pd.notna(value):
                         assigned_to_name = str(value).strip()
@@ -694,14 +694,21 @@ def import_data(table_name):
                     # Check NOT NULL constraints
                     if not_null_columns.get(db_col, False):
                         if pd.isna(value) or str(value).strip() == '':
-                            print(f"  Row {idx} skipped: Required column '{db_col}' is empty or NULL")  # Debug NULL constraint
+                            print(f"  Row {idx} skipped: Required column '{db_col}' is empty or NULL")
                             skip_row = True
                             break
                     row_data[db_col] = value
-                # Set the description field
+
+                # Set the description field if it exists in the database
                 if 'description' in db_columns:
                     row_data['description'] = final_description
-                # ID generation logic (restore original)
+                    # Check NOT NULL constraint for description after we've built it
+                    if not_null_columns.get('description', False) and not final_description:
+                        print(f"  Row {idx} skipped: Required column 'description' is empty after combining.")
+                        skip_row = True
+                        skipped_count += 1
+
+                # ID generation logic
                 if id_column is not None and next_num is not None:
                     if table_name == 'items':
                         row_data[id_column] = f"MLQU-{next_num:07d}"
@@ -709,21 +716,16 @@ def import_data(table_name):
                     else:
                         row_data[id_column] = next_num
                         next_num += 1
-                # Check NOT NULL for description
-                if not_null_columns.get('description', False):
-                    if not final_description:
-                        print(f"  Row {idx} skipped: Required column 'description' is empty after combining.")
-                        skip_row = True
-                        skipped_count += 1
+
                 if not skip_row:
-                    print(f"  Row {idx} accepted with data: {row_data}")  # Debug accepted row
+                    print(f"  Row {idx} accepted with data: {row_data}")
                     current_batch.append(row_data)
                     if len(current_batch) >= batch_size:
                         inserted = bulk_insert_rows(c, table_name, current_batch, datetime.datetime.now())
                         valid_rows.extend(current_batch)
                         current_batch = []
                 else:
-                    print(f"  Row {idx} skipped!")  # Debug skipped row
+                    print(f"  Row {idx} skipped!")
                     skipped_count += 1
             
             # Insert any remaining rows

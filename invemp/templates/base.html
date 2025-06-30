@@ -10,7 +10,7 @@
     <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
   </button>
   {% endif %}
-  {% if is_index and table_name == 'items' %}
+  {% if is_index and table_name == 'items' and g.user[3] == 'admin' %}
   <form id="import-form" action="{{ url_for('dashboard_admin.import_data', table_name = table_name) }}" method="post" enctype="multipart/form-data" style="display:inline;">
     <label for="import-file" id="btn-import" class="btn-download" style="cursor:pointer;">
       <img src="{{ url_for('static', filename='icons/upload.svg') }}" alt="import" id="import-icon-img">
