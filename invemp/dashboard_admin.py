@@ -29,11 +29,13 @@ def create(table_name):
     preserved_args = get_preserved_args()
 
     c.execute(f"DESCRIBE `{table_name}`")
+    describe_rows = c.fetchall()
     if table_name == 'items':
-        columns = get_items_columns()
-        describe_rows = [row for row in c.fetchall()]
+        columns = [row[0] for row in describe_rows]
+        # Rename 'employee' column to 'Assigned To' for UI consistency
+        columns = [col if col != 'employee' else 'Assigned To' for col in columns]
+        columns = [col if col != 'subcategory' else 'Subcategory' for col in columns]
     else:
-        describe_rows = c.fetchall()
         columns = [row[0] for row in describe_rows]
     # Build not_null_columns dict
     not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
@@ -41,7 +43,7 @@ def create(table_name):
 
 
     dropdown_options = get_dropdown_options()
-    
+
     id_column = None
     for column in columns:
         if column == 'id' or column.endswith('_id'):
@@ -90,6 +92,8 @@ def create(table_name):
                 continue
             elif column == 'department':
                 continue
+            elif column == 'Subcategory':
+                continue
             else:
                 if request.form.get(column) != '':
                     values.append(request.form.get(column))
@@ -99,15 +103,16 @@ def create(table_name):
 
 
         status_from_form = request.form.get('status', '').strip().lower()
-        department_value = request.form.get('department')
         # Convert employee name to employee_id before inserting
         assigned_to_name = request.form.get('Assigned To')
+        subcategory_name = request.form.get('Subcategory')
 
         # Only handle 'employee', 'department', and 'status' columns for items table
         if table_name == 'items':
+            # Handle Assigned To (employee)
             if assigned_to_name and status_from_form != 'active':
                 c_lookup = get_cursor()
-                c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+                c_lookup.execute("SELECT employee_id FROM employees WHERE CONCAT(last_name, ', ', first_name) = %s", (assigned_to_name,))
                 emp_row = c_lookup.fetchone()
                 c_lookup.close()
                 assigned_to_value = emp_row[0] if emp_row else None
@@ -116,10 +121,22 @@ def create(table_name):
             values.append(assigned_to_value)
             insert_columns.append('employee')
 
+            # Handle Subcategory (foreign key)
+            if subcategory_name:
+                c_lookup = get_cursor()
+                c_lookup.execute("SELECT id FROM subcategories WHERE subcategory = %s", (subcategory_name,))
+                subcat_row = c_lookup.fetchone()
+                c_lookup.close()
+                subcategory_value = subcat_row[0] if subcat_row else None
+            else:
+                subcategory_value = None
+            values.append(subcategory_value)
+            insert_columns.append('subcategory')
+
             if status_from_form == 'active':
-                values.append('MIS')
-                insert_columns.append('department')
+                # Do NOT set department in items table, just set status
                 values.append(status_from_form)
+                insert_columns.append('status')
             elif status_from_form == 'assigned' and assigned_to_value is None:
                 flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
                 entries = preserve_current_entries(columns)
@@ -132,15 +149,10 @@ def create(table_name):
                     preserved_args=preserved_args
                 )
             else:
-                values.append(department_value)
-                insert_columns.append('department')
                 values.append(status_from_form)
-            insert_columns.append('status')
+                insert_columns.append('status')
         else:
             # For non-items tables, only add department/status if they exist in columns
-            if 'department' in columns:
-                values.append(department_value)
-                insert_columns.append('department')
             if 'status' in columns:
                 values.append(status_from_form)
                 insert_columns.append('status')
@@ -184,6 +196,8 @@ def create(table_name):
                     entry.append(id)
                 elif column == 'Assigned To':
                     entry.append(request.form.get('Assigned To'))
+                elif column == 'Subcategory':
+                    entry.append(request.form.get('Subcategory'))
                 elif column == 'last_updated':
                     entry.append(current_datetime)
                 else:

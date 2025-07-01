@@ -62,12 +62,16 @@ def get_dropdown_options():
     fallback_status = ['active', 'assigned', 'for repair', 'for disposal']
 
     c = get_cursor()
-    c.execute("SELECT employee_id, name FROM employees")
+    c.execute("SELECT employee_id, CONCAT(last_name, ', ', first_name) AS full_name FROM employees")
     employees = c.fetchall()
     employee_options = ['-- None --'] + [f"{emp[1]}" for emp in employees]
     c.close()
+    c = get_cursor()
+    c.execute("SELECT id, subcategory FROM subcategories ORDER BY subcategory ASC")
+    subcategory_options = c.fetchall()  # List of (id, name)
+    c.close()
     return {
-        'category': load_options('category.txt', fallback_category),
+        'subcategory': subcategory_options,
         'department': load_options('department.txt', fallback_department),
         'Assigned To': employee_options,
         'account_type': load_options('account_type.txt', fallback_account_type),
@@ -76,15 +80,15 @@ def get_dropdown_options():
 
 def get_items_columns():
     return [
-        'item_id', 'serial_number', 'item_name', 'category', 'description',
-        'comment', 'Assigned To', 'department', 'status', 'last_updated'
+        'item id', 'serial number', 'item name', 'category', 'description',
+        'Assigned To', 'status', 'last_updated'
     ]
 
 def get_items_query():
     return """
         SELECT i.item_id AS 'item id', i.serial_number AS 'serial number', 
         i.item_name AS 'item name', i.category, i.description, 
-        i.comment, e.name AS 'Assigned To', i.department, i.status, i.last_updated
+        i.comment, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', i.status, i.last_updated
         FROM items i
         LEFT JOIN employees e ON i.employee = e.employee_id
     """
@@ -114,6 +118,7 @@ def get_filters(table_name):
             if values:
                 filters[column] = ' '.join(values) if len(values) > 1 else values[0]
 
+
     
     return filters
 
@@ -142,7 +147,7 @@ def filter_table(table_name, cursor, page=1, per_page=15):
                 continue
             if table_name in ('items', 'items_disposal'):
                 if col == "Assigned To":
-                    or_clauses.append("e.name LIKE %s")
+                    or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
                 else:
                     or_clauses.append(f"i.`{col}` LIKE %s")
             else:
@@ -175,7 +180,7 @@ def filter_table(table_name, cursor, page=1, per_page=15):
     if sort_column and sort_direction.lower() in ['asc', 'desc']:
         if table_name in ('items', 'items_disposal'):
             if sort_column == "Assigned To":
-                sql_query += f" ORDER BY e.name {sort_direction}"
+                sql_query += f" ORDER BY CONCAT(e.last_name, ', ', e.first_name) {sort_direction}"
             else:
                 sql_query += f" ORDER BY i.`{sort_column}` {sort_direction}"
         else:
@@ -262,7 +267,7 @@ def get_item_assignment_history(item_id):
     c = get_cursor()
     c.execute(
         """
-        SELECT h.item_id, e.name, h.assigned_date, h.removed_date
+        SELECT h.item_id, CONCAT(e.last_name, ', ', e.first_name) AS full_name, h.assigned_date, h.removed_date
         FROM item_assignment_history h
         LEFT JOIN employees e ON h.employee_id = e.employee_id
         WHERE h.item_id = %s

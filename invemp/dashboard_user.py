@@ -19,16 +19,12 @@ from weasyprint import CSS, HTML
 
 bp = Blueprint('dashboard_user', __name__)
 
-@bp.route('/', defaults={'table_name': 'items'})
+@bp.route('/', defaults={'table_name': 'employees'})
 @bp.route('/<table_name>')
 @login_required
 def index(table_name):
-    # Redirect admin to 'employees' table by default
-    if g.user[3] == 'admin' and table_name == 'items':
-        return redirect(url_for('dashboard_user.index', table_name='employees'))
     # Check for admin access
     if g.user[3] != 'admin' and table_name != 'items':
-        flash("You do not have permission to access this table.")
         return redirect(url_for('dashboard_user.index'))
 
     # Pagination setup
