@@ -80,18 +80,19 @@ def get_dropdown_options():
 
 def get_items_columns():
     return [
-        'item_id', 'item_name', 'subcategory',
-        'description', 'specification', 'Assigned To', 'status', 'last_updated'
+        'item id', 'item name', 'subcategory', 'category',
+        'brand name', 'description', 'specification', 'Assigned To', 'department', 'status', 'last_updated'
     ]
 
 def get_items_query():
     return """
         SELECT i.item_id AS 'item id', 
-        i.item_name AS 'item name', subcat.subcategory AS 'Subcategory', subcat.category AS 'Category',
-        i.description, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department, i.status, i.last_updated
+        i.item_name AS 'item name', subcat.subcategory, cat.category AS 'category',
+        i.brand_name AS 'brand name', i.description, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department, i.status, i.last_updated
         FROM items i
         LEFT JOIN employees e ON i.employee = e.employee_id
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
+        LEFT JOIN items_categories cat ON subcat.category_id = cat.id
     """
 
 def get_filters(table_name):

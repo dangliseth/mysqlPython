@@ -92,7 +92,7 @@ def create(table_name):
                 continue
             elif column == 'department':
                 continue
-            elif column == 'Subcategory':
+            elif column == 'subcategory':
                 continue
             else:
                 if request.form.get(column) != '':
@@ -105,7 +105,7 @@ def create(table_name):
         status_from_form = request.form.get('status', '').strip().lower()
         # Convert employee name to employee_id before inserting
         assigned_to_name = request.form.get('Assigned To')
-        subcategory_name = request.form.get('Subcategory')
+        subcategory_name = request.form.get('subcategory')
 
         # Only handle 'employee', 'department', and 'status' columns for items table
         if table_name == 'items':
