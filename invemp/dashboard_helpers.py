@@ -68,7 +68,8 @@ def get_dropdown_options():
     c.close()
     c = get_cursor()
     c.execute("SELECT id, subcategory FROM subcategories ORDER BY subcategory ASC")
-    subcategory_options = c.fetchall()  # List of (id, name)
+    subcategories = c.fetchall()  # List of (id, name)
+    subcategory_options = [f"{sub[1]}" for sub in subcategories]
     c.close()
     return {
         'subcategory': subcategory_options,

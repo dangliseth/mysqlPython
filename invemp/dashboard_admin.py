@@ -34,7 +34,6 @@ def create(table_name):
         columns = [row[0] for row in describe_rows]
         # Rename 'employee' column to 'Assigned To' for UI consistency
         columns = [col if col != 'employee' else 'Assigned To' for col in columns]
-        columns = [col if col != 'subcategory' else 'Subcategory' for col in columns]
     else:
         columns = [row[0] for row in describe_rows]
     # Build not_null_columns dict
@@ -90,8 +89,6 @@ def create(table_name):
                 continue
             elif column == 'Assigned To':
                 continue
-            elif column == 'department':
-                continue
             elif column == 'subcategory':
                 continue
             else:
@@ -103,6 +100,7 @@ def create(table_name):
 
 
         status_from_form = request.form.get('status', '').strip().lower()
+        status_value = None
         # Convert employee name to employee_id before inserting
         assigned_to_name = request.form.get('Assigned To')
         subcategory_name = request.form.get('subcategory')
@@ -110,12 +108,24 @@ def create(table_name):
         # Only handle 'employee', 'department', and 'status' columns for items table
         if table_name == 'items':
             # Handle Assigned To (employee)
-            if assigned_to_name and status_from_form != 'active':
+            if assigned_to_name:
                 c_lookup = get_cursor()
                 c_lookup.execute("SELECT employee_id FROM employees WHERE CONCAT(last_name, ', ', first_name) = %s", (assigned_to_name,))
                 emp_row = c_lookup.fetchone()
                 c_lookup.close()
-                assigned_to_value = emp_row[0] if emp_row else None
+                if not emp_row:
+                    flash(f"Employee '{assigned_to_name}' not found.", "error")
+                    entries = preserve_current_entries(columns)
+                    return render_template(
+                        'dashboard/create.html',
+                        entries=entries,
+                        table_name=table_name,
+                        columns=columns,
+                        dropdown_options=dropdown_options,
+                        preserved_args=preserved_args,
+                        not_null_columns=not_null_columns
+                    )
+                assigned_to_value = emp_row[0]
             else:
                 assigned_to_value = None
             values.append(assigned_to_value)
@@ -133,24 +143,14 @@ def create(table_name):
             values.append(subcategory_value)
             insert_columns.append('subcategory')
 
-            if status_from_form == 'active':
-                # Do NOT set department in items table, just set status
-                values.append(status_from_form)
-                insert_columns.append('status')
-            elif status_from_form == 'assigned' and assigned_to_value is None:
-                flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
-                entries = preserve_current_entries(columns)
-                return render_template(
-                    'dashboard/create.html',
-                    entries=entries,
-                    table_name=table_name,
-                    columns=columns,
-                    dropdown_options=dropdown_options,
-                    preserved_args=preserved_args
-                )
+            if assigned_to_value is None and status_from_form not in ['for repair', 'for disposal']:
+                status_value = 'active'
+            elif assigned_to_value and status_from_form not in ['for repair', 'for disposal']:
+                status_value = 'assigned'
             else:
-                values.append(status_from_form)
-                insert_columns.append('status')
+                status_value = status_from_form
+            values.append(status_value)
+            insert_columns.append('status')
         else:
             # For non-items tables, only add department/status if they exist in columns
             if 'status' in columns:
@@ -219,11 +219,12 @@ def update(id, table_name):
     c = get_cursor()
 
     c.execute(f"DESCRIBE `{table_name}`")
+    describe_rows = c.fetchall()
     if table_name == 'items':
-        columns = get_items_columns()
-        describe_rows = [row for row in c.fetchall()]
+        columns = [row[0] for row in describe_rows]
+        # Rename 'employee' column to 'Assigned To' for UI consistency
+        columns = [col if col != 'employee' else 'Assigned To' for col in columns]
     else:
-        describe_rows = c.fetchall()
         columns = [row[0] for row in describe_rows]
     # Build not_null_columns dict
     not_null_columns = {row[0]: (row[2] == 'NO') for row in describe_rows}
@@ -243,7 +244,7 @@ def update(id, table_name):
         if employee_id:  # Only query if employee_id exists
             c = get_cursor()
             try:
-                c.execute("SELECT name FROM employees WHERE employee_id = %s", (employee_id,))
+                c.execute("SELECT CONCAT(last_name, ', ', first_name) FROM employees WHERE employee_id = %s", (employee_id,))
                 result = c.fetchone()
                 employee_name = result[0] if result else None
                 entry[employee_idx] = employee_name  # Replace ID with name
@@ -260,7 +261,7 @@ def update(id, table_name):
         prev_assigned_to_value = None
         new_assigned_to_value = None
         for column in columns:
-            if column == 'id' or column.endswith('_id') or column == 'ID':  # Skip ID columns
+            if column == 'id' or column.endswith('_id') or column == 'ID' or column.endswith('id'):  # Skip ID columns
                 id_column = column
                 continue
             if column == 'password':
@@ -269,7 +270,7 @@ def update(id, table_name):
                 continue
             elif column == 'Assigned To':
                 continue
-            elif column == 'department':
+            elif column == 'subcategory':
                 continue
             elif column == 'last_updated':
                 values.append(current_datetime)
@@ -290,16 +291,29 @@ def update(id, table_name):
                 prev_assigned_to_value = prev_row[0]
             c_prev.close()
 
-            # Handle status, 'Assigned To', and department logic
+            # Handle 'Assigned To', and subcategory logic
             assigned_to_name = request.form.get('Assigned To')
-            department_value = request.form.get('department')
             status_from_form = request.form.get('status', '').strip().lower()
+            status_value = None
             # Convert name to employee_id
-            if assigned_to_name and status_from_form != 'active':
+            if assigned_to_name:
                 c_lookup = get_cursor()
-                c_lookup.execute("SELECT employee_id FROM employees WHERE name = %s", (assigned_to_name,))
+                c_lookup.execute("SELECT employee_id FROM employees WHERE CONCAT(last_name, ', ', first_name) = %s", (assigned_to_name,))
                 emp_row = c_lookup.fetchone()
                 c_lookup.close()
+                if not emp_row:
+                    flash(f"Employee '{assigned_to_name}' not found.", "error")
+                    entries = preserve_current_entries(columns)
+                    return render_template(
+                        'dashboard/update.html',
+                        entry=entry,
+                        entries=entries,
+                        table_name=table_name,
+                        columns=columns,
+                        dropdown_options=dropdown_options,
+                        preserved_args=preserved_args,
+                        not_null_columns=not_null_columns
+                    )
                 assigned_to_value = emp_row[0] if emp_row else None
             else:
                 assigned_to_value = None
@@ -308,27 +322,26 @@ def update(id, table_name):
             update_columns.append(employee_column)
             new_assigned_to_value = assigned_to_value
 
-            if status_from_form == 'active':
-                values.append('MIS')
-                update_columns.append('department')
-                values.append(status_from_form)
-            elif status_from_form == 'assigned' and assigned_to_value is None:
-                flash("'Assigned To' column cannot be empty when status is 'assigned'.", "error")
-                entries = preserve_current_entries(columns)
-                # Stay on the update page with the user's input preserved
-                return render_template(
-                    'dashboard/update.html',
-                    entry=entry,
-                    entries=entries,
-                    table_name=table_name,
-                    columns=columns,
-                    dropdown_options=dropdown_options,
-                    preserved_args=preserved_args
-                )
+            # Handle Subcategory (foreign key)
+            subcategory_name = request.form.get('subcategory')
+            if subcategory_name:
+                c_lookup = get_cursor()
+                c_lookup.execute("SELECT id FROM subcategories WHERE subcategory = %s", (subcategory_name,))
+                subcat_row = c_lookup.fetchone()
+                c_lookup.close()
+                subcategory_value = subcat_row[0] if subcat_row else None
             else:
-                values.append(department_value)
-                update_columns.append('department')
-                values.append(status_from_form)
+                subcategory_value = None
+            values.append(subcategory_value)
+            update_columns.append('subcategory')
+
+            if assigned_to_value and status_from_form not in ['for repair', 'for disposal']:
+                status_value = 'assigned'
+            elif assigned_to_value is None and status_from_form not in ['for repair', 'for disposal']:
+                status_value = 'active'
+            else:
+                status_value = status_from_form
+            values.append(status_value)
             update_columns.append('status')
 
 
