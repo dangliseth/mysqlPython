@@ -28,7 +28,7 @@ def get_entry(entry_id, table_name):
     # Identify the primary key column (id, ends with _id, or ID)
     id_column = None
     for column in columns:
-        if column.lower() == 'id' or column.endswith('_id') or column == 'ID':
+        if column.lower() == 'id' or column.endswith('_id') or column == 'ID' or column.endswith('id'):
             id_column = column
             break
 
@@ -322,7 +322,7 @@ def bulk_insert_rows(c, table_name, valid_rows, current_datetime):
     db_columns = [row[0] for row in c.fetchall()]
     
     # Prepare for ID generation (must be before row loop)
-    id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id')), None)
+    id_column = next((col for col in db_columns if col == 'id' or col.endswith('_id') or col.endswith('id')), None)
     next_num = None
     if id_column:
         c.execute(f"SELECT MAX({id_column}) AS max_id FROM `{table_name}`")
