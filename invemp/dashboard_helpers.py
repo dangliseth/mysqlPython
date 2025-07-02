@@ -41,7 +41,7 @@ def get_entry(entry_id, table_name):
     return entry
 
 def is_valid_table(table_name):
-    allowed_tables = {'items', 'items_disposal', 'user_accounts', 'employees', 'employees_archive'}
+    allowed_tables = {'items', 'user_accounts', 'employees', 'items_groups'}
     return table_name in allowed_tables
 
 def get_dropdown_options():
@@ -148,7 +148,9 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         for col in columns:
             if col == 'password':
                 continue
-            if table_name in ('items', 'items_disposal'):
+            elif col == 'subcategory_id':
+                    or_clauses.append("subcategories.subcategory LIKE %s")
+            if table_name in ('items'):
                 if col == "Assigned To":
                     or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
                 else:
