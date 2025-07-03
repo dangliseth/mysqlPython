@@ -80,8 +80,8 @@ def get_dropdown_options():
 
 def get_items_columns():
     return [
-        'item id', 'item name', 'subcategory', 'category',
-        'brand name', 'description', 'specification', 'Assigned To', 'department', 'status', 'last_updated'
+        'item_id', 'item_name', 'subcategory', 'category',
+        'brand_name', 'description', 'specification', 'Assigned To', 'department', 'status', 'last_updated'
     ]
 
 def get_items_query():
