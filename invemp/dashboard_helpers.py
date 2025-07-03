@@ -55,7 +55,6 @@ def get_dropdown_options():
             return fallback
 
     # Fallbacks in case files are missing
-    fallback_category = ['Computer', 'Category 2', 'Category 3', 'Category 4', 'Category 5', 'Category 6']
     fallback_department = ['Registrar', 'SGS', 'SOB', 'SCJ', 'SOA', 'SOE', 'SOL', 'Administration', 'OSA', 'SESO',
                        'Accounting', 'HR', 'Cashier', 'OTP', 'Marketing', 'SHS', 'Quacro', 'Library', 'MIS', 'GenServ']
     fallback_account_type = ['user', 'admin']
@@ -94,6 +93,14 @@ def get_items_query():
         LEFT JOIN employees e ON i.employee = e.employee_id
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
         LEFT JOIN items_categories cat ON subcat.category_id = cat.id
+    """
+def get_items_group_query():
+    return """
+        SELECT items_groups.group_name, 
+        subcategories.subcategory AS 'subcategory_id', items_groups.brand_name,
+        items_groups.item_count, items_groups.assigned_count
+        FROM items_groups
+        LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id
     """
 
 def get_filters(table_name):
@@ -148,11 +155,11 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         for col in columns:
             if col == 'password':
                 continue
-            elif col == 'subcategory_id':
-                    or_clauses.append("subcategories.subcategory LIKE %s")
-            if table_name in ('items'):
+            elif table_name in ('items'):
                 if col == "Assigned To":
                     or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
+                elif col == 'subcategory_id':
+                    or_clauses.append("subcategories.subcategory LIKE %s")
                 else:
                     or_clauses.append(f"i.`{col}` LIKE %s")
             else:
@@ -167,9 +174,12 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         filter_values.append(status_filter)
 
     # Build the base query
-    if table_name in ('items', 'items_disposal'):
+    if table_name == 'items':
         sql_query = get_items_query()
         count_query = "SELECT COUNT(*) FROM items i LEFT JOIN employees e ON i.employee = e.employee_id"
+    elif table_name == 'items_groups':
+        sql_query = get_items_group_query()
+        count_query = "SELECT COUNT(*) FROM items_groups LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id"
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
         count_query = f"SELECT COUNT(*) FROM `{table_name}`"
