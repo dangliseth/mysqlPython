@@ -80,14 +80,14 @@ def get_dropdown_options():
 
 def get_items_columns():
     return [
-        'item_id', 'item_name', 'subcategory', 'category',
-        'brand_name', 'description', 'specification', 'Assigned To', 'department', 'status', 'last_updated'
+        'item id', 'item name', 'subcategory', 'category',
+        'brand name', 'description', 'specification', 'Assigned To', 'department', 'status', 'last_updated'
     ]
 
 def get_items_query():
     return """
         SELECT i.item_id AS 'item id', 
-        i.item_name AS 'item name', subcat.subcategory, cat.category AS 'category',
+        i.item_name AS 'item name', subcat.subcategory, cat.category,
         i.brand_name AS 'brand name', i.description, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department, i.status, i.last_updated
         FROM items i
         LEFT JOIN employees e ON i.employee = e.employee_id
@@ -139,28 +139,47 @@ def filter_table(table_name, cursor, page=1, per_page=15):
 
     if table_name == 'items':
         columns = get_items_columns()
+        # Map display columns to actual SQL expressions for filtering/search
+        column_sql_map = {
+            'item id': 'i.item_id',
+            'item name': 'i.item_name',
+            'subcategory': 'subcat.subcategory',
+            'category': 'cat.category',
+            'brand name': 'i.brand_name',
+            'description': 'i.description',
+            'specification': 'i.specification',
+            'Assigned To': "CONCAT(e.last_name, ', ', e.first_name)",
+            'department': 'e.department',
+            'status': 'i.status',
+            'last_updated': 'i.last_updated',
+        }
     else:
         cursor.execute(f"DESCRIBE `{table_name}`")
         columns = [row[0] for row in cursor.fetchall()]
+        column_sql_map = {col: f'`{col}`' for col in columns}
 
     where_clauses = []
     filter_values = []
+
+    # Build the base query
+    if table_name == 'items':
+        sql_query = get_items_query()
+        count_query = "SELECT COUNT(*) FROM items i LEFT JOIN employees e ON i.employee = e.employee_id LEFT JOIN subcategories subcat ON i.subcategory = subcat.id LEFT JOIN items_categories cat ON subcat.category_id = cat.id"
+    elif table_name == 'items_groups':
+        sql_query = get_items_group_query()
+        count_query = "SELECT COUNT(*) FROM items_groups LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id"
+    else:
+        sql_query = f"SELECT * FROM `{table_name}`"
+        count_query = f"SELECT COUNT(*) FROM `{table_name}`"
 
     # Global search (all columns)
     if search_term:
         or_clauses = []
         for col in columns:
-            if col == 'password':
+            if col == 'password' or col == 'last_updated':
                 continue
-            if col == 'last_updated':
-                continue
-            if table_name == 'items':
-                if col == 'Assigned To':
-                    or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
-                else:
-                    or_clauses.append(f"i.`{col}` LIKE %s")
-            else:
-                or_clauses.append(f"`{col}` LIKE %s")
+            sql_expr = column_sql_map.get(col, f'`{col}`')
+            or_clauses.append(f"{sql_expr} LIKE %s")
             filter_values.append(f"%{search_term}%")
         if or_clauses:
             where_clauses.append(f"({' OR '.join(or_clauses)})")
@@ -169,17 +188,6 @@ def filter_table(table_name, cursor, page=1, per_page=15):
     if table_name == 'items' and status_filter:
         where_clauses.append("i.status = %s")
         filter_values.append(status_filter)
-
-    # Build the base query
-    if table_name == 'items':
-        sql_query = get_items_query()
-        count_query = "SELECT COUNT(*) FROM items i LEFT JOIN employees e ON i.employee = e.employee_id"
-    elif table_name == 'items_groups':
-        sql_query = get_items_group_query()
-        count_query = "SELECT COUNT(*) FROM items_groups LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id"
-    else:
-        sql_query = f"SELECT * FROM `{table_name}`"
-        count_query = f"SELECT COUNT(*) FROM `{table_name}`"
 
     # Add WHERE conditions if any
     if where_clauses:
@@ -190,7 +198,10 @@ def filter_table(table_name, cursor, page=1, per_page=15):
     sort_column = request.args.get('sort_column')
     sort_direction = request.args.get('sort_direction', 'asc')
     if sort_column and sort_direction.lower() in ['asc', 'desc']:
-        if table_name in ('items', 'items_disposal'):
+        if table_name == 'items':
+            sql_expr = column_sql_map.get(sort_column, f'i.`{sort_column}`')
+            sql_query += f" ORDER BY {sql_expr} {sort_direction}"
+        elif table_name == 'items_disposal':
             if sort_column == "Assigned To":
                 sql_query += f" ORDER BY CONCAT(e.last_name, ', ', e.first_name) {sort_direction}"
             else:
