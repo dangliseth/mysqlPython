@@ -126,10 +126,7 @@ def get_filters(table_name):
             
             values = [v.strip() for v in values if v.strip()]
             if values:
-                filters[column] = ' '.join(values) if len(values) > 1 else values[0]
-
-
-    
+                filters[column] = ' '.join(values) if len(values) > 1 else values[0]    
     return filters
 
 def filter_table(table_name, cursor, page=1, per_page=15):
@@ -140,11 +137,9 @@ def filter_table(table_name, cursor, page=1, per_page=15):
     search_term = request.args.get('search', '').strip()
     status_filter = request.args.get('status', '').strip() if table_name == 'items' else None
 
-    if table_name == 'items':
-        columns = get_items_columns()
-    else:
-        cursor.execute(f"DESCRIBE `{table_name}`")
-        columns = [row[0] for row in cursor.fetchall()]
+
+    cursor.execute(f"DESCRIBE `{table_name}`")
+    columns = [row[0] for row in cursor.fetchall()]
 
     where_clauses = []
     filter_values = []
@@ -155,15 +150,12 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         for col in columns:
             if col == 'password':
                 continue
-            elif table_name in ('items'):
-                if col == "Assigned To":
-                    or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
-                elif col == 'subcategory_id':
-                    or_clauses.append("subcategories.subcategory LIKE %s")
-                else:
-                    or_clauses.append(f"i.`{col}` LIKE %s")
+            elif col == 'last_updated':
+                continue
+            elif col == "Assigned To":
+                or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
             else:
-                or_clauses.append(f"`{col}` LIKE %s")
+                or_clauses.append(f"i.`{col}` LIKE %s")
             filter_values.append(f"%{search_term}%")
         if or_clauses:
             where_clauses.append(f"({' OR '.join(or_clauses)})")

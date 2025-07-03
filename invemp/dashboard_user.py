@@ -25,7 +25,7 @@ bp = Blueprint('dashboard_user', __name__)
 def index(table_name):
     # Check for admin access
     if g.user[3] != 'admin' and table_name != 'items':
-        return redirect(url_for('dashboard_user.index'))
+        return redirect(url_for('dashboard_user.index', table_name='items'))
 
     # Pagination setup
     try:
