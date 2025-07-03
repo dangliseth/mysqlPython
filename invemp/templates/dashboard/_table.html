@@ -19,9 +19,8 @@ This template is rendered for both full page loads and AJAX requests.
       <tr>
       {% for column, value in zip(columns, item) %}
         {% if column != 'password' %}
-          {% if loop.index0 == 0 %}
+          {% if loop.last %}
           <td class="id-cell">
-            {{ value }}
             <span class="action-btns">
               <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args) }}" class="btn btn-table">
                 <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="Edit" class="icon">
@@ -32,6 +31,7 @@ This template is rendered for both full page loads and AJAX requests.
               </a>
               {% endif %}
             </span>
+            {{ value }}
           </td>
           {% elif table_name == 'items' and column == 'subcategory' %}
           <td>
