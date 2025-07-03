@@ -152,6 +152,8 @@ def filter_table(table_name, cursor, page=1, per_page=15):
                 continue
             elif col == 'last_updated':
                 continue
+            elif col == 'Assigned To':
+                or_clauses.append("CONCAT(employees.last_name, ', ', employees.first_name) LIKE %s")
             else:
                 or_clauses.append(f"i.`{col}` LIKE %s")
             filter_values.append(f"%{search_term}%")
