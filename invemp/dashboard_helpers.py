@@ -152,8 +152,6 @@ def filter_table(table_name, cursor, page=1, per_page=15):
                 continue
             elif col == 'last_updated':
                 continue
-            elif col == "Assigned To":
-                or_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
             else:
                 or_clauses.append(f"i.`{col}` LIKE %s")
             filter_values.append(f"%{search_term}%")
@@ -164,6 +162,29 @@ def filter_table(table_name, cursor, page=1, per_page=15):
     if table_name == 'items' and status_filter:
         where_clauses.append("i.status = %s")
         filter_values.append(status_filter)
+
+    # Build filters from query string (for column-specific filters)
+    filters = get_filters(table_name)
+    for col, val in filters.items():
+        if table_name == 'items':
+            if col == 'Assigned To':
+                where_clauses.append("CONCAT(e.last_name, ', ', e.first_name) LIKE %s")
+                filter_values.append(f"%{val}%")
+            elif col == 'subcategory':
+                where_clauses.append("subcategories.subcategory LIKE %s")
+                filter_values.append(f"%{val}%")
+            elif col == 'category':
+                where_clauses.append("items_categories.category LIKE %s")
+                filter_values.append(f"%{val}%")
+            elif col == 'department':
+                where_clauses.append("e.department LIKE %s")
+                filter_values.append(f"%{val}%")
+            else:
+                where_clauses.append(f"i.`{col}` LIKE %s")
+                filter_values.append(f"%{val}%")
+        else:
+            where_clauses.append(f"`{col}` LIKE %s")
+            filter_values.append(f"%{val}%")
 
     # Build the base query
     if table_name == 'items':
