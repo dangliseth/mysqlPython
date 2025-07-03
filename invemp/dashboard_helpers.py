@@ -172,6 +172,17 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         sql_query = f"SELECT * FROM `{table_name}`"
         count_query = f"SELECT COUNT(*) FROM `{table_name}`"
 
+    # Specific column filters for items table (for clickable rows from items_groups)
+    if table_name == 'items':
+        brand_name_filter = request.args.get('brand_name', '').strip()
+        subcategory_filter = request.args.get('subcategory', '').strip()
+        if brand_name_filter:
+            where_clauses.append("i.brand_name = %s")
+            filter_values.append(brand_name_filter)
+        if subcategory_filter:
+            where_clauses.append("subcat.subcategory = %s")
+            filter_values.append(subcategory_filter)
+
     # Global search (all columns)
     if search_term:
         or_clauses = []
