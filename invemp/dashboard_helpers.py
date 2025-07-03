@@ -137,9 +137,11 @@ def filter_table(table_name, cursor, page=1, per_page=15):
     search_term = request.args.get('search', '').strip()
     status_filter = request.args.get('status', '').strip() if table_name == 'items' else None
 
-
-    cursor.execute(f"DESCRIBE `{table_name}`")
-    columns = [row[0] for row in cursor.fetchall()]
+    if table_name == 'items':
+        columns = get_items_columns()
+    else:
+        cursor.execute(f"DESCRIBE `{table_name}`")
+        columns = [row[0] for row in cursor.fetchall()]
 
     where_clauses = []
     filter_values = []
@@ -150,12 +152,15 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         for col in columns:
             if col == 'password':
                 continue
-            elif col == 'last_updated':
+            if col == 'last_updated':
                 continue
-            elif col == 'Assigned To':
-                or_clauses.append("CONCAT(employees.last_name, ', ', employees.first_name) LIKE %s")
+            if table_name == 'items':
+                if col == 'Assigned To':
+                    or_clauses.append("CONCAT(employees.last_name, ', ', employees.first_name) LIKE %s")
+                else:
+                    or_clauses.append(f"i.`{col}` LIKE %s")
             else:
-                or_clauses.append(f"i.`{col}` LIKE %s")
+                or_clauses.append("`{col}` LIKE %s")
             filter_values.append(f"%{search_term}%")
         if or_clauses:
             where_clauses.append(f"({' OR '.join(or_clauses)})")
