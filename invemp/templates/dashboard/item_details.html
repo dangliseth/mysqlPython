@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %} {{item_id}} from {{ table_name }} {% endblock %}
+
+{% block content %}
+<main id="item-details-view">
+    <h1>Details for {{ item_id }}</h1>
+    <div class="item-details">
+        <table class="table table-striped">
+            <tbody>
+                {% for column, value in item_details.items() %}
+                    <tr>
+                        <th>{{ column }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item_id) }}" class="btn btn-primary">Edit</a>
+        <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item_id) }}" class="btn btn-secondary">View History</a>
+    </div>
+{% endblock %}

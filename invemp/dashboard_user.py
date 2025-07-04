@@ -77,6 +77,23 @@ def index(table_name):
                          args=request.args.to_dict(),
                          is_index=True)
 
+"""
+@bp.route('/<table_name>/<employee_id>', table_name='employees')
+@login_required
+def employee_details(table_name, employee_id):
+    details_query = f
+    SELECT * FROM {table_name} WHERE employee_id = %s
+    
+    c = get_cursor()
+    try:
+        c.execute(details_query, (employee_id,))
+        employee_details = c.fetchone() # Fetch single employee details
+    except Exception as e:
+        flash(f"Error fetching employee details: {e}", 'error')
+        return redirect(url_for('dashboard_user.index', table_name=table_name))
+"""
+        
+
 @bp.route('/<table_name>/convert_pdf')
 @login_required
 def convert_pdf(table_name):

@@ -6,7 +6,7 @@ This template is rendered for both full page loads and AJAX requests.
   <thead>
     <tr>
       {% for column in columns %}
-        {% if column != 'password' and not (table_name == 'items' and (column == 'category' or column == 'department')) %}
+        {% if column != 'password' and not (column == 'category' or column == 'department' or column == 'last_updated' or column == 'specification') %}
           <th style="cursor:pointer;">
             {{ column }}
           </th>
@@ -18,25 +18,15 @@ This template is rendered for both full page loads and AJAX requests.
     {% for item in items if item[1] != g.user[1] %}
       {% if table_name == 'items_groups' %}
       <tr class="clickable-row" style="cursor:pointer;" onclick="window.location='{{ url_for('dashboard_user.index', table_name='items', brand_name=item[columns.index('brand_name')], subcategory=item[columns.index('subcategory_id')]) }}'">
+      {% elif table_name == 'employees' %}
+      <tr class="clickable-row" style="cursor: pointer;" onclick=""></tr>
       {% else %}
       <tr>
       {% endif %}
       {% for column, value in zip(columns, item) %}
         {% if column != 'password' %}
-          {% if loop.last and g.user[3] == 'admin' and table_name != 'items_groups' %}
-          <td class="id-cell">
-            <span class="action-btns">
-              <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args) }}" class="btn btn-table">
-                <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="Edit" class="icon">
-              </a>
-              {% if table_name == 'items' %}
-              <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args)}}" class="btn btn-table">
-                <img src="{{ url_for('static', filename='icons/history.svg') }}" alt="History" class="icon">
-              </a>
-              {% endif %}
-            </span>
-            {{ value }}
-          </td>
+          {% if column == 'category' or column == 'department' or column == 'last_updated' or column == 'specification' %}
+            {# skip category and department columns, already shown with item_name/Assigned To #}
           {% elif table_name == 'items' and column == 'subcategory' %}
           <td>
             <div>{{ value }}</div>
@@ -50,9 +40,17 @@ This template is rendered for both full page loads and AJAX requests.
             <div style="font-size:0.85em; color:#242424; font-style:italic; margin-top:2px;">
               {{ item[columns.index('department')] }}
             </div>
+            <span class="action-btns">
+              <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args) }}" class="btn btn-table">
+                <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="Edit" class="icon">
+              </a>
+              {% if table_name == 'items' %}
+              <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args)}}" class="btn btn-table">
+                <img src="{{ url_for('static', filename='icons/history.svg') }}" alt="History" class="icon">
+              </a>
+              {% endif %}
+            </span>
           </td>
-          {% elif table_name == 'items' and (column == 'category' or column == 'department') %}
-            {# skip category and department columns, already shown with item_name/Assigned To #}
           {% else %}
           <td>{{ value }}</td>
           {% endif %}

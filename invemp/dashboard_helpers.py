@@ -81,7 +81,7 @@ def get_dropdown_options():
 def get_items_columns():
     return [
         'item id', 'item name', 'subcategory', 'category',
-        'brand name', 'description', 'specification', 'Assigned To', 'department', 'status', 'last_updated'
+        'brand name', 'description', 'status', 'Assigned To', 'department'
     ]
 
 def get_items_query():
@@ -94,6 +94,7 @@ def get_items_query():
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
         LEFT JOIN items_categories cat ON subcat.category_id = cat.id
     """
+
 def get_items_group_query():
     return """
         SELECT items_groups.group_name, 
@@ -147,11 +148,9 @@ def filter_table(table_name, cursor, page=1, per_page=15):
             'category': 'cat.category',
             'brand name': 'i.brand_name',
             'description': 'i.description',
-            'specification': 'i.specification',
             'Assigned To': "CONCAT(e.last_name, ', ', e.first_name)",
             'department': 'e.department',
             'status': 'i.status',
-            'last_updated': 'i.last_updated',
         }
     else:
         cursor.execute(f"DESCRIBE `{table_name}`")
@@ -212,11 +211,6 @@ def filter_table(table_name, cursor, page=1, per_page=15):
         if table_name == 'items':
             sql_expr = column_sql_map.get(sort_column, f'i.`{sort_column}`')
             sql_query += f" ORDER BY {sql_expr} {sort_direction}"
-        elif table_name == 'items_disposal':
-            if sort_column == "Assigned To":
-                sql_query += f" ORDER BY CONCAT(e.last_name, ', ', e.first_name) {sort_direction}"
-            else:
-                sql_query += f" ORDER BY i.`{sort_column}` {sort_direction}"
         else:
             sql_query += f" ORDER BY `{sort_column}` {sort_direction}"
 
