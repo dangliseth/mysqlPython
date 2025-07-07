@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if table_name == 'items' %}
+    Item Details
+  {% elif table_name == 'employees' %}
+    Employee Details
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="details-container">
+    <!-- Back button and title header -->
+    <div class="details-header">
+    <h1 class="details-title">
+        {% if table_name == 'items' %}
+        Item #{{ entry[0] }} Details
+        {% elif table_name == 'employees' %}
+        Employee #{{ entry[0] }} Details
+        {% endif %}
+    </h1>
+    </div>
+
+    <!-- Details card -->
+    <div class="details-card">
+    <div class="details-grid">
+    {% for column in columns %}
+        <div class="detail-item">
+            <span class="detail-label">{{ column }}</span>
+            {% if column == 'subcategory' %}
+                <span class="detail-value">{{ entry[-2] }}</span>
+            {% elif column == 'Assigned To' %}
+                <span class="detail-value">{{ entry[-1] }}</span>
+            {% else %}
+                <span class="detail-value">{{ entry[loop.index0] }}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div> <!-- end of details-grid -->
+
+    </div> <!-- end of details-card -->
+    <div class="details-actions">
+        <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=id) }}" class="edit-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        Edit Item
+        </a>
+    </div>
+
+<style>
+.details-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #666;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  background-color: #f5f5f5;
+}
+
+.back-button:hover {
+  background-color: #e5e5e5;
+  color: #333;
+}
+
+.details-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.details-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #333;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-maintenance {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.details-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  font-size: 1rem;
+}
+.edit-btn .icon {
+  margin-right: 0.5rem;
+}
+.edit-btn:hover {
+  background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+  transform: translateY(-2px) scale(1.03);
+}
+
+@media (max-width: 768px) {
+  .details-container {
+    margin: 1rem auto;
+  }
+  
+  .details-card {
+    padding: 1rem;
+  }
+  
+  .details-grid {
+    gap: 1rem;
+  }
+}
+</style>
+{% endblock %}

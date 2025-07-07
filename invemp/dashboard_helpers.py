@@ -148,9 +148,9 @@ def filter_table(table_name, cursor, page=1, per_page=15):
             'category': 'cat.category',
             'brand name': 'i.brand_name',
             'description': 'i.description',
+            'status': 'i.status',
             'Assigned To': "CONCAT(e.last_name, ', ', e.first_name)",
             'department': 'e.department',
-            'status': 'i.status',
         }
     else:
         cursor.execute(f"DESCRIBE `{table_name}`")

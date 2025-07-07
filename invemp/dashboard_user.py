@@ -8,7 +8,7 @@ import datetime
 from invemp.auth import login_required
 from invemp.dashboard_helpers import (
     is_valid_table, get_tables, calculate_column_widths, get_items_columns, get_items_query,
-    filter_table
+    filter_table, get_preserved_args
     )
 from invemp.db import get_cursor
 
@@ -77,21 +77,51 @@ def index(table_name):
                          args=request.args.to_dict(),
                          is_index=True)
 
-"""
-@bp.route('/<table_name>/<employee_id>', table_name='employees')
+@bp.route('/<table_name>/<id>')
 @login_required
-def employee_details(table_name, employee_id):
-    details_query = f
-    SELECT * FROM {table_name} WHERE employee_id = %s
-    
+def view_details(table_name, id):
+    id_column = None
+    args = get_preserved_args()
     c = get_cursor()
+    c.execute(f'DESCRIBE {table_name}')
+    description = c.fetchall()
+    columns = [row[0] for row in description]
+    c.close()
+    for column in columns:
+        if column == 'id' or column.endswith('_id'):
+            id_column = column
+            break
+    if table_name == 'items':
+        columns = [col if col != 'employee' else 'Assigned To' for col in columns]
+        details_query = f'''
+        SELECT i.*, s.subcategory, CONCAT(e.last_name, ', ', e.first_name) AS "Assigned To" 
+        FROM {table_name} i 
+        LEFT JOIN subcategories s ON i.subcategory = s.id
+        LEFT JOIN employees e ON i.employee = e.employee_id
+        WHERE i.{id_column} = %s
+        '''
+    else:
+        details_query = f"""
+        SELECT * FROM {table_name} WHERE {id_column} = %s
+        """
+
     try:
-        c.execute(details_query, (employee_id,))
-        employee_details = c.fetchone() # Fetch single employee details
+        c = get_cursor()
+        c.execute(details_query, (id,))
+        details = c.fetchone()
     except Exception as e:
-        flash(f"Error fetching employee details: {e}", 'error')
+        flash(f"Error fetching entry details: {e}", 'error')
         return redirect(url_for('dashboard_user.index', table_name=table_name))
-"""
+    finally:
+        c.close()
+
+    return render_template('dashboard/view_details.html',
+                            entry=details,
+                            table_name=table_name,
+                            columns=columns,
+                            id_column=id_column,
+                            id=id,
+                            args=args)
         
 
 @bp.route('/<table_name>/convert_pdf')

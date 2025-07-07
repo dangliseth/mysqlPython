@@ -379,7 +379,7 @@ def update(id, table_name):
             c.connection.commit()
             c.close()
             flash(f"Successfully updated {table_name} id: {entry[0]}")
-            return redirect(url_for('dashboard_user.index', table_name=table_name,
+            return redirect(url_for('dashboard_user.view_details', table_name=table_name, id = id,
                                     **preserved_args))
         except Exception as e:
             # Import pymysql.err if not already imported

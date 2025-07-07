@@ -18,10 +18,10 @@ This template is rendered for both full page loads and AJAX requests.
     {% for item in items if item[1] != g.user[1] %}
       {% if table_name == 'items_groups' %}
       <tr class="clickable-row" style="cursor:pointer;" onclick="window.location='{{ url_for('dashboard_user.index', table_name='items', brand_name=item[columns.index('brand_name')], subcategory=item[columns.index('subcategory_id')]) }}'">
-      {% elif table_name == 'employees' %}
-      <tr class="clickable-row" style="cursor: pointer;" onclick=""></tr>
+      {% elif table_name == 'user_accounts' %}
+      <tr class="clickable-row" style="cursor:pointer;" onclick="window.location='{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0]) }}'">
       {% else %}
-      <tr>
+      <tr style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name=table_name,id=item[0], **args) }}'">
       {% endif %}
       {% for column, value in zip(columns, item) %}
         {% if column != 'password' %}
@@ -41,9 +41,6 @@ This template is rendered for both full page loads and AJAX requests.
               {{ item[columns.index('department')] }}
             </div>
             <span class="action-btns">
-              <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args) }}" class="btn btn-table">
-                <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="Edit" class="icon">
-              </a>
               {% if table_name == 'items' %}
               <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args)}}" class="btn btn-table">
                 <img src="{{ url_for('static', filename='icons/history.svg') }}" alt="History" class="icon">
