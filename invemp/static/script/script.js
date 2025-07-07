@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filterInput.addEventListener('input', toggleClearBtn);
     }
 
-    // Auto-hide flash messages after 5 seconds
+    // Auto-hide flash messages after 2.5 seconds
     setTimeout(function() {
         document.querySelectorAll('.flash').forEach(function(flash) {
             flash.style.transition = 'opacity 0.5s';
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 500);
         });
-    }, 5000);
+    }, 2500);
 });
 
 document.addEventListener('DOMContentLoaded', function() {

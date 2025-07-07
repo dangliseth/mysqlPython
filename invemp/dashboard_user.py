@@ -105,6 +105,17 @@ def view_details(table_name, id):
         SELECT * FROM {table_name} WHERE {id_column} = %s
         """
 
+    if table_name == 'employees':
+        liabilities_query = f"""
+        SELECT i.item_id, i.item_name, subcat.subcategory, i.specification
+        FROM items i
+        LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
+        WHERE i.employee = %s
+        """
+        c = get_cursor()
+        c.execute(liabilities_query, (id,))
+        liabilities = c.fetchall()
+        c.close()
     try:
         c = get_cursor()
         c.execute(details_query, (id,))
@@ -120,6 +131,7 @@ def view_details(table_name, id):
                             table_name=table_name,
                             columns=columns,
                             id_column=id_column,
+                            liabilities=liabilities if table_name == 'employees' else None,
                             id=id,
                             args=args)
         

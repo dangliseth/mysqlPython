@@ -63,7 +63,7 @@ def get_dropdown_options():
     c = get_cursor()
     c.execute("SELECT employee_id, CONCAT(last_name, ', ', first_name) AS full_name FROM employees")
     employees = c.fetchall()
-    employee_options = ['-- None --'] + [f"{emp[1]}" for emp in employees]
+    employee_options = [f"{emp[1]}" for emp in employees]
     c.close()
     c = get_cursor()
     c.execute("SELECT id, subcategory FROM subcategories ORDER BY subcategory ASC")
@@ -88,7 +88,7 @@ def get_items_query():
     return """
         SELECT i.item_id AS 'item id', 
         i.item_name AS 'item name', subcat.subcategory, cat.category,
-        i.brand_name AS 'brand name', i.description, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department, i.status, i.last_updated
+        i.brand_name AS 'brand name', i.description, i.status, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department, i.last_updated
         FROM items i
         LEFT JOIN employees e ON i.employee = e.employee_id
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id

@@ -42,9 +42,38 @@
     <div class="details-actions">
         <a href="{{ url_for('dashboard_admin.update', table_name=table_name, id=id) }}" class="edit-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        {% if table_name == 'items' %}
         Edit Item
+        {% elif table_name == 'employees' %}
+        Edit Employee
+        {% endif %}
         </a>
     </div>
+    {% if table_name == 'employees' and liabilities %}
+    <div class="liabilities-card">
+      <h2>Liabilities</h2>
+      <table class="liabilities-table">
+        <thead>
+          <tr>
+            <th>Item ID</th>
+            <th>Item Name</th>
+            <th>Subcategory</th>
+            <th>Specification</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in liabilities %}
+          <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+            <td>{{ item[2] }}</td>
+            <td>{{ item[3] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
 
 <style>
 .details-container {
@@ -151,8 +180,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
-  color: #fff;
+  background: linear-gradient(90deg, #2e2e52 0%, #ffffff 100%);
+  color: #000000;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   border-radius: 0.75rem;
@@ -166,9 +195,40 @@
 }
 .edit-btn:hover {
   background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
-  color: #fff;
+  color: #000000;
   box-shadow: 0 4px 16px rgba(99,102,241,0.15);
   transform: translateY(-2px) scale(1.03);
+}
+
+.liabilities-card {
+  margin-top: 2.5rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 2rem;
+}
+.liabilities-card h2 {
+  font-size: 1.2rem;
+  color: #2e2e52;
+  margin-bottom: 1.2rem;
+}
+.liabilities-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+.liabilities-table th, .liabilities-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+.liabilities-table th {
+  background: #f3f4f6;
+  color: #22223b;
+  font-weight: 600;
+}
+.liabilities-table tr:last-child td {
+  border-bottom: none;
 }
 
 @media (max-width: 768px) {
