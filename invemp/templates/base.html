@@ -5,19 +5,10 @@
 {% if g.user %}
 <nav>
   {% if not is_index %}
-  <button class="btn-back" id="btn-back"
-    onclick="window.location='{{ url_for('dashboard_user.index', table_name=table_name, **(merged_args if merged_args is defined else (preserved_args if preserved_args is defined else request.args))) }}'">
-    <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}" class="btn-back-icon">
-    <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
-  </button>
-  {% endif %}
-  {% if is_index and table_name == 'items' and g.user[3] == 'admin' %}
-  <form id="import-form" action="{{ url_for('dashboard_admin.import_data', table_name = table_name) }}" method="post" enctype="multipart/form-data" style="display:inline;">
-    <label for="import-file" id="btn-import" class="btn-download" style="cursor:pointer;">
-      <img src="{{ url_for('static', filename='icons/upload.svg') }}" alt="import" id="import-icon-img">
-    </label>
-    <input type="file" name="file" id="import-file" accept=".xlsx" style="display:none;" onchange="this.form.submit()">
-  </form>
+  <button class="btn-back" id="btn-back" type="button">
+        <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}" class="btn-back-icon">
+        <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
+      </button>
   {% endif %}
   {% if is_index %}
   <div id="download-btns">
@@ -219,13 +210,17 @@ document.addEventListener('DOMContentLoaded', function() {
   var btnBack = document.getElementById('btn-back');
   if (btnBack) {
     var ref = document.referrer;
-    // Only override if referrer is not empty and not a create/update page
-    if (ref && !/\/(create|update)(\/|$)/.test(ref)) {
-      btnBack.onclick = function(e) {
+    btnBack.onclick = function(e) {
+      // If no referrer or referrer is a create/update page, go to index
+      if (!ref || /\/(create|update)(\/|\?|$)/.test(ref)) {
         e.preventDefault();
-        window.location = ref;
-      };
-    }
+        window.location = "{{ url_for('dashboard_user.index', table_name=table_name) }}";
+      } else {
+        // Otherwise, use browser history
+        e.preventDefault();
+        window.history.back();
+      }
+    };
   }
 });
 </script>

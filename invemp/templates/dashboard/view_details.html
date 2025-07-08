@@ -52,6 +52,10 @@
     {% if table_name == 'employees' and liabilities %}
     <div class="liabilities-card">
       <h2>Liabilities</h2>
+      <a href="{{ url_for('dashboard_admin.add_liabilities', table_name='items', id=entry[0]) }}">
+        Add Liabilities
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      </a>
       <table class="liabilities-table">
         <thead>
           <tr>

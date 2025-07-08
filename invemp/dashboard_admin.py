@@ -379,7 +379,10 @@ def update(id, table_name):
             c.connection.commit()
             c.close()
             flash(f"Successfully updated {table_name} id: {entry[0]}")
-            return redirect(url_for('dashboard_user.view_details', table_name=table_name, id = id,
+            if table_name == 'user_accounts':
+                return redirect(url_for('dashboard_user.index', table_name=table_name, **preserved_args))
+            else:
+                return redirect(url_for('dashboard_user.view_details', table_name=table_name, id = id,
                                     **preserved_args))
         except Exception as e:
             # Import pymysql.err if not already imported
@@ -470,6 +473,28 @@ def delete(id, table_name):
         c.connection.commit()
         flash(f"{id_column}: {id} DELETED from {table_name}")
     return redirect(url_for('dashboard_user.index', table_name = table_name, **preserved_args))
+
+@bp.route('/<table_name>/<id>/add_liabilities', methods=('GET', 'POST'))
+@admin_required
+def add_liabilities(id, table_name):
+    c = get_cursor()
+    c.execute(f"DESCRIBE `{table_name}`")
+    describe_rows = c.fetchall()
+    for row in describe_rows:
+        if row[0] == 'id' or row[0].endswith('_id'):
+            id_column = row[0]
+            break
+    active_items = []
+    get_active_items_query = "SELECT item_id, item_name FROM items WHERE status = 'active' ORDER BY item_id"
+    c.execute(get_active_items_query)
+    active_items = c.fetchall()
+    c.close()
+    preserved_args = get_preserved_args()
+    return render_template('dashboard/add_liabilities.html',
+                           table_name=table_name, id=id, 
+                           id_column=id_column, active_items=active_items,
+                           preserved_args=preserved_args)
+
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
 @admin_required

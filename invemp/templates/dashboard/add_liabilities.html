@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Liabilities{% endblock %}
+
+{% block content %}
+<div class="liabilities-container">
+  <h2>Active Items</h2>
+  {% if active_items and active_items|length > 0 %}
+    <table class="liabilities-table">
+      <thead>
+        <tr>
+          <th>Item ID</th>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in active_items %}
+        <tr>
+          <td>{{ item[0] }}</td>
+          <td>{{ item[1] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No active items found.</p>
+  {% endif %}
+</div>
+
+<style>
+.liabilities-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 2rem;
+}
+.liabilities-container h2 {
+  font-size: 1.3rem;
+  color: #2e2e52;
+  margin-bottom: 1.2rem;
+}
+.liabilities-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+.liabilities-table th, .liabilities-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+.liabilities-table th {
+  background: #f3f4f6;
+  color: #22223b;
+  font-weight: 600;
+}
+.liabilities-table tr:last-child td {
+  border-bottom: none;
+}
+</style>
+{% endblock %}
