@@ -6,22 +6,27 @@
 <div class="liabilities-container">
   <h2>Active Items</h2>
   {% if active_items and active_items|length > 0 %}
-    <table class="liabilities-table">
-      <thead>
-        <tr>
-          <th>Item ID</th>
-          <th>Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in active_items %}
-        <tr>
-          <td>{{ item[0] }}</td>
-          <td>{{ item[1] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <form method="post">
+      <table class="liabilities-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Item ID</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in active_items %}
+          <tr>
+            <td><input type="checkbox" name="selected_items" value="{{ item[0] }}"></td>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <button type="submit" class="assign-btn">Assign Selected Items</button>
+    </form>
   {% else %}
     <p>No active items found.</p>
   {% endif %}
@@ -58,6 +63,20 @@
 }
 .liabilities-table tr:last-child td {
   border-bottom: none;
+}
+.assign-btn {
+  margin-top: 1.2rem;
+  background: #2e2e52;
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.assign-btn:hover {
+  background: #43437a;
 }
 </style>
 {% endblock %}

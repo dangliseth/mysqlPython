@@ -490,6 +490,26 @@ def add_liabilities(id, table_name):
     active_items = c.fetchall()
     c.close()
     preserved_args = get_preserved_args()
+
+    # --- POST logic for assigning liabilities ---
+    if request.method == 'POST':
+        selected_item_ids = request.form.getlist('item_checkbox')
+        if selected_item_ids:
+            try:
+                c = get_cursor()
+                # Assign each selected item to this employee (id)
+                update_query = "UPDATE items SET employee = %s WHERE item_id = %s"
+                for item_id in selected_item_ids:
+                    c.execute(update_query, (id, item_id))
+                c.connection.commit()
+                c.close()
+                flash(f"Assigned {len(selected_item_ids)} item(s) as liabilities.", 'success')
+            except Exception as e:
+                flash(f"Error assigning liabilities: {e}", 'error')
+        else:
+            flash("No items selected.", 'warning')
+        return redirect(url_for('dashboard_user.view_details', table_name=table_name, id=id, **preserved_args))
+
     return render_template('dashboard/add_liabilities.html',
                            table_name=table_name, id=id, 
                            id_column=id_column, active_items=active_items,
