@@ -16,7 +16,7 @@
         {% if table_name == 'items' %}
         Item #{{ entry[0] }} Details
         {% elif table_name == 'employees' %}
-        Employee #{{ entry[0] }} Details
+        Employee {{ entry[2], entry[1] }} Details
         {% endif %}
     </h1>
     </div>
@@ -52,7 +52,7 @@
     {% if table_name == 'employees' and liabilities %}
     <div class="liabilities-card">
       <h2>Liabilities</h2>
-      <a href="{{ url_for('dashboard_admin.add_liabilities', table_name='items', id=entry[0]) }}">
+      <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=entry[0]) }}">
         Add Liabilities
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
       </a>
@@ -63,15 +63,23 @@
             <th>Item Name</th>
             <th>Subcategory</th>
             <th>Specification</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {% for item in liabilities %}
-          <tr style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name='items',id=item[0], **args) }}'">
+          <tr style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name='items', id=item[0]) }}'">
             <td>{{ item[0] }}</td>
             <td>{{ item[1] }}</td>
             <td>{{ item[2] }}</td>
             <td>{{ item[3] }}</td>
+            <td style="text-align:center;" onclick="event.stopPropagation();">
+              <form method="post" action="{{ url_for('dashboard_admin.remove_liability', employee_id=entry[0], item_id=item[0]) }}" style="display:inline;">
+                <button type="submit" class="remove-liability-btn" title="Remove Liability">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#991b1b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/></svg>
+                </button>
+              </form>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -184,7 +192,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(90deg, #2e2e52 0%, #ffffff 100%);
+  background-color: #9f83ec;
   color: #000000;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
@@ -233,6 +241,17 @@
 }
 .liabilities-table tr:last-child td {
   border-bottom: none;
+}
+.remove-liability-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 50%;
+}
+.remove-liability-btn:hover {
+  background: #fee2e2;
 }
 
 @media (max-width: 768px) {

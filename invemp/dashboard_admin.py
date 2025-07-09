@@ -493,7 +493,7 @@ def add_liabilities(id, table_name):
 
     # --- POST logic for assigning liabilities ---
     if request.method == 'POST':
-        selected_item_ids = request.form.getlist('item_checkbox')
+        selected_item_ids = request.form.getlist('selected_items')
         if selected_item_ids:
             try:
                 c = get_cursor()
@@ -508,7 +508,7 @@ def add_liabilities(id, table_name):
                 flash(f"Error assigning liabilities: {e}", 'error')
         else:
             flash("No items selected.", 'warning')
-        return redirect(url_for('dashboard_user.view_details', table_name=table_name, id=id, **preserved_args))
+        return redirect(url_for('dashboard_user.view_details', table_name='employees', id=id, **preserved_args))
 
     return render_template('dashboard/add_liabilities.html',
                            table_name=table_name, id=id, 
@@ -833,3 +833,19 @@ def import_data(table_name):
                     ctypes.windll.kernel32.MoveFileExW(temp_file.name, None, MOVEFILE_DELAY_UNTIL_REBOOT)
                 except:
                     pass
+
+@bp.route('/employees/<int:employee_id>/remove_liability/<item_id>', methods=['POST'])
+@admin_required
+def remove_liability(employee_id, item_id):
+    c = get_cursor()
+    try:
+        c.execute("UPDATE items SET employee = NULL WHERE item_id = %s AND employee = %s", (item_id, employee_id))
+        c.connection.commit()
+        flash('Liability removed successfully.', 'success')
+    except Exception as e:
+        c.connection.rollback()
+        flash(f'Error removing liability: {e}', 'error')
+    finally:
+        c.close()
+    preserved_args = get_preserved_args()
+    return redirect(url_for('dashboard_user.view_details', table_name='employees', id=employee_id, **preserved_args))

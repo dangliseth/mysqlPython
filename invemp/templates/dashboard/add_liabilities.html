@@ -21,6 +21,13 @@
             <td><input type="checkbox" name="selected_items" value="{{ item[0] }}"></td>
             <td>{{ item[0] }}</td>
             <td>{{ item[1] }}</td>
+            <td style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name='items',id=item[0]) }}'">
+              <button style="display: inline;" type="submit" class="view-details-btn" title="View Details">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S2 15.866 2 12 6.477 5 12 5s10 3.134 10 7z"/>
+                  </svg>
+              </button>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -77,6 +84,17 @@
 }
 .assign-btn:hover {
   background: #43437a;
+}
+.view-details-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  justify-items: center;
+  transition: background 0.15s;
+  border-radius: 50%;
+}
+.view-details-btn:hover {
+  background: #ffb453;
 }
 </style>
 {% endblock %}
