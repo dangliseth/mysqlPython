@@ -13,6 +13,7 @@
             <th></th>
             <th>Item ID</th>
             <th>Name</th>
+            <th>View</th>
           </tr>
         </thead>
         <tbody>
@@ -21,12 +22,13 @@
             <td><input type="checkbox" name="selected_items" value="{{ item[0] }}"></td>
             <td>{{ item[0] }}</td>
             <td>{{ item[1] }}</td>
-            <td style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name='items',id=item[0]) }}'">
-              <button style="display: inline;" type="submit" class="view-details-btn" title="View Details">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S2 15.866 2 12 6.477 5 12 5s10 3.134 10 7z"/>
-                  </svg>
-              </button>
+            <td style="text-align:center;">
+              <a href="{{ url_for('dashboard_user.view_details', table_name='items', id=item[0]) }}" class="view-details-btn" title="View Details">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2e2e52" style="vertical-align:middle;">
+                  <circle cx="12" cy="12" r="10" stroke="#2e2e52" stroke-width="2" fill="#f3f4f6"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3.866-4.477 7-10 7S2 15.866 2 12 6.477 5 12 5s10 3.134 10 7z"/>
+                </svg>
+              </a>
             </td>
           </tr>
           {% endfor %}
@@ -62,6 +64,11 @@
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #e5e7eb;
   text-align: left;
+  vertical-align: middle;
+}
+.liabilities-table td:last-child {
+  text-align: center;
+  vertical-align: middle;
 }
 .liabilities-table th {
   background: #f3f4f6;
@@ -86,15 +93,39 @@
   background: #43437a;
 }
 .view-details-btn {
-  background: none;
+  background: linear-gradient(90deg, #f3f4f6 0%, #e0e7ff 100%);
   border: none;
+  outline: none;
   cursor: pointer;
-  justify-items: center;
-  transition: background 0.15s;
+  display: inline-flex;
+  align-content: center;
+  justify-content: center;
+  padding: 0.35rem 0.5rem;
   border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.1s, color 0.18s;
+  text-decoration: none;
+  color: #2e2e52;
+  position: relative;
+  margin: auto 0;
 }
-.view-details-btn:hover {
-  background: #ffb453;
+.view-details-btn:hover, .view-details-btn:focus {
+  background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+  box-shadow: 0 4px 16px rgba(99,102,241,0.18);
+  transform: translateY(-1px) scale(1.10);
+  color: #fff;
+}
+.view-details-btn svg {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(99,102,241,0.10));
+  transition: stroke 0.18s;
+}
+.view-details-btn:hover svg circle {
+  stroke: #fff;
+  fill: #6366f1;
+}
+.view-details-btn:hover svg path {
+  stroke: #fff;
 }
 </style>
 {% endblock %}

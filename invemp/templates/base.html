@@ -6,9 +6,9 @@
 <nav>
   {% if not is_index %}
   <button class="btn-back" id="btn-back" type="button">
-        <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}" class="btn-back-icon">
-        <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
-      </button>
+    <img src="{{ url_for('static', filename='icons/arrow_back.svg') }}" class="btn-back-icon">
+    <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
+  </button>
   {% endif %}
   {% if is_index %}
   <div id="download-btns">
@@ -31,8 +31,13 @@
     <li class="nav-item">
       {% if table == 'items' and table != table_name %}
       <div class="tables dropdown" id="table-link">
-      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables dropdown" id="table-link"> 
-        items
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables dropdown" id="table-link">
+        <!-- Items table icon (SVG) -->
+        <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+          <rect x="3" y="4" width="20" height="18" rx="2" fill="#f5bf6f" stroke="#333" stroke-width="1.2"/>
+          <rect x="6" y="7" width="16" height="2" rx="1" fill="#fff"/>
+          <rect x="6" y="11" width="14" height="2" rx="1" fill="#fff"/>
+        </svg>
       </a>
         <span class="dropdown-arrow">&#9662;</span>
         <!-- Status Dropdown -->
@@ -49,7 +54,11 @@
       {% elif table == table_name and table == 'items' %}
         {% if request.args.get('status') == 'active' %}
         <h1 class="tables dropdown status-active" id="current-table">
-          items
+          <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+            <rect x="3" y="4" width="16" height="14" rx="2" fill="#f5bf6f" stroke="#333" stroke-width="1.2"/>
+            <rect x="6" y="7" width="10" height="2" rx="1" fill="#fff"/>
+            <rect x="6" y="11" width="7" height="2" rx="1" fill="#fff"/>
+          </svg>
           <span class="dropdown-arrow">&#9662;</span>
           <!-- Status Dropdown -->
           <div class="dropdown-content">
@@ -66,7 +75,11 @@
         </h1>
         {% elif request.args.get('status') == 'assigned' %}
         <h1 class="tables dropdown status-assigned" id="current-table">
-          items
+          <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+            <rect x="3" y="4" width="16" height="14" rx="2" fill="#f5bf6f" stroke="#333" stroke-width="1.2"/>
+            <rect x="6" y="7" width="10" height="2" rx="1" fill="#fff"/>
+            <rect x="6" y="11" width="7" height="2" rx="1" fill="#fff"/>
+          </svg>
           <span class="dropdown-arrow">&#9662;</span>
           <!-- Status Dropdown -->
           <div class="dropdown-content">
@@ -83,7 +96,11 @@
         </h1>
         {% elif request.args.get('status') == 'for repair' %}
         <h1 class="tables dropdown status-repair" id="current-table">
-          items
+          <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+            <rect x="3" y="4" width="16" height="14" rx="2" fill="#f5bf6f" stroke="#333" stroke-width="1.2"/>
+            <rect x="6" y="7" width="10" height="2" rx="1" fill="#fff"/>
+            <rect x="6" y="11" width="7" height="2" rx="1" fill="#fff"/>
+          </svg>
           <span class="dropdown-arrow">&#9662;</span>
           <!-- Status Dropdown -->
           <div class="dropdown-content">
@@ -100,7 +117,11 @@
         </h1>
         {% elif request.args.get('status') == 'for disposal' %}
         <h1 class="tables dropdown status-disposal" id="current-table">
-          items
+          <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+            <rect x="3" y="4" width="16" height="14" rx="2" fill="#f5bf6f" stroke="#333" stroke-width="1.2"/>
+            <rect x="6" y="7" width="10" height="2" rx="1" fill="#fff"/>
+            <rect x="6" y="11" width="7" height="2" rx="1" fill="#fff"/>
+          </svg>
           <span class="dropdown-arrow">&#9662;</span>
           <!-- Status Dropdown -->
           <div class="dropdown-content">
@@ -117,7 +138,11 @@
         </h1>
         {% else %}
         <h1 class="tables dropdown" id="current-table">
-          items
+          <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+            <rect x="3" y="4" width="16" height="14" rx="2" fill="#f5bf6f" stroke="#333" stroke-width="1.2"/>
+            <rect x="6" y="7" width="10" height="2" rx="1" fill="#fff"/>
+            <rect x="6" y="11" width="7" height="2" rx="1" fill="#fff"/>
+          </svg>
           <span class="dropdown-arrow">&#9662;</span>
           <!-- Status Dropdown -->
           <div class="dropdown-content">
@@ -144,9 +169,39 @@
         user accounts
       </h1>
       {% elif table == table_name %}
-      <h1 class="tables" id="current-table">{{ table_name }}</h1>
+      <h1 class="tables" id="current-table">
+        {% if table == 'employees' %}
+            <!-- Employees table icon (SVG) -->
+            <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+              <circle cx="11" cy="5.5" r="6" fill="#7ec6e6" stroke="#333" stroke-width="1.5"/>
+              <rect x="2" y="14" width="18" height="9" rx="2.5" fill="#fff" stroke="#333" stroke-width="1.2"/>
+            </svg>
+        {% elif table == 'items_groups' %}
+            <!-- Items Groups table icon (SVG) -->
+            <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+              <rect x="3" y="5" width="16" height="4" rx="2" fill="#b7e6a5" stroke="#333" stroke-width="1.2"/>
+              <rect x="3" y="13" width="16" height="4" rx="2" fill="#b7e6a5" stroke="#333" stroke-width="1.2"/>
+              <rect x="7" y="9" width="8" height="4" rx="2" fill="#fff" stroke="#333" stroke-width="1.2"/>
+            </svg>
+        {% endif %}
+      </h1>
       {% else %}
-      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">{{ table }}</a>
+      <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="tables" id="table-link">
+        {% if table == 'employees' %}
+            <!-- Employees table icon (SVG) -->
+            <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+              <circle cx="11" cy="5.5" r="6" fill="#7ec6e6" stroke="#333" stroke-width="1.5"/>
+              <rect x="2" y="14" width="18" height="9" rx="2.5" fill="#fff" stroke="#333" stroke-width="1.2"/>
+            </svg>
+          {% elif table == 'items_groups' %}
+            <!-- Items Groups table icon (SVG) -->
+            <svg class="nav-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;">
+              <rect x="3" y="5" width="16" height="4" rx="2" fill="#b7e6a5" stroke="#333" stroke-width="1.2"/>
+              <rect x="3" y="13" width="16" height="4" rx="2" fill="#b7e6a5" stroke="#333" stroke-width="1.2"/>
+              <rect x="7" y="9" width="8" height="4" rx="2" fill="#fff" stroke="#333" stroke-width="1.2"/>
+            </svg>
+          {% endif %}
+      </a>
       {% endif %}
     </li>
     {% endfor %}
