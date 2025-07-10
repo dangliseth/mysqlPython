@@ -133,6 +133,7 @@ def view_details(table_name, id):
                             id_column=id_column,
                             liabilities=liabilities if table_name == 'employees' else None,
                             id=id,
+                            tables=get_tables(),
                             args=args)
         
 

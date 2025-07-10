@@ -13,6 +13,7 @@ from invemp.dashboard_helpers import (
     is_valid_table, get_dropdown_options, 
     get_entry, get_items_columns, get_preserved_args,
     get_item_assignment_history, preserve_current_entries,
+    get_tables,
     load_options_from_file, normalize_column_name, bulk_insert_rows
 )
 from invemp.db import get_cursor
@@ -123,7 +124,8 @@ def create(table_name):
                         columns=columns,
                         dropdown_options=dropdown_options,
                         preserved_args=preserved_args,
-                        not_null_columns=not_null_columns
+                        not_null_columns=not_null_columns,
+                        tables=get_tables()
                     )
                 assigned_to_value = emp_row[0]
             else:
@@ -203,11 +205,13 @@ def create(table_name):
                 else:
                     entry.append(request.form.get(column))
             return render_template('dashboard/create.html', table_name=table_name, entry=entry,
-                           columns=columns, dropdown_options=dropdown_options, preserved_args=preserved_args, not_null_columns=not_null_columns)
+                           columns=columns, dropdown_options=dropdown_options, 
+                           preserved_args=preserved_args, not_null_columns=not_null_columns, tables=get_tables())
     
     return render_template('dashboard/create.html', table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options,
-                           preserved_args=preserved_args, not_null_columns=not_null_columns)
+                           preserved_args=preserved_args, not_null_columns=not_null_columns,
+                           tables=get_tables())
 
 @bp.route('/<table_name>/<id>/update', methods=['GET', 'POST'])
 @admin_required
@@ -312,7 +316,8 @@ def update(id, table_name):
                         columns=columns,
                         dropdown_options=dropdown_options,
                         preserved_args=preserved_args,
-                        not_null_columns=not_null_columns
+                        not_null_columns=not_null_columns,
+                        tables=get_tables()
                     )
                 assigned_to_value = emp_row[0] if emp_row else None
             else:
@@ -408,7 +413,8 @@ def update(id, table_name):
                 not_null_columns=not_null_columns
             )
     return render_template('dashboard/update.html', entry=entry, table_name=table_name, columns=columns, 
-                           dropdown_options=dropdown_options, preserved_args=preserved_args, not_null_columns=not_null_columns)
+                           dropdown_options=dropdown_options, 
+                           preserved_args=preserved_args, not_null_columns=not_null_columns, tables=get_tables())
 
 @bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
 @admin_required
@@ -498,7 +504,7 @@ def add_liabilities(id, table_name):
             try:
                 c = get_cursor()
                 # Assign each selected item to this employee (id)
-                update_query = "UPDATE items SET employee = %s WHERE item_id = %s"
+                update_query = "UPDATE items SET employee = %s, status = 'assigned' WHERE item_id = %s"
                 for item_id in selected_item_ids:
                     c.execute(update_query, (id, item_id))
                 c.connection.commit()
@@ -513,7 +519,23 @@ def add_liabilities(id, table_name):
     return render_template('dashboard/add_liabilities.html',
                            table_name=table_name, id=id, 
                            id_column=id_column, active_items=active_items,
-                           preserved_args=preserved_args)
+                           preserved_args=preserved_args, tables=get_tables())
+
+@bp.route('/employees/<int:employee_id>/remove_liability/<item_id>', methods=['POST'])
+@admin_required
+def remove_liability(employee_id, item_id):
+    c = get_cursor()
+    try:
+        c.execute("UPDATE items SET employee = NULL, status = 'active' WHERE item_id = %s AND employee = %s", (item_id, employee_id))
+        c.connection.commit()
+        flash('Liability removed successfully.', 'success')
+    except Exception as e:
+        c.connection.rollback()
+        flash(f'Error removing liability: {e}', 'error')
+    finally:
+        c.close()
+    preserved_args = get_preserved_args()
+    return redirect(url_for('dashboard_user.view_details', table_name='employees', id=employee_id, **preserved_args))
 
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
@@ -531,7 +553,7 @@ def history(id, table_name):
     
     return render_template('dashboard/history.html', table_name=table_name, 
                            history_data=history_data, columns=columns, zip=zip, 
-                           preserved_args=preserved_args)
+                           preserved_args=preserved_args, tables=get_tables())
 
 @bp.route('/<table_name>/import', methods=['GET', 'POST'])
 @admin_required
@@ -833,19 +855,3 @@ def import_data(table_name):
                     ctypes.windll.kernel32.MoveFileExW(temp_file.name, None, MOVEFILE_DELAY_UNTIL_REBOOT)
                 except:
                     pass
-
-@bp.route('/employees/<int:employee_id>/remove_liability/<item_id>', methods=['POST'])
-@admin_required
-def remove_liability(employee_id, item_id):
-    c = get_cursor()
-    try:
-        c.execute("UPDATE items SET employee = NULL WHERE item_id = %s AND employee = %s", (item_id, employee_id))
-        c.connection.commit()
-        flash('Liability removed successfully.', 'success')
-    except Exception as e:
-        c.connection.rollback()
-        flash(f'Error removing liability: {e}', 'error')
-    finally:
-        c.close()
-    preserved_args = get_preserved_args()
-    return redirect(url_for('dashboard_user.view_details', table_name='employees', id=employee_id, **preserved_args))

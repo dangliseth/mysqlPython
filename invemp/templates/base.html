@@ -67,7 +67,7 @@
               table_name='items', 
               **dict(request.args, status=status, page='')) }}">{{ status }}</a>
             {% endfor %}
-            {% if request.args.get('status') %}
+            {% if request.args.get(filters) %}
               <a href="{{ url_for('dashboard_user.index', table_name = table_name,
                        **dict(request.args, status='', page=''))}}"> All </a>
             {% endif %}
