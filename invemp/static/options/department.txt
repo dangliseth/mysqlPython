@@ -1,21 +1,21 @@
 Library
-SHS
-MIS
+Senior HighSchool
+Management Information System
 Registrar
-SOA/SOE
-GenServ
-HR
+School of Architecture/School of Engineering
+General Services
+Human Resources
 Accounting
-OSAS
+CSAW
 SESO
 Cashier
 Marketing
-OTP
-SCJ
-SOL
+Office of the President
+School of Criminal Justice
+School of Law
 Clinic
-SGS
-SOB
+School of Graduate Studies
+School of Business
 QACRO
 Laboratory
 Sports Coordinator

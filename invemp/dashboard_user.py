@@ -100,12 +100,14 @@ def view_details(table_name, id):
         LEFT JOIN employees e ON i.employee = e.employee_id
         WHERE i.{id_column} = %s
         '''
-    else:
-        details_query = f"""
-        SELECT * FROM {table_name} WHERE {id_column} = %s
-        """
+    elif table_name == 'employees':
+        details_query = f'''
+        SELECT e.*, u.username
+        FROM {table_name} e
+        LEFT JOIN user_accounts u ON e.user_account = u.id
+        WHERE e.{id_column} = %s
+        '''
 
-    if table_name == 'employees':
         liabilities_query = f"""
         SELECT i.item_id, i.item_name, subcat.subcategory, i.specification
         FROM items i
@@ -115,7 +117,12 @@ def view_details(table_name, id):
         c = get_cursor()
         c.execute(liabilities_query, (id,))
         liabilities = c.fetchall()
-        c.close()
+        c.close() 
+    else:
+        details_query = f"""
+        SELECT * FROM {table_name} WHERE {id_column} = %s
+        """
+
     try:
         c = get_cursor()
         c.execute(details_query, (id,))

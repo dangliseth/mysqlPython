@@ -256,6 +256,22 @@ def update(id, table_name):
                 c.close()
         else:
             entry[employee_idx] = None  # Ensure None is preserved
+    elif 'user_account' in columns:
+        # Get the index of the user_account column in the original data
+        user_account_idx = [i for i, col in enumerate(columns) if col == 'user_account'][0]
+        
+        # Get the user_account ID from the entry
+        user_account_id = entry[user_account_idx]
+        
+        if user_account_id:
+            c = get_cursor()
+            try:
+                c.execute("SELECT username FROM user_accounts WHERE id = %s", (user_account_id,))
+                result = c.fetchone()
+                username = result[0] if result else None
+                entry[user_account_idx] = username  # Replace ID with username
+            finally:
+                c.close()
 
     preserved_args = get_preserved_args()
 
@@ -268,13 +284,7 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID' or column.endswith('id'):  # Skip ID columns
                 id_column = column
                 continue
-            if column == 'password':
-                continue
-            elif column == 'status':
-                continue
-            elif column == 'Assigned To':
-                continue
-            elif column == 'subcategory':
+            if column in ['password', 'user_account', 'status', 'Assigned To', 'subcategory']:
                 continue
             elif column == 'last_updated':
                 values.append(current_datetime)
@@ -536,6 +546,18 @@ def remove_liability(employee_id, item_id):
         c.close()
     preserved_args = get_preserved_args()
     return redirect(url_for('dashboard_user.view_details', table_name='employees', id=employee_id, **preserved_args))
+
+"""@bp.route('/liabilities_agreement_form/employees/<id>', methods=['POST'])
+@admin_required
+def liabilities_agreement_form(id):
+    if request.method == 'POST':
+        c = get_cursor()
+        try:
+            liabilities = c.execute(""
+                SELECT * from items WHERE employee = %s
+                      ""), (id,)
+            if liabilities:"""
+                
 
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))

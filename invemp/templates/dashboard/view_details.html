@@ -28,11 +28,13 @@
         <div class="detail-item">
             <span class="detail-label">{{ column }}</span>
             {% if column == 'subcategory' %}
-                <span class="detail-value">{{ entry[-2] }}</span>
+              <span class="detail-value">{{ entry[-2] }}</span>
             {% elif column == 'Assigned To' %}
-                <span class="detail-value">{{ entry[-1] }}</span>
+              <span class="detail-value">{{ entry[-1] }}</span>
+            {% elif column == 'user_account' %}
+              <span class="detail-value">{{ entry[-1] }}</span>
             {% else %}
-                <span class="detail-value">{{ entry[loop.index0] }}</span>
+              <span class="detail-value">{{ entry[loop.index0] }}</span>
             {% endif %}
         </div>
     {% endfor %}
