@@ -500,6 +500,7 @@ def add_liabilities(id, table_name):
         if row[0] == 'id' or row[0].endswith('_id'):
             id_column = row[0]
             break
+    columns = [row[0] for row in describe_rows]
     active_items = []
     get_active_items_query = "SELECT item_id, item_name FROM items WHERE status = 'active' ORDER BY item_id"
     c.execute(get_active_items_query)
@@ -529,7 +530,7 @@ def add_liabilities(id, table_name):
     return render_template('dashboard/add_liabilities.html',
                            table_name=table_name, id=id, 
                            id_column=id_column, active_items=active_items,
-                           preserved_args=preserved_args, tables=get_tables())
+                           columns=columns, preserved_args=preserved_args, tables=get_tables())
 
 @bp.route('/employees/<int:employee_id>/remove_liability/<item_id>', methods=['POST'])
 @admin_required

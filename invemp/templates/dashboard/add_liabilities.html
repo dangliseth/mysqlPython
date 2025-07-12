@@ -4,15 +4,19 @@
 
 {% block content %}
 <div class="liabilities-container">
-  <h2>Active Items</h2>
+  <h2>Available Items</h2>
+  <div class="filter-search">
+    
+  </div>
   {% if active_items and active_items|length > 0 %}
     <form method="post">
       <table class="liabilities-table">
         <thead>
           <tr>
             <th></th>
-            <th>Item ID</th>
-            <th>Name</th>
+            {% for column in columns if column in ['item_id', 'item_name', 'subcategory', 'brand_name'] %}
+            <th> {{ column }}</th>
+            {% endfor %}
             <th>View</th>
           </tr>
         </thead>
@@ -20,8 +24,9 @@
           {% for item in active_items %}
           <tr>
             <td><input type="checkbox" name="selected_items" value="{{ item[0] }}"></td>
-            <td>{{ item[0] }}</td>
-            <td>{{ item[1] }}</td>
+            {% for col in columns if col in ['item_id', 'item_name', 'subcategory', 'brand_name'] %}
+            <td>{{ item[columns.index(col)] }}</td>
+            {% endfor %}
             <td style="text-align:center;">
               <a href="{{ url_for('dashboard_user.view_details', table_name='items', id=item[0]) }}" class="view-details-btn" title="View Details">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#2e2e52" style="vertical-align:middle;">
@@ -40,7 +45,7 @@
     <p>No active items found.</p>
   {% endif %}
 </div>
-
+<script src="{{ url_for('static', filename='script/script.js') }}"></script>
 <style>
 .liabilities-container {
   max-width: 600px;
