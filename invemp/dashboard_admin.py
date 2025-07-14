@@ -87,6 +87,8 @@ def create(table_name):
             elif column == 'last_updated':
                 values.append(current_datetime)
                 insert_columns.append(column)
+            elif column == 'item_name':
+                continue
             elif column == 'status':
                 continue
             elif column == 'Assigned To':
@@ -154,6 +156,13 @@ def create(table_name):
                 status_value = status_from_form
             values.append(status_value)
             insert_columns.append('status')
+
+            # handle item_name #
+            brand_name = request.form.get('brand_name', '') or ''
+            model_name = request.form.get('model_name', '') or ''
+            item_name_value = f"{brand_name} {model_name}".strip()
+            values.append(item_name_value)
+            insert_columns.append('item_name')
         else:
             # For non-items tables, only add department/status if they exist in columns
             if 'status' in columns:
