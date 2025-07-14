@@ -1,7 +1,8 @@
 from flask import (
-    Blueprint, flash, redirect, render_template, request, url_for, send_file, jsonify, session
+    Blueprint, flash, redirect, render_template, request, url_for, send_file, jsonify, session, current_app
 )
 from werkzeug.exceptions import abort
+from werkzeug.datastructures import MultiDict
 
 import datetime
 import os
@@ -426,6 +427,58 @@ def update(id, table_name):
                            dropdown_options=dropdown_options, 
                            preserved_args=preserved_args, not_null_columns=not_null_columns, tables=get_tables())
 
+@bp.route('/<table_name>/<id>/duplicate', methods=['GET', 'POST'])
+@admin_required
+def duplicate(id, table_name='items'):
+    if not is_valid_table(table_name) or table_name != 'items':
+        abort(400)
+    entry = get_entry(id, table_name)
+    c = get_cursor()
+    c.execute(f"DESCRIBE `{table_name}`")
+    describe_rows = c.fetchall()
+    columns = [row[0] for row in describe_rows]
+    c.close()
+    preserved_args = get_preserved_args()
+
+    if request.method == 'POST':
+        try:
+            num_duplicates = int(request.form.get('num_duplicates', 1))
+            entry_dict = dict(zip(columns, entry))
+            # Remove fields that should not be duplicated
+            for field in ['last_updated', 'status', 'id', 'item_id', 'employee', 'Assigned To']:
+                if field in entry_dict:
+                    entry_dict.pop(field)
+            # --- Set 'subcategory' and 'Assigned To' as names for form ---
+            # Get subcategory name from subcategory ID
+            subcategory_id = None
+            if 'subcategory' in columns:
+                subcategory_idx = columns.index('subcategory')
+                subcategory_id = entry[subcategory_idx]
+                if subcategory_id:
+                    c = get_cursor()
+                    c.execute("SELECT subcategory FROM subcategories WHERE id = %s", (subcategory_id,))
+                    subcat_row = c.fetchone()
+                    c.close()
+                    if subcat_row:
+                        entry_dict['subcategory'] = subcat_row[0]
+            for _ in range(num_duplicates):
+                # Use MultiDict to simulate form data
+                form_data = MultiDict(entry_dict)
+                # Simulate a POST request context for create using current_app
+                with current_app.test_request_context(
+                    f'/{table_name}/create', method='POST', data=form_data
+                ):
+                    response = create(table_name=table_name)
+            flash(f"Successfully duplicated {num_duplicates} time(s).", "success")
+            return redirect(url_for('dashboard_user.index', table_name=table_name, **preserved_args))
+        except Exception as e:
+            flash(f"Error duplicating entry: {e}", "error")
+    return render_template('dashboard/duplicate.html', entry=entry, 
+                           columns=columns, 
+                           table_name=table_name, 
+                           zip=zip,
+                           id=id, preserved_args=preserved_args)
+
 @bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
 @admin_required
 def archive_scrap(id, table_name):
@@ -500,9 +553,8 @@ def add_liabilities(id, table_name):
         if row[0] == 'id' or row[0].endswith('_id'):
             id_column = row[0]
             break
-    columns = [row[0] for row in describe_rows]
-    active_items = []
-    get_active_items_query = "SELECT item_id, item_name FROM items WHERE status = 'active' ORDER BY item_id"
+    columns = ['item_id', 'item_name', 'brand_name', 'specification']
+    get_active_items_query = f"SELECT {', '.join(columns)} FROM items WHERE status = 'active' ORDER BY item_id"
     c.execute(get_active_items_query)
     active_items = c.fetchall()
     c.close()

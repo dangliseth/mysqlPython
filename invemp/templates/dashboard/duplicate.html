@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Duplicate Item{% endblock %}
+
+{% block content %}
+<div class="duplicate-container">
+  <h2>Duplicate Item</h2>
+  <form method="post">
+    <label for="num_duplicates">Number of duplicates:</label>
+    <input type="number" id="num_duplicates" name="num_duplicates" min="1" value="1" required style="margin-left:0.5rem; width:4rem;">
+    <button type="submit" class="assign-btn" style="margin-left:1rem;">Duplicate</button>
+  </form>
+  <div class="duplicate-preview" style="margin-top:2rem;">
+    <h3>Preview of duplicated item:</h3>
+    <ul>
+      {% for col, val in zip(columns, entry) if col not in ['item_id', 'last_updated', 'last_updated_by', 'status', 'employee'] %}
+        <li><strong>{{ col }}:</strong> {{ val }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<style>
+.duplicate-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 2rem;
+}
+.duplicate-container h2 {
+  font-size: 1.3rem;
+  color: #2e2e52;
+  margin-bottom: 1.2rem;
+}
+.assign-btn {
+  background: #2e2e52;
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.assign-btn:hover {
+  background: #43437a;
+}
+.duplicate-preview {
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.duplicate-preview ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.duplicate-preview li {
+  margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}

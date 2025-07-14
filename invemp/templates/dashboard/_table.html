@@ -6,7 +6,7 @@ This template is rendered for both full page loads and AJAX requests.
   <thead>
     <tr>
       {% for column in columns %}
-        {% if column != 'password' and not (column == 'category' or column == 'department' or column == 'last_updated' or column == 'specification') %}
+        {% if column != 'password' and column not in ['category','serial_number','department','last_updated', 'description'] %}
           <th style="cursor:pointer;">
             {{ column }}
           </th>
@@ -25,7 +25,7 @@ This template is rendered for both full page loads and AJAX requests.
       {% endif %}
       {% for column, value in zip(columns, item) %}
         {% if column != 'password' %}
-          {% if column == 'category' or column == 'department' or column == 'last_updated' or column == 'specification' %}
+          {% if column in ['category','serial_number','department','last_updated','description'] %}
             {# skip category and department columns, already shown with item_name/Assigned To #}
           {% elif table_name == 'items' and column == 'subcategory' %}
           <td>

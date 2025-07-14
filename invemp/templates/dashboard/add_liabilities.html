@@ -14,7 +14,7 @@
         <thead>
           <tr>
             <th></th>
-            {% for column in columns if column in ['item_id', 'item_name', 'subcategory', 'brand_name'] %}
+            {% for column in columns %}
             <th> {{ column }}</th>
             {% endfor %}
             <th>View</th>
@@ -24,8 +24,8 @@
           {% for item in active_items %}
           <tr>
             <td><input type="checkbox" name="selected_items" value="{{ item[0] }}"></td>
-            {% for col in columns if col in ['item_id', 'item_name', 'subcategory', 'brand_name'] %}
-            <td>{{ item[columns.index(col)] }}</td>
+            {% for column in columns %}
+            <td>{{ item[loop.index0] }}</td>
             {% endfor %}
             <td style="text-align:center;">
               <a href="{{ url_for('dashboard_user.view_details', table_name='items', id=item[0]) }}" class="view-details-btn" title="View Details">
