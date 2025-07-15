@@ -16,7 +16,7 @@
         {% if table_name == 'items' %}
         Item #{{ entry[0] }} Details
         {% elif table_name == 'employees' %}
-        Employee {{ entry[2], entry[1] }} Details
+        Employee {{ entry[3] }}, {{ entry[2] }} Details
         {% endif %}
     </h1>
     {% if table_name == 'items' %}

@@ -87,13 +87,7 @@ def create(table_name):
             elif column == 'last_updated':
                 values.append(current_datetime)
                 insert_columns.append(column)
-            elif column == 'item_name':
-                continue
-            elif column == 'status':
-                continue
-            elif column == 'Assigned To':
-                continue
-            elif column == 'subcategory':
+            elif column in ['item_name', 'status', 'Assigned To', 'subcategory']:
                 continue
             else:
                 if request.form.get(column) != '':
@@ -294,7 +288,7 @@ def update(id, table_name):
             if column == 'id' or column.endswith('_id') or column == 'ID' or column.endswith('id'):  # Skip ID columns
                 id_column = column
                 continue
-            if column in ['password', 'user_account', 'status', 'Assigned To', 'subcategory']:
+            if column in ['item_name', 'password', 'user_account', 'status', 'Assigned To', 'subcategory']:
                 continue
             elif column == 'last_updated':
                 values.append(current_datetime)
@@ -368,6 +362,13 @@ def update(id, table_name):
                 status_value = status_from_form
             values.append(status_value)
             update_columns.append('status')
+
+            # handle item_name #
+            brand_name = request.form.get('brand_name', '') or ''
+            model_name = request.form.get('model_name', '') or ''
+            item_name_value = f"{brand_name} {model_name}".strip()
+            values.append(item_name_value)
+            update_columns.append('item_name')
 
 
 
@@ -457,6 +458,8 @@ def duplicate(id, table_name='items'):
             for field in ['last_updated', 'status', 'id', 'item_id', 'employee', 'Assigned To']:
                 if field in entry_dict:
                     entry_dict.pop(field)
+            if field in entry_dict and field.endswith('_id'):
+                entry_dict.pop(field)
             # --- Set 'subcategory' and 'Assigned To' as names for form ---
             # Get subcategory name from subcategory ID
             subcategory_id = None
@@ -562,9 +565,52 @@ def add_liabilities(id, table_name):
         if row[0] == 'id' or row[0].endswith('_id'):
             id_column = row[0]
             break
-    columns = ['item_id', 'item_name', 'brand_name', 'specification']
-    get_active_items_query = f"SELECT {', '.join(columns)} FROM items WHERE status = 'active' ORDER BY item_id"
-    c.execute(get_active_items_query)
+    columns = ['item_id', 'item_name', 'brand_name', 'subcategory', 'specification']
+
+    # --- Filter logic ---
+    filters = {}
+    where_clauses = ["items.status = 'active'"]
+    filter_args = []
+    for col in columns:
+        val = request.args.get(f'filter_{col}', '').strip()
+        filters[col] = val
+        if val:
+            if col == 'subcategory':
+                where_clauses.append("subcategories.subcategory LIKE %s")
+            else:
+                where_clauses.append(f"items.{col} LIKE %s")
+            filter_args.append(f"%{val}%")
+    where_sql = ' AND '.join(where_clauses)
+
+    # --- Pagination logic ---
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1:
+            page = 1
+    except ValueError:
+        page = 1
+    per_page = 15
+    offset = (page - 1) * per_page
+
+    # Get total count for pagination
+    count_query = f"""
+    SELECT COUNT(*) FROM items
+    LEFT JOIN subcategories ON items.subcategory = subcategories.id
+    WHERE {where_sql}
+    """
+    c.execute(count_query, tuple(filter_args))
+    total_items = c.fetchone()[0]
+    total_pages = (total_items + per_page - 1) // per_page
+
+    # Fetch only the current page of items
+    get_active_items_query = f"""
+    SELECT items.item_id, items.item_name, items.brand_name, subcategories.subcategory, items.specification
+    FROM items
+    LEFT JOIN subcategories ON items.subcategory = subcategories.id 
+    WHERE {where_sql} ORDER BY items.item_id
+    LIMIT %s OFFSET %s
+    """
+    c.execute(get_active_items_query, tuple(filter_args) + (per_page, offset))
     active_items = c.fetchall()
     c.close()
     preserved_args = get_preserved_args()
@@ -591,7 +637,9 @@ def add_liabilities(id, table_name):
     return render_template('dashboard/add_liabilities.html',
                            table_name=table_name, id=id, 
                            id_column=id_column, active_items=active_items,
-                           columns=columns, preserved_args=preserved_args, tables=get_tables())
+                           columns=columns, preserved_args=preserved_args, tables=get_tables(),
+                           entry=get_entry(id, table_name), page=page, total_pages=total_pages,
+                           filters=filters)
 
 @bp.route('/employees/<int:employee_id>/remove_liability/<item_id>', methods=['POST'])
 @admin_required

@@ -81,7 +81,6 @@ def index(table_name):
 @login_required
 def view_details(table_name, id):
     id_column = None
-    args = get_preserved_args()
     c = get_cursor()
     c.execute(f'DESCRIBE {table_name}')
     description = c.fetchall()
@@ -141,7 +140,7 @@ def view_details(table_name, id):
                             liabilities=liabilities if table_name == 'employees' else None,
                             id=id,
                             tables=get_tables(),
-                            args=args)
+                            args = get_preserved_args())
         
 
 @bp.route('/<table_name>/convert_pdf')

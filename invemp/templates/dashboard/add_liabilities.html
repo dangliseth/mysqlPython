@@ -4,11 +4,19 @@
 
 {% block content %}
 <div class="liabilities-container">
+  <h1>Add Liabilities to {{ entry[3] }}, {{ entry[2] }}</h1>
   <h2>Available Items</h2>
   <div class="filter-search">
-    
+    <form method="get" class="filter-form" style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; margin-bottom:1.2rem;">
+      <input type="hidden" name="page" value="1">
+      {% for col in columns %}
+        <input type="text" name="filter_{{ col }}" value="{{ filters[col]|default('') }}" placeholder="Filter {{ col|replace('_',' ') }}" class="filter-input">
+      {% endfor %}
+      <button type="submit" class="filter-btn">Filter</button>
+    </form>
   </div>
   {% if active_items and active_items|length > 0 %}
+    <button type="button" id="clear-selections-btn" class="clear-btn-minimal" style="margin-bottom:1rem; margin-right:0.5rem;">Clear Selections</button>
     <form method="post">
       <table class="liabilities-table">
         <thead>
@@ -41,11 +49,97 @@
       </table>
       <button type="submit" class="assign-btn">Assign Selected Items</button>
     </form>
+    <!-- Pagination Controls -->
+    <div class="pagination" style="margin-top:1.5rem; text-align:center;">
+      {% if total_pages > 1 %}
+        <nav aria-label="Page navigation">
+          <ul class="minimal-pagination">
+            <li>
+              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page-1) }}" class="page-link prev {% if page <= 1 %}disabled{% endif %}" tabindex="{% if page <= 1 %}-1{% else %}0{% endif %}">&laquo; Prev</a>
+            </li>
+            {% for p in range(1, total_pages+1) %}
+              <li>
+                <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=p) }}" class="page-link {% if p==page %}active{% endif %}">{{ p }}</a>
+              </li>
+            {% endfor %}
+            <li>
+              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page+1) }}" class="page-link next {% if page >= total_pages %}disabled{% endif %}" tabindex="{% if page >= total_pages %}-1{% else %}0{% endif %}">Next &raquo;</a>
+            </li>
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
   {% else %}
     <p>No active items found.</p>
   {% endif %}
 </div>
 <script src="{{ url_for('static', filename='script/script.js') }}"></script>
+<script>
+// --- Persist checkbox selection across pagination using sessionStorage ---
+const STORAGE_KEY = 'add_liabilities_selected_items';
+
+function getSelectedItems() {
+  try {
+    return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+function setSelectedItems(arr) {
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+// On page load, restore checked state
+window.addEventListener('DOMContentLoaded', function() {
+  const selected = getSelectedItems();
+  document.querySelectorAll('input[type=checkbox][name=selected_items]').forEach(cb => {
+    if (selected.includes(cb.value)) {
+      cb.checked = true;
+    }
+    // Listen for changes
+    cb.addEventListener('change', function() {
+      let sel = getSelectedItems();
+      if (cb.checked) {
+        if (!sel.includes(cb.value)) sel.push(cb.value);
+      } else {
+        sel = sel.filter(v => v !== cb.value);
+      }
+      setSelectedItems(sel);
+    });
+  });
+
+  // On form submit, add hidden inputs for all selected items
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      // Remove any previous hidden inputs
+      form.querySelectorAll('input[type=hidden][name=selected_items]').forEach(el => el.remove());
+      const sel = getSelectedItems();
+      sel.forEach(val => {
+        // Only add hidden input if not already checked on this page
+        if (!form.querySelector('input[type=checkbox][name=selected_items][value="' + val + '"]:checked')) {
+          const hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'selected_items';
+          hidden.value = val;
+          form.appendChild(hidden);
+        }
+      });
+    });
+  }
+
+  // Clear selections button
+  const clearBtn = document.getElementById('clear-selections-btn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      setSelectedItems([]);
+      document.querySelectorAll('input[type=checkbox][name=selected_items]').forEach(cb => {
+        cb.checked = false;
+      });
+    });
+  }
+});
+</script>
 <style>
 .liabilities-container {
   max-width: 600px;
@@ -131,6 +225,133 @@
 }
 .view-details-btn:hover svg path {
   stroke: #fff;
+}
+.minimal-pagination {
+  display: inline-flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.25rem;
+}
+.page-link {
+  display: inline-block;
+  min-width: 2.1rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 0.4rem;
+  border: none;
+  background: none;
+  color: #6366f1;
+  font-weight: 500;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+  outline: none;
+}
+.page-link.active {
+  background: #6366f1;
+  color: #fff;
+  font-weight: 600;
+}
+.page-link:hover:not(.active):not(.disabled), .page-link:focus:not(.active):not(.disabled) {
+  background: #f3f4f6;
+  color: #22223b;
+}
+.page-link.disabled {
+  background: none;
+  color: #b5b5c3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.page-link.prev, .page-link.next {
+  font-weight: 500;
+  color: #6366f1;
+  background: none;
+}
+.page-link.prev.disabled, .page-link.next.disabled {
+  color: #b5b5c3;
+  background: none;
+}
+.clear-btn-minimal {
+  background: #f3f4f6;
+  color: #111;
+  border: 1px solid #e5e7eb;
+  padding: 0.3rem 0.9rem;
+  border-radius: 0.4rem;
+  font-size: 0.97rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 0.7rem;
+  margin-right: 0.5rem;
+  transition: background 0.15s, color 0.15s, border 0.15s, box-shadow 0.15s;
+  box-shadow: none;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+.clear-btn-minimal:hover {
+  background: #dbeafe;
+  color: #111;
+  border-color: #60a5fa;
+  box-shadow: 0 2px 8px rgba(96,165,250,0.10);
+}
+.clear-btn-minimal:active {
+  background: #bae6fd;
+  color: #111;
+  border-color: #38bdf8;
+}
+.clear-btn-minimal::after {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(59,130,246,0.15);
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: width 0.25s cubic-bezier(.4,0,.2,1), height 0.25s cubic-bezier(.4,0,.2,1), opacity 0.25s;
+  opacity: 0;
+}
+.clear-btn-minimal:active::after {
+  width: 180%;
+  height: 400%;
+  opacity: 1;
+  transition: 0s;
+}
+.filter-form {
+  margin-bottom: 1.2rem;
+}
+.filter-input {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.4rem;
+  font-size: 0.97rem;
+  outline: none;
+  transition: border 0.15s, box-shadow 0.15s;
+  min-width: 120px;
+}
+.filter-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+}
+.filter-btn {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.38rem 1.1rem;
+  font-size: 0.97rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.filter-btn:hover, .filter-btn:focus {
+  background: #43437a;
+  color: #fff;
 }
 </style>
 {% endblock %}
