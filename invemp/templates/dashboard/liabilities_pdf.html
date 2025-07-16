@@ -1,0 +1,50 @@
+<!-- Simple Liabilities Form PDF Template -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Liabilities Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 11pt; margin: 2em; }
+        h1 { font-size: 1.3em; margin-bottom: 0.5em; }
+        .timestamp { color: #666; font-size: 0.95em; margin-bottom: 1em; }
+        .emp-info { margin-bottom: 1.2em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f3f4f6; font-weight: bold; }
+        tr:nth-child(even) { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Employee Liabilities Form</h1>
+    <div class="timestamp">Generated: {{ current_time }}</div>
+    <div class="emp-info">
+        <strong>Employee:</strong> {{ employee_name }}<br>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Item Name</th>
+                <th>Subcategory</th>
+                <th>Specification</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in liabilities %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td>{{ item[3] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center; color:#888;">No liabilities found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div style="margin-top:2em;">
+        <strong>Employee Signature:</strong> ____________________________
+    </div>
+</body>
+</html>
