@@ -23,7 +23,14 @@
           <tr>
             <th></th>
             {% for column in columns %}
-            <th> {{ column }}</th>
+            <th>
+              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=1, sort_column=column, sort_order='desc' if sort_column==column and sort_order=='asc' else 'asc', **filters) }}" class="sort-link" style="color:inherit; text-decoration:none;">
+                {{ column }}
+                {% if sort_column == column %}
+                  <span style="font-size:1em;">{% if sort_order == 'asc' %}&uarr;{% else %}&darr;{% endif %}</span>
+                {% endif %}
+              </a>
+            </th>
             {% endfor %}
             <th>View</th>
           </tr>
@@ -352,6 +359,18 @@ window.addEventListener('DOMContentLoaded', function() {
 .filter-btn:hover, .filter-btn:focus {
   background: #43437a;
   color: #fff;
+}
+.sort-link {
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
+  transition: background 0.15s, color 0.15s;
+}
+.sort-link:hover, .sort-link:focus {
+  background: #e0e7ff;
+  color: #22223b;
+  text-decoration: underline;
 }
 </style>
 {% endblock %}

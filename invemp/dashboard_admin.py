@@ -582,6 +582,19 @@ def add_liabilities(id, table_name):
             filter_args.append(f"%{val}%")
     where_sql = ' AND '.join(where_clauses)
 
+    # --- Sorting logic ---
+    sort_column = request.args.get('sort_column', 'item_id')
+    sort_order = request.args.get('sort_order', 'asc')
+    if sort_column not in columns:
+        sort_column = 'item_id'
+    if sort_order not in ['asc', 'desc']:
+        sort_order = 'asc'
+    # Map subcategory to correct table
+    if sort_column == 'subcategory':
+        order_by = f"subcategories.subcategory {sort_order}"
+    else:
+        order_by = f"items.{sort_column} {sort_order}"
+
     # --- Pagination logic ---
     try:
         page = int(request.args.get('page', 1))
@@ -607,7 +620,7 @@ def add_liabilities(id, table_name):
     SELECT items.item_id, items.item_name, items.brand_name, subcategories.subcategory, items.specification
     FROM items
     LEFT JOIN subcategories ON items.subcategory = subcategories.id 
-    WHERE {where_sql} ORDER BY items.item_id
+    WHERE {where_sql} ORDER BY {order_by}
     LIMIT %s OFFSET %s
     """
     c.execute(get_active_items_query, tuple(filter_args) + (per_page, offset))
@@ -639,7 +652,7 @@ def add_liabilities(id, table_name):
                            id_column=id_column, active_items=active_items,
                            columns=columns, preserved_args=preserved_args, tables=get_tables(),
                            entry=get_entry(id, table_name), page=page, total_pages=total_pages,
-                           filters=filters)
+                           filters=filters, sort_column=sort_column, sort_order=sort_order)
 
 @bp.route('/employees/<int:employee_id>/remove_liability/<item_id>', methods=['POST'])
 @admin_required

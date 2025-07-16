@@ -35,11 +35,20 @@ def index(table_name):
         page = 1
     per_page = 15
 
+    # Sorting setup
+    sort_column = request.args.get('sort_column')
+    sort_order = request.args.get('sort_order', 'asc')
+    if sort_order not in ['asc', 'desc']:
+        sort_order = 'asc'
+
     # Get filtered results using the helper
     c = get_cursor()
     try:
-        # Get filtered items and columns, and total filtered count
-        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
+        # Pass sorting params to filter_table
+        filtered_items, columns, filters, total_items = filter_table(
+            table_name, c, page=page, per_page=per_page,
+            sort_column=sort_column, sort_order=sort_order
+        )
         total_pages = (total_items + per_page - 1) // per_page
     finally:
         c.close()
@@ -51,6 +60,11 @@ def index(table_name):
         del pagination_args['page']
     merged_args = dict(pagination_args)
     merged_args.update(filters)
+    # Add sorting params to merged_args for links
+    if sort_column:
+        merged_args['sort_column'] = sort_column
+    if sort_order:
+        merged_args['sort_order'] = sort_order
 
     # AJAX partial rendering for table and pagination
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -61,6 +75,9 @@ def index(table_name):
                              page=page,
                              total_pages=total_pages,
                              merged_args=merged_args,
+                             args=merged_args,  # <-- ensure args is always defined
+                             sort_column=sort_column,
+                             sort_order=sort_order,
                              zip=zip)
 
     return render_template('dashboard/index.html',
@@ -75,6 +92,8 @@ def index(table_name):
                          pagination_args=pagination_args,  # Pass filter args without page
                          total_items=total_items,
                          args=request.args.to_dict(),
+                         sort_column=sort_column,
+                         sort_order=sort_order,
                          is_index=True)
 
 @bp.route('/<table_name>/<id>')

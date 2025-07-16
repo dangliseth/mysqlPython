@@ -7,8 +7,16 @@ This template is rendered for both full page loads and AJAX requests.
     <tr>
       {% for column in columns %}
         {% if column != 'password' and column not in ['category','serial_number','department','last_updated', 'description'] %}
-          <th style="cursor:pointer;">
+          <th style="cursor:pointer;"
+              data-sort-column="{{ column }}"
+              data-sort-order="{{ 'desc' if sort_column == column and sort_order == 'asc' else 'asc' }}"
+              {% if is_sorted %}class="sorted"{% endif %}>
             {{ column }}
+            {% if is_sorted %}
+              <span style="font-size:1em; vertical-align:middle;">
+                {% if sort_order == 'asc' %}&#9650;{% else %}&#9660;{% endif %}
+              </span>
+            {% endif %}
           </th>
         {% endif %}
       {% endfor %}
@@ -21,7 +29,7 @@ This template is rendered for both full page loads and AJAX requests.
       {% elif table_name == 'user_accounts' %}
       <tr class="clickable-row" style="cursor:pointer;" onclick="window.location='{{ url_for('dashboard_admin.update', table_name=table_name, id=item[0]) }}'">
       {% else %}
-      <tr style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name=table_name,id=item[0], **args) }}'">
+      <tr style="cursor: pointer;" onclick="window.location='{{ url_for('dashboard_user.view_details', table_name=table_name, id=item[0], page=page, sort_column=sort_column, sort_order=sort_order) }}'">
       {% endif %}
       {% for column, value in zip(columns, item) %}
         {% if column != 'password' %}
@@ -57,6 +65,22 @@ This template is rendered for both full page loads and AJAX requests.
     {% endfor %}
   </tbody>
 </table>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#main-table thead th[data-sort-column]').forEach(function(th) {
+    th.addEventListener('click', function() {
+      const col = th.getAttribute('data-sort-column');
+      const order = th.getAttribute('data-sort-order');
+      // Build new URL with sort params, reset to page 1
+      const url = new URL(window.location.href);
+      url.searchParams.set('sort_column', col);
+      url.searchParams.set('sort_order', order);
+      url.searchParams.set('page', '1');
+      window.location.href = url.toString();
+    });
+  });
+});
+</script>
 {% if total_pages > 1 %}
 <div class="pagination">
     {% if page > 1 %}
