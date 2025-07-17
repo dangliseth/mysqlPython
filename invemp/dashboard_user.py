@@ -350,32 +350,3 @@ def convert_pdf_qr(table_name):
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'attachment; filename={table_name}_qr_report.pdf'
     return response
-
-@bp.route('/liabilities_pdf/<int:employee_id>')
-@login_required
-def liabilities_pdf(employee_id):
-    # Get employee info and liabilities
-    c = get_cursor()
-    c.execute("SELECT first_name, last_name FROM employees WHERE employee_id = %s", (employee_id,))
-    emp = c.fetchone()
-    employee_name = f"{emp[1]}, {emp[0]}" if emp else "Unknown"
-    liabilities_query = """
-        SELECT i.item_id, i.item_name, subcat.subcategory, i.specification
-        FROM items i
-        LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
-        WHERE i.employee = %s
-    """
-    c.execute(liabilities_query, (employee_id,))
-    liabilities = c.fetchall()
-    c.close()
-    html = render_template(
-        'dashboard/liabilities_pdf.html',
-        employee_name=employee_name,
-        liabilities=liabilities,
-        current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-    )
-    pdf = HTML(string=html).write_pdf()
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'attachment; filename=liabilities_form_{employee_id}.pdf'
-    return response

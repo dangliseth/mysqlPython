@@ -16,11 +16,11 @@
         {% if table_name == 'items' %}
         Item #{{ entry[0] }} Details
         {% elif table_name == 'employees' %}
-        Employee {{ entry[3] }}, {{ entry[2] }} Details
+        Employee {{ entry[3] }}, {{ entry[2] }}
         {% endif %}
     </h1>
-    {% if table_name == 'employees' and liabilities %}
-    <a href="{{ url_for('dashboard_user.liabilities_pdf', employee_id=entry[0]) }}" class="icon-btn duplicate-btn" title="Download Liabilities Form" style="margin-left:1em;">
+    {% if table_name == 'employees' and liabilities and g.user[3] == 'admin' %}
+    <a href="{{ url_for('dashboard_admin.liabilities_pdf', employee_id=entry[0]) }}" class="icon-btn duplicate-btn" title="Download Liabilities Form" style="margin-left:1em;">
       <span class="icon-btn-svg">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10" stroke="#6366f1" stroke-width="2" fill="#f3f4f6"/>
@@ -144,7 +144,7 @@
   font-size: 1rem;
   color: #3730a3;
 }
-.icon-btn.duplicate-btn:hover, .icon-btn.duplicate-btn:focus {
+.icon-btn.duplicate-btn:hover {
   background: #6366f1;
   color: #fff;
   box-shadow: 0 4px 16px rgba(99,102,241,0.18);

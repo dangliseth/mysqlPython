@@ -1,5 +1,6 @@
 from flask import (
-    Blueprint, flash, redirect, render_template, request, url_for, send_file, jsonify, session, current_app
+    Blueprint, flash, redirect, render_template, request, url_for, 
+    make_response, session, current_app, g
 )
 from werkzeug.exceptions import abort
 from werkzeug.datastructures import MultiDict
@@ -8,6 +9,7 @@ import datetime
 import os
 import tempfile
 import pandas as pd
+from weasyprint import HTML
 
 from invemp.auth import admin_required
 from invemp.dashboard_helpers import (
@@ -670,17 +672,48 @@ def remove_liability(employee_id, item_id):
     preserved_args = get_preserved_args()
     return redirect(url_for('dashboard_user.view_details', table_name='employees', id=employee_id, **preserved_args))
 
-"""@bp.route('/liabilities_agreement_form/employees/<id>', methods=['POST'])
+@bp.route('/liabilities_pdf/<int:employee_id>')
 @admin_required
-def liabilities_agreement_form(id):
-    if request.method == 'POST':
-        c = get_cursor()
-        try:
-            liabilities = c.execute(""
-                SELECT * from items WHERE employee = %s
-                      ""), (id,)
-            if liabilities:"""
-                
+def liabilities_pdf(employee_id):
+    # Get employee info and liabilities
+    c = get_cursor()
+    c.execute("""
+              SELECT first_name, last_name, department 
+              FROM employees WHERE employee_id = %s
+              """, (employee_id,))
+    emp = c.fetchone()
+    employee_name = f"{emp[1]}, {emp[0]}" if emp else "Unknown"
+    employee_department = emp[2] if emp else "Unknown"
+    head_lookup_query = """
+    SELECT CONCAT(first_name, ', ', last_name) FROM employees 
+    WHERE department = %s AND position='Head'
+        """
+    c.execute(head_lookup_query, (employee_department,))
+    department_head = c.fetchone()
+
+    liabilities_query = """
+        SELECT i.item_id, i.item_name, subcat.subcategory, i.specification, cat.category
+        FROM items i
+        LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
+        LEFT JOIN items_categories cat ON subcat.category_id = cat.id
+        WHERE i.employee = %s
+    """
+    c.execute(liabilities_query, (employee_id,))
+    liabilities = c.fetchall()
+    c.close()
+    html = render_template(
+        'dashboard/liabilities_pdf.html',
+        employee_name=employee_name,
+        employee_department=employee_department,
+        department_head=department_head[0] if department_head else "Unknown",
+        liabilities=liabilities,
+        current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+    )
+    pdf = HTML(string=html, base_url=request.host_url).write_pdf()
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=liabilities_form_{employee_id}.pdf'
+    return response
 
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
