@@ -7,12 +7,13 @@ This template is rendered for both full page loads and AJAX requests.
     <tr>
       {% for column in columns %}
         {% if column != 'password' and column not in ['category','serial_number','department','last_updated', 'description'] %}
+          {# Only show arrow and toggle order for the sorted column #}
           <th style="cursor:pointer;"
               data-sort-column="{{ column }}"
-              data-sort-order="{{ 'desc' if sort_column == column and sort_order == 'asc' else 'asc' }}"
-              {% if is_sorted %}class="sorted"{% endif %}>
+              data-sort-order="{% if sort_column == column %}{{ 'desc' if sort_order == 'asc' else 'asc' }}{% else %}asc{% endif %}"
+              {% if sort_column == column %}class="sorted"{% endif %}>
             {{ column }}
-            {% if is_sorted %}
+            {% if sort_column == column %}
               <span style="font-size:1em; vertical-align:middle;">
                 {% if sort_order == 'asc' %}&#9650;{% else %}&#9660;{% endif %}
               </span>
@@ -67,8 +68,11 @@ This template is rendered for both full page loads and AJAX requests.
 </table>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Remove any previous click handlers to avoid conflicts
   document.querySelectorAll('#main-table thead th[data-sort-column]').forEach(function(th) {
-    th.addEventListener('click', function() {
+    th.onclick = null;
+    th.addEventListener('click', function(e) {
+      e.preventDefault();
       const col = th.getAttribute('data-sort-column');
       const order = th.getAttribute('data-sort-order');
       // Build new URL with sort params, reset to page 1

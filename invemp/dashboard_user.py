@@ -35,11 +35,17 @@ def index(table_name):
         page = 1
     per_page = 15
 
+    sort_column = request.args.get('sort_column')
+    sort_order = request.args.get('sort_order')
+
     # Get filtered results using the helper
     c = get_cursor()
     try:
         # Get filtered items and columns, and total filtered count
-        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
+        filtered_items, columns, filters, total_items = filter_table(
+            table_name, c, page=page, per_page=per_page, 
+            sort_column=sort_column, sort_order=sort_order
+                                                                     )
         total_pages = (total_items + per_page - 1) // per_page
     finally:
         c.close()
@@ -61,6 +67,7 @@ def index(table_name):
                              page=page,
                              total_pages=total_pages,
                              merged_args=merged_args,
+                             sort_column=sort_column, sort_order=sort_order,
                              zip=zip)
 
     return render_template('dashboard/index.html',
@@ -72,6 +79,7 @@ def index(table_name):
                          page=page,
                          zip = zip,
                          total_pages=total_pages,
+                         sort_column=sort_column, sort_order=sort_order,
                          pagination_args=pagination_args,  # Pass filter args without page
                          total_items=total_items,
                          args=request.args.to_dict(),

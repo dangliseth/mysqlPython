@@ -207,7 +207,7 @@ def filter_table(table_name, cursor, page=1, per_page=15, sort_column=None, sort
     # Remove: sort_column = request.args.get('sort_column')
     # Remove: sort_direction = request.args.get('sort_direction', 'asc')
     # Instead, use function arguments for sorting (from dashboard_user.py)
-    if sort_column and sort_order and sort_order.lower() in ['asc', 'desc']:
+    if sort_column and sort_order.lower() in ['asc', 'desc']:
         if table_name == 'items':
             sql_expr = column_sql_map.get(sort_column, f'i.`{sort_column}`')
             sql_query += f" ORDER BY {sql_expr} {sort_order}"
