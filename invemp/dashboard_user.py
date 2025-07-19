@@ -156,16 +156,19 @@ def view_details(table_name, id):
 def convert_pdf(table_name):
     if not is_valid_table(table_name):
         abort(400)
-    # Get current page and per_page from request (default to 1 and 15)
+    # Always export all entries, not just current page
     try:
-        page = int(request.args.get('page', 1))
-        page = max(page, 1)
+        page = 1
     except ValueError:
         page = 1
-    per_page = 15
+    per_page = 1000000  # Large number to get all entries
+    sort_column = request.args.get('sort_column')
+    sort_order = request.args.get('sort_order')
     c = get_cursor()
     try:
-        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
+        filtered_items, columns, filters, total_items = filter_table(
+            table_name, c, page=page, per_page=per_page, sort_column=sort_column, sort_order=sort_order
+        )
     finally:
         c.close()
 
@@ -281,21 +284,24 @@ def convert_pdf(table_name):
 def convert_pdf_qr(table_name):
     if not is_valid_table(table_name):
         abort(400)
-    # Get current page and per_page from request (default to 1 and 15)
+    # Always export all entries, not just current page
     try:
-        page = int(request.args.get('page', 1))
-        page = max(page, 1)
+        page = 1
     except ValueError:
         page = 1
-    per_page = 15
+    per_page = 1000000  # Large number to get all entries
+    sort_column = request.args.get('sort_column')
+    sort_order = request.args.get('sort_order')
     c = get_cursor()
     try:
-        filtered_items, columns, filters, total_items = filter_table(table_name, c, page=page, per_page=per_page)
+        filtered_items, columns, filters, total_items = filter_table(
+            table_name, c, page=page, per_page=per_page, sort_column=sort_column, sort_order=sort_order
+        )
     finally:
         c.close()
 
-    if table_name == 'items' or table_name == 'items_disposal':
-        qr_columns = ['item_id', 'item_name', 'serial_number']  # Change as needed
+    if table_name == 'items':
+        qr_columns = ['item id', 'item name', 'brand name', 'subcategory', 'specification']  # Match actual column names
     else:
         qr_columns = columns
 
@@ -332,7 +338,7 @@ def convert_pdf_qr(table_name):
             tmp_file_path = tmp_file.name
         pdf.image(tmp_file_path, x=x, y=y, w=qr_width, h=qr_height, type='PNG')
         pdf.set_xy(x, y + qr_height)
-        label_col = 'item_id' if 'item_id' in col_indices else columns[0]
+        label_col = 'item id' if 'item id' in col_indices else columns[0]
         pdf.cell(qr_width, 5, f"{row[col_indices[label_col]]}", 0, 0, "C")
 
         x += qr_width + spacing
