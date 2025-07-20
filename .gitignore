@@ -4,3 +4,4 @@
 /invemp/__pycache__
 *.pyc
 mysqlDumps/~$Book1.xlsx
+instance/config.py
