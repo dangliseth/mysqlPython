@@ -79,22 +79,11 @@
     <table class="signature-table">
         <tr>
             <td style="height:2.5em;">{{ employee_name }}</td>
-            <td></td>
-            {% if employee_name != department_head %}
-            <td>{{ department_head }}</td>
-            {% endif %}
+            <td>{{ current_time }}</td>
         </tr>
         <tr>
             <td>{{ employee_department }}</td>
             <td>Date</td>
-            {% if employee_name != department_head %}
-            <td>
-                <div>Department Head</div>
-                <div style="font-size:0.9em; color:#242424; font-style:italic; margin-top:2px;">
-                    {{ employee_department }}
-                </div>
-            </td>
-            {% endif %}
         </tr>
     </table>
 </body>

@@ -705,7 +705,7 @@ def liabilities_pdf(employee_id):
         'dashboard/liabilities_pdf.html',
         employee_name=employee_name,
         employee_department=employee_department,
-        department_head=department_head[0] if department_head else "Unknown",
+        department_head=department_head[0] if department_head else "None",
         liabilities=liabilities,
         current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     )
