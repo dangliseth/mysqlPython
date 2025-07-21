@@ -41,7 +41,8 @@ def get_entry(entry_id, table_name):
     return entry
 
 def is_valid_table(table_name):
-    allowed_tables = {'items', 'user_accounts', 'employees', 'items_groups'}
+    """Check if the table name is valid and exists in the database."""
+    allowed_tables = get_tables()
     return table_name in allowed_tables
 
 def get_dropdown_options():
