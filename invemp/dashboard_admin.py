@@ -26,9 +26,7 @@ bp = Blueprint('dashboard_admin', __name__)
 
 @bp.route('/<table_name>/create', methods=['GET', 'POST'])
 @admin_required
-def create(table_name):
-    if not is_valid_table(table_name):
-        abort(400)
+def create(table_name, id=None):
     c = get_cursor()
     preserved_args = get_preserved_args()
 
@@ -164,9 +162,15 @@ def create(table_name):
             if 'status' in columns:
                 values.append(status_from_form)
                 insert_columns.append('status')
+        
+
+        where_clause = 'WHERE `{id_column}` = %s'
 
         placeholders = ', '.join(['%s'] * len(values))
-        query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
+        if id is not None:
+            query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})", ({where_clause}, {id})
+        else:
+            query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
 
         try:
             c = get_cursor()
@@ -185,7 +189,12 @@ def create(table_name):
             c.close()
             preserved_args = get_preserved_args()
             flash(f"Successfully created new {table_name[:-1]}")
-            return redirect(url_for('dashboard_user.index', table_name=table_name,
+            if table_name == 'items_categories':
+                return redirect(url_for('dashboard_admin.settings_categories', **preserved_args))
+            elif table_name == 'subcategories':
+                return redirect(url_for('dashboard_admin.settings_subcategories', **preserved_args))
+            else:
+                return redirect(url_for('dashboard_user.index', table_name=table_name,
                                     **preserved_args))
         except Exception as e:
             # Import pymysql.err if not already imported
@@ -222,8 +231,6 @@ def create(table_name):
 @bp.route('/<table_name>/<id>/update', methods=['GET', 'POST'])
 @admin_required
 def update(id, table_name):
-    if not is_valid_table(table_name):
-        abort(400)
     entry = get_entry(id, table_name)
     entry = list(entry)
     c = get_cursor()
@@ -715,12 +722,45 @@ def liabilities_pdf(employee_id):
     response.headers['Content-Disposition'] = f'attachment; filename=liabilities_form_{employee_id}.pdf'
     return response
 
+@bp.route('/settings/categories')
+@admin_required
+def settings_categories():
+    c = get_cursor()
+    c.execute("SELECT id, category FROM items_categories")
+    categories = c.fetchall()
+    c.close()
+    preserved_args = get_preserved_args()
+    return render_template(
+        'dashboard/settings_categories.html',
+        categories=categories,
+        preserved_args=preserved_args,
+        tables=get_tables()
+    )
+
+@bp.route('/settings/categories/<category_id>')
+@admin_required
+def settings_subcategories(category_id):
+    c = get_cursor()
+    # Get the selected category
+    c.execute("SELECT id, category FROM items_categories WHERE id = %s", (category_id,))
+    category = c.fetchone()
+    # Get subcategories for this category
+    c.execute("SELECT id, subcategory FROM subcategories WHERE category_id = %s", (category_id,))
+    subcategories = c.fetchall()
+    c.close()
+    preserved_args = get_preserved_args()
+    return render_template(
+        'dashboard/settings_subcategories.html',
+        category=category,
+        subcategories=subcategories,
+        preserved_args=preserved_args,
+        tables=get_tables()
+    )
+
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
 @admin_required
 def history(id, table_name):
-    if not is_valid_table(table_name):
-        abort(400)
     c = get_cursor()
     preserved_args = get_preserved_args()
 

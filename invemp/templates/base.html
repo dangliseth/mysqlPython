@@ -24,7 +24,7 @@
   <ul class="tables-nav">
       {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
       <a href = "{{ url_for ('auth.register', **request.args) }}" class="btn btn-create">Create User</a>
-      {% elif (g.user[3] == 'admin' and is_index and table_name != 'items_disposal' and table_name != 'employees_archive') %}
+      {% elif g.user[3] == 'admin' and is_index and table_name not in ['items_disposal', 'employees_archive', 'items_groups'] %}
       <a href = "{{ url_for ('dashboard_admin.create', table_name = table_name, **request.args) }}" class="btn btn-create">Create Entry</a>
       {% endif %}
     {% for table in tables if table not in ['item_assignment_history', 'items_categories', 'subcategories'] %}
@@ -249,7 +249,7 @@
     <ul class="settings">
       {% for table in tables if table in ['items_categories'] %}
       <li>
-        <a href="{{ url_for('dashboard_user.index', table_name=table) }}" class="settings-link">
+        <a href="{{ url_for('dashboard_admin.settings_categories') }}" class="settings">
           <img src="{{ url_for('static', filename='icons/settings.svg') }}" class="settings-icon">
           {{ table.replace('_', ' ').title() }}
         </a>

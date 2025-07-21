@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="settings-container">
+  <a href="{{ url_for('dashboard_admin.settings_categories', **preserved_args) }}" class="settings-back">&larr; Back to Categories</a>
+  <div class="settings-header">
+    <h2 class="settings-title">Subcategories for: {{ category[1] }}</h2>
+    <a href="{{ url_for('dashboard_admin.create', table_name='subcategories', id=category[0], **preserved_args) }}" class="btn btn-create">
+      + Create Subcategory
+    </a>
+  </div>
+  <ul class="settings-list">
+    {% for subcat in subcategories %}
+      <li class="settings-list-item">
+        <span class="settings-list-text">{{ subcat[1] }}</span>
+      </li>
+    {% else %}
+      <li class="settings-list-item settings-empty">No subcategories found.</li>
+    {% endfor %}
+  </ul>
+</div>
+<style>
+.settings-container {
+  max-width: 480px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 32px 28px 24px 28px;
+}
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.settings-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+.btn-create {
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-create:hover {
+  background: #444;
+}
+.settings-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #888;
+  text-decoration: none;
+  font-size: 0.98rem;
+  transition: color 0.15s;
+}
+.settings-back:hover {
+  color: #007bff;
+}
+.settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.settings-list-item {
+  border-bottom: 1px solid #eee;
+  padding: 16px 0;
+  font-size: 1.08rem;
+  color: #222;
+  transition: background 0.15s;
+}
+.settings-list-item:last-child {
+  border-bottom: none;
+}
+.settings-list-item:hover {
+  background: #f7f9fa;
+}
+.settings-empty {
+  color: #bbb;
+  font-style: italic;
+}
+</style>
+{% endblock %}

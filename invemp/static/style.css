@@ -247,7 +247,7 @@ nav h1 {
   background-color: #570000;
 }
 /* Profile Toggle Styling */
-.profile {
+.profile, .settings {
   position: relative;
   display: inline-block;
   align-self: center;
@@ -255,12 +255,12 @@ nav h1 {
 }
 
 /* Hide the checkbox input */
-#profile-toggle {
+#profile-toggle, #settings-toggle {
   display: none;
 }
 
 /* Style the profile icon */
-#profile-icon {
+#profile-icon, #settings-icon {
   cursor: pointer;
   background-color: white;
   color: black;
@@ -272,7 +272,7 @@ nav h1 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
-#profile-icon:hover {
+#profile-icon:hover, #settings-icon:hover {
   border-radius: 15px;
   transform: scale(1.1);
   background-color: #7f87f7;
@@ -280,7 +280,7 @@ nav h1 {
 }
 
 /* Hide profile dropdown by default */
-ul.profile {
+ul.profile, ul.settings {
   display: none;
   position: absolute;
   right: 0;
@@ -298,12 +298,12 @@ ul.profile {
 }
 
 /* Show profile dropdown when checkbox is checked */
-#profile-toggle:checked ~ #profile-icon ~ ul.profile {
+#profile-toggle:checked ~ #profile-icon ~ ul.profile, #settings-toggle:checked ~ #settings-icon ~ ul.settings {
   display: flex;
 }
 
 /* Profile dropdown items */
-ul.profile li {
+ul.profile li, ul.settings li {
   padding: 0.5rem 1rem;
   color: #333;
   cursor: pointer;

@@ -8,7 +8,7 @@
 <div class="form-compact create-bg">
   <form method="post" class="form-compact-form">
     {% for column in columns %}
-      {% if not (column.endswith('_id') or column == 'id' or column == 'last_updated' or column == 'item_name') %}
+      {% if not (column.endswith('_id') and column != 'category_id' ) and column not in ['id', 'last_updated', 'item_name'] %}
       <div class="form-row">
         <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
         {% if column == 'Assigned To' %}
@@ -19,7 +19,7 @@
             {% endfor %}
           </datalist>
           <button type="button" class="btn btn-secondary btn-clear" onclick="document.getElementById('Assigned-To').value = '';">Clear</button>
-        {% elif column in dropdown_options %}
+        {% elif column in dropdown_options and table_name != 'subcategories' %}
           <select class="form-input" id="{{ column }}" name="{{ column }}">
             {% for option in dropdown_options[column] %}
             <option value="{{ option }}">{{ option }}</option>

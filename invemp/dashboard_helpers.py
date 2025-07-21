@@ -42,7 +42,7 @@ def get_entry(entry_id, table_name):
 
 def is_valid_table(table_name):
     """Check if the table name is valid and exists in the database."""
-    allowed_tables = get_tables()
+    allowed_tables = ['items', 'items_groups', 'employees', 'user_accounts']
     return table_name in allowed_tables
 
 def get_dropdown_options():
@@ -89,7 +89,7 @@ def get_items_query():
     return """
         SELECT i.item_id AS 'item id', 
         i.item_name AS 'item name', subcat.subcategory, cat.category,
-        i.brand_name AS 'brand name', i.status, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department, i.last_updated
+        i.brand_name AS 'brand name', i.status, i.specification, CONCAT(e.last_name, ', ', e.first_name) AS 'Assigned To', e.department
         FROM items i
         LEFT JOIN employees e ON i.employee = e.employee_id
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
