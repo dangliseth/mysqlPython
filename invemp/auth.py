@@ -14,6 +14,18 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
+    # Idle timeout logic (15 minutes)
+    timeout_seconds = 900
+    last_activity = session.get('last_activity')
+    now = int(__import__('time').time())
+    if user_id is not None and last_activity is not None:
+        if now - last_activity > timeout_seconds:
+            session.clear()
+            g.user = None
+            flash('You have been logged out due to inactivity.')
+            return redirect(url_for('auth.login'))
+        else:
+            session['last_activity'] = now
     if user_id is None:
         g.user = None
     else:
@@ -88,10 +100,10 @@ def login():
             if user is None or not check_password_hash(user[2], password):
                 error = 'Incorrect username or password. Please try again.'
 
-
             if error is None:
                 session.clear()
                 session['user_id'] = user[0]
+                session['last_activity'] = int(__import__('time').time())
                 response = redirect(url_for('index'))
                 response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
                 response.headers['Pragma'] = 'no-cache'

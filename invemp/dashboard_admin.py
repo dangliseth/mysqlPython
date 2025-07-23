@@ -24,9 +24,19 @@ from invemp.db import get_cursor
 
 bp = Blueprint('dashboard_admin', __name__)
 
-@bp.route('/<table_name>/create', methods=['GET', 'POST'])
+@bp.route('/<table_name>/create/', methods=['GET', 'POST'], defaults={'id': None})
+@bp.route('/<table_name>/create/<id>', methods=['GET', 'POST'])
 @admin_required
 def create(table_name, id=None):
+    # for subcategories table, get category_id from category_name if provided
+    if table_name == 'subcategories' and id is not None:
+        c = get_cursor()
+        c.execute("SELECT * FROM items_categories WHERE id = %s", (id,))
+        category = c.fetchone()
+        c.close()
+        print(category)
+
+
     c = get_cursor()
     preserved_args = get_preserved_args()
 
@@ -50,6 +60,7 @@ def create(table_name, id=None):
         if column == 'id' or column.endswith('_id'):
             id_column = column
             break
+
 
     # Max id check
     if request.method == 'POST':
@@ -87,8 +98,12 @@ def create(table_name, id=None):
             elif column == 'last_updated':
                 values.append(current_datetime)
                 insert_columns.append(column)
-            elif column in ['item_name', 'status', 'Assigned To', 'subcategory']:
+            elif table_name == 'items' and column in ['item_name', 'status', 'Assigned To', 'subcategory']:
                 continue
+            elif table_name == 'subcategories' and column == 'category':
+                # Always use the category_id from the context if present
+                values.append(id if id is not None else None)
+                insert_columns.append('category')
             else:
                 if request.form.get(column) != '':
                     values.append(request.form.get(column))
@@ -103,7 +118,7 @@ def create(table_name, id=None):
         assigned_to_name = request.form.get('Assigned To')
         subcategory_name = request.form.get('subcategory')
 
-        # Only handle 'employee', 'department', and 'status' columns for items table
+        # Only handle 'employee', 'department', 'subcategory', and 'status' columns for items table
         if table_name == 'items':
             # Handle Assigned To (employee)
             if assigned_to_name:
@@ -162,15 +177,9 @@ def create(table_name, id=None):
             if 'status' in columns:
                 values.append(status_from_form)
                 insert_columns.append('status')
-        
-
-        where_clause = 'WHERE `{id_column}` = %s'
 
         placeholders = ', '.join(['%s'] * len(values))
-        if id is not None:
-            query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})", ({where_clause}, {id})
-        else:
-            query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
+        query = f"INSERT INTO `{table_name}` ({', '.join(insert_columns)}) VALUES ({placeholders})"
 
         try:
             c = get_cursor()
@@ -192,10 +201,9 @@ def create(table_name, id=None):
             if table_name == 'items_categories':
                 return redirect(url_for('dashboard_admin.settings_categories', **preserved_args))
             elif table_name == 'subcategories':
-                return redirect(url_for('dashboard_admin.settings_subcategories', **preserved_args))
+                return redirect(url_for('dashboard_admin.settings_subcategories', category_id=category[0], **preserved_args))
             else:
-                return redirect(url_for('dashboard_user.index', table_name=table_name,
-                                    **preserved_args))
+                return redirect(url_for('dashboard_user.index', table_name=table_name, **preserved_args))
         except Exception as e:
             # Import pymysql.err if not already imported
             import pymysql
@@ -220,11 +228,12 @@ def create(table_name, id=None):
                 else:
                     entry.append(request.form.get(column))
             return render_template('dashboard/create.html', table_name=table_name, entry=entry,
-                           columns=columns, dropdown_options=dropdown_options, 
+                           columns=columns, dropdown_options=dropdown_options, category=category if table_name == 'subcategories' else None, 
                            preserved_args=preserved_args, not_null_columns=not_null_columns, tables=get_tables())
     
     return render_template('dashboard/create.html', table_name=table_name, 
                            columns=columns, dropdown_options=dropdown_options,
+                           category=category if table_name == 'subcategories' else None,
                            preserved_args=preserved_args, not_null_columns=not_null_columns,
                            tables=get_tables())
 
@@ -723,6 +732,7 @@ def liabilities_pdf(employee_id):
     return response
 
 @bp.route('/settings/categories')
+@bp.route('/categories')
 @admin_required
 def settings_categories():
     c = get_cursor()
@@ -737,15 +747,15 @@ def settings_categories():
         tables=get_tables()
     )
 
-@bp.route('/settings/categories/<category_id>')
+@bp.route('/settings/subcategories/<category_id>')
 @admin_required
 def settings_subcategories(category_id):
     c = get_cursor()
     # Get the selected category
-    c.execute("SELECT id, category FROM items_categories WHERE id = %s", (category_id,))
+    c.execute("SELECT * FROM items_categories WHERE id = %s", (category_id,))
     category = c.fetchone()
     # Get subcategories for this category
-    c.execute("SELECT id, subcategory FROM subcategories WHERE category_id = %s", (category_id,))
+    c.execute("SELECT id, subcategory FROM subcategories WHERE category = %s", (category_id,))
     subcategories = c.fetchall()
     c.close()
     preserved_args = get_preserved_args()
@@ -756,6 +766,9 @@ def settings_subcategories(category_id):
         preserved_args=preserved_args,
         tables=get_tables()
     )
+@bp.route('/subcategories')
+def subcategories_alias(category_name):
+    return redirect(url_for('bp.settings_subcategories', category_name=category_name), code=302)
 
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))

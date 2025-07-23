@@ -39,7 +39,7 @@
     <button type="submit" class="btn btn-primary btn-compact">Update</button>
     {% endif %}
   </form>
-  {% if table_name == 'items' %}
+  {% if table_name in ['items', 'user_accounts'] %}
   <form action="{{ url_for('dashboard_admin.delete', table_name = table_name, id = entry[0], **request.args) }}" method="post" id="delete" class="delete-form">
     <button type="submit" class="btn-danger">
       <img src="{{ url_for('static', filename='icons/delete_forever.svg')}}" class="icon-danger">

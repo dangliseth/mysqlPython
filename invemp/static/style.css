@@ -272,11 +272,17 @@ nav h1 {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+#settings-icon {
+  background-color: transparent;
+}
 #profile-icon:hover, #settings-icon:hover {
   border-radius: 15px;
   transform: scale(1.1);
   background-color: #7f87f7;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#settings-icon:hover {
+  background-color: #21836a;
 }
 
 /* Hide profile dropdown by default */

@@ -163,6 +163,18 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
         });
     }
+    // Auto-hide flash messages after 2.5 seconds
+    setTimeout(function() {
+        document.querySelectorAll('.flash').forEach(function(flash) {
+            flash.style.transition = 'opacity 0.5s';
+            flash.style.opacity = '0';
+            setTimeout(function() {
+                if (flash.parentNode) {
+                    flash.parentNode.removeChild(flash);
+                }
+            }, 500);
+        });
+    }, 2500);
 });
 
 // Re-attach event listeners when back/forward buttons are used

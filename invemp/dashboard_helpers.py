@@ -105,6 +105,13 @@ def get_items_group_query():
         LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id
     """
 
+def get_employees_query():
+    return """
+        SELECT e.*, u.username
+        FROM employees e
+        LEFT JOIN user_accounts u ON e.user_account = u.id
+    """
+
 def get_filters(table_name):
     c = get_cursor()
 
@@ -167,6 +174,9 @@ def filter_table(table_name, cursor, page=1, per_page=15, sort_column=None, sort
     elif table_name == 'items_groups':
         sql_query = get_items_group_query()
         count_query = "SELECT COUNT(*) FROM items_groups LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id"
+    elif table_name == 'employees':
+        sql_query = get_employees_query()
+        count_query = "SELECT COUNT(*) FROM employees e LEFT JOIN user_accounts u ON e.user_account = u.id"
     else:
         sql_query = f"SELECT * FROM `{table_name}`"
         count_query = f"SELECT COUNT(*) FROM `{table_name}`"

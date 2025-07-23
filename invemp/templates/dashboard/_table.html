@@ -34,7 +34,13 @@ This template is rendered for both full page loads and AJAX requests.
       {% endif %}
       {% for column, value in zip(columns, item) %}
         {% if column != 'password' %}
-          {% if column in ['category','serial_number','department','last_updated','description'] %}
+          {% if table_name == 'employees' and column == 'position' %}
+          <td>
+            <div>{{ value }}</div>
+            <div style="font-size:0.85em; color:#242424; font-style:italic; margin-top:2px;">
+              {{ item[columns.index('department')] }}
+            </div>
+          {% elif column in ['category','serial_number','department','last_updated','description'] %}
             {# skip category and department columns, already shown with item_name/Assigned To #}
           {% elif table_name == 'items' and column == 'subcategory' %}
           <td>
@@ -49,14 +55,16 @@ This template is rendered for both full page loads and AJAX requests.
             <div style="font-size:0.85em; color:#242424; font-style:italic; margin-top:2px;">
               {{ item[columns.index('department')] }}
             </div>
+            {% if table_name == 'items' %}
             <span class="action-btns">
-              {% if table_name == 'items' %}
               <a href="{{ url_for('dashboard_admin.history', table_name=table_name, id=item[0], **merged_args if merged_args is defined else request.args)}}" class="btn btn-table">
                 <img src="{{ url_for('static', filename='icons/history.svg') }}" alt="History" class="icon">
               </a>
-              {% endif %}
             </span>
+            {% endif %}
           </td>
+          {% elif table_name == 'employees' and column == 'user_account' %}
+          <td>{{ item[-1] }}</td>
           {% else %}
           <td>{{ value }}</td>
           {% endif %}

@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 
 {% block header %}
-<h1>{% block title%}Create Entry in {{ table_name }}{% endblock%}</h1>
+<h1>{% block title%}Create Entry in {{ table_name }} 
+  {% if table_name == 'subcategories' %} for {{ category[1] }} {% endif %}{% endblock%}</h1>
 {% endblock %}
 
 {% block content %}
 <div class="form-compact create-bg">
   <form method="post" class="form-compact-form">
     {% for column in columns %}
-      {% if not (column.endswith('_id') and column != 'category_id' ) and column not in ['id', 'last_updated', 'item_name'] %}
+      {% if not (column.endswith('_id') and column != 'category_id' ) and column not in ['id', 'last_updated', 'item_name', 'category'] %}
       <div class="form-row">
         <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
         {% if column == 'Assigned To' %}
@@ -25,6 +26,8 @@
             <option value="{{ option }}">{{ option }}</option>
             {% endfor %}
           </select>
+        {% elif column == 'category' and table_name == 'subcategories' %}
+          <input type="text" class="form-input" id="{{ column }}" name="{{ column }}" value="{{ category_name }}" readonly>
         {% else %}
           <input type="text" class="form-input" id="{{ column }}" name="{{ column }}">
         {% endif %}
