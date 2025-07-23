@@ -9,7 +9,13 @@
 <div class="form-compact create-bg">
   <form method="post" class="form-compact-form">
     {% for column in columns %}
-      {% if not (column.endswith('_id') and column != 'category_id' ) and column not in ['id', 'last_updated', 'item_name', 'category'] %}
+      {% if column == 'category' and table_name == 'subcategories' %}
+      <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
+      <input type="text" class="form-input" id="{{ column }}" name="{{ column }}" value="{{ category[1] }}" readonly>
+      {% elif column == 'category' and table_name == 'items_categories' %}
+      <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
+      <input type="text" class="form-input" id="{{ column }}" name="{{ column }}">
+      {% elif not (column.endswith('_id') and column != 'category_id' ) and column not in ['id', 'last_updated', 'item_name', 'category'] %}
       <div class="form-row">
         <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
         {% if column == 'Assigned To' %}
@@ -26,8 +32,6 @@
             <option value="{{ option }}">{{ option }}</option>
             {% endfor %}
           </select>
-        {% elif column == 'category' and table_name == 'subcategories' %}
-          <input type="text" class="form-input" id="{{ column }}" name="{{ column }}" value="{{ category_name }}" readonly>
         {% else %}
           <input type="text" class="form-input" id="{{ column }}" name="{{ column }}">
         {% endif %}
