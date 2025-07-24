@@ -12,7 +12,7 @@ This template is rendered for both full page loads and AJAX requests.
               data-sort-column="{{ column }}"
               data-sort-order="{% if sort_column == column %}{{ 'desc' if sort_order == 'asc' else 'asc' }}{% else %}asc{% endif %}"
               {% if sort_column == column %}class="sorted"{% endif %}>
-            {{ column }}
+            {{ column.replace('_', ' ') }}
             {% if sort_column == column %}
               <span style="font-size:1em; vertical-align:middle;">
                 {% if sort_order == 'asc' %}&#9650;{% else %}&#9660;{% endif %}

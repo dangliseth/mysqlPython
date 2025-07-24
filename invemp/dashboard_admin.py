@@ -34,7 +34,6 @@ def create(table_name, id=None):
         c.execute("SELECT * FROM items_categories WHERE id = %s", (id,))
         category = c.fetchone()
         c.close()
-        print(category)
 
 
     c = get_cursor()

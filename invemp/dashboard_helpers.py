@@ -93,7 +93,7 @@ def get_items_query():
         FROM items i
         LEFT JOIN employees e ON i.employee = e.employee_id
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
-        LEFT JOIN items_categories cat ON subcat.category_id = cat.id
+        LEFT JOIN items_categories cat ON subcat.category = cat.id
     """
 
 def get_items_group_query():
@@ -170,7 +170,7 @@ def filter_table(table_name, cursor, page=1, per_page=15, sort_column=None, sort
     # Build the base query
     if table_name == 'items':
         sql_query = get_items_query()
-        count_query = "SELECT COUNT(*) FROM items i LEFT JOIN employees e ON i.employee = e.employee_id LEFT JOIN subcategories subcat ON i.subcategory = subcat.id LEFT JOIN items_categories cat ON subcat.category_id = cat.id"
+        count_query = "SELECT COUNT(*) FROM items i LEFT JOIN employees e ON i.employee = e.employee_id LEFT JOIN subcategories subcat ON i.subcategory = subcat.id LEFT JOIN items_categories cat ON subcat.category = cat.id"
     elif table_name == 'items_groups':
         sql_query = get_items_group_query()
         count_query = "SELECT COUNT(*) FROM items_groups LEFT JOIN subcategories ON items_groups.subcategory_id = subcategories.id"

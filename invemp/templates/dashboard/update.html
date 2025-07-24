@@ -10,7 +10,7 @@
     {% for column in columns if column != 'password' %}
       {% if not (column.endswith('_id') or column in ['id', 'last_updated', 'last_updated_by', 'item_name']) %}
       <div class="form-row">
-        <label for="{{ column }}" class="form-label">{{ column }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
+        <label for="{{ column }}" class="form-label">{{ column.replace('_', ' ').title() }}{% if not_null_columns and not_null_columns.get(column) %}<span class="required-asterisk">*</span>{% endif %}</label>
         {% if not (column == 'username') %}
           {% if column == 'Assigned To' %}
             <input type="text" class="form-input" id="Assigned-To" name="Assigned To" list="assigned-to-list" value="{{ entry[columns.index(column)] if entry[columns.index(column)] is not none else '' }}">

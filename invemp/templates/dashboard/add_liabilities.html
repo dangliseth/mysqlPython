@@ -59,7 +59,7 @@
     <!-- Pagination Controls -->
     <div class="pagination" style="margin-top:1.5rem; text-align:center;">
       {% if total_pages > 1 %}
-        <nav aria-label="Page navigation">
+        <nav aria-label="Page navigation" class="page-navigation">
           <ul class="minimal-pagination">
             <li>
               <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page-1) }}" class="page-link prev {% if page <= 1 %}disabled{% endif %}" tabindex="{% if page <= 1 %}-1{% else %}0{% endif %}">&laquo; Prev</a>
@@ -198,6 +198,10 @@ window.addEventListener('DOMContentLoaded', function() {
 .assign-btn:hover {
   background: #43437a;
 }
+.assign-btn:active {
+  background-color: #24244e;
+  transform: scale(0.94);
+}
 .view-details-btn {
   background: linear-gradient(90deg, #f3f4f6 0%, #e0e7ff 100%);
   border: none;
@@ -233,53 +237,77 @@ window.addEventListener('DOMContentLoaded', function() {
 .view-details-btn:hover svg path {
   stroke: #fff;
 }
+nav.page-navigation {
+  background-color: #26264d;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  box-shadow:
+    rgba(0, 0, 0, 0.15) 0px 4px 12px,
+    rgba(10, 37, 64, 0.2) 0px -2px 4px inset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .minimal-pagination {
   display: inline-flex;
+  gap: 0.4rem;
   list-style: none;
   padding: 0;
   margin: 0;
-  gap: 0.25rem;
 }
-.page-link {
-  display: inline-block;
-  min-width: 2.1rem;
-  padding: 0.45rem 0.95rem;
-  border-radius: 0.4rem;
-  border: none;
-  background: none;
-  color: #6366f1;
+
+.minimal-pagination .page-link {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 2.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #f0f0f0;
   font-weight: 500;
   font-size: 1rem;
-  text-align: center;
+  border: 1px solid transparent;
   text-decoration: none;
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
   cursor: pointer;
-  outline: none;
+  transition: all 0.2s ease-in-out;
 }
-.page-link.active {
-  background: #6366f1;
-  color: #fff;
+
+.minimal-pagination .page-link:hover:not(.active):not(.disabled),
+.minimal-pagination .page-link:focus-visible:not(.active):not(.disabled) {
+  background-color: #4fc3a1;
+  color: #000000;
+  border-color: #4fc3a1;
+  box-shadow: 0 0 0 2px rgba(79, 195, 161, 0.3);
+}
+
+.minimal-pagination .page-link.active {
+  background-color: #308f6f;
+  color: #ffffff;
   font-weight: 600;
+  border-color: #308f6f;
 }
-.page-link:hover:not(.active):not(.disabled), .page-link:focus:not(.active):not(.disabled) {
-  background: #f3f4f6;
-  color: #22223b;
-}
-.page-link.disabled {
-  background: none;
-  color: #b5b5c3;
+
+.minimal-pagination .page-link.disabled {
+  opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
 }
-.page-link.prev, .page-link.next {
-  font-weight: 500;
-  color: #6366f1;
-  background: none;
+
+.minimal-pagination .page-link.prev,
+.minimal-pagination .page-link.next {
+  color: #d1d1ff;
+  font-weight: 600;
+  border: 1px solid transparent;
 }
-.page-link.prev.disabled, .page-link.next.disabled {
-  color: #b5b5c3;
-  background: none;
+
+.minimal-pagination .page-link.prev:hover,
+.minimal-pagination .page-link.next:hover {
+  color: #ffffff;
+  background-color: #5e5eb7;
 }
+
 .clear-btn-minimal {
   background: #f3f4f6;
   color: #111;

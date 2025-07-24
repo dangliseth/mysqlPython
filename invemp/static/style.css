@@ -306,6 +306,7 @@ ul.profile, ul.settings {
 /* Show profile dropdown when checkbox is checked */
 #profile-toggle:checked ~ #profile-icon ~ ul.profile, #settings-toggle:checked ~ #settings-icon ~ ul.settings {
   display: flex;
+  list-style: none;
 }
 
 /* Profile dropdown items */
@@ -314,6 +315,30 @@ ul.profile li, ul.settings li {
   color: #333;
   cursor: pointer;
   text-align: left;
+}
+ul.settings li a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px; /* pill shape */
+  background-color: #f3f3f3;
+  color: #333;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+ul.settings li a:hover {
+  background-color: #813517; /* your color, but modernized */
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+ul.settings li a:active {
+  transform: scale(0.98);
 }
 ul.profile li#current-user {
   font-weight: bold;
