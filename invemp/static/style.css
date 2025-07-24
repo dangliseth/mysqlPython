@@ -1091,8 +1091,16 @@ table#main-table th {
   min-width: 0;
 }
 .form-input:focus {
-  border-color: #8E1616;
+  border-color: #25a7ac;
   box-shadow: 0 0 0 2px #f5bf6f55;
+}
+.readonly {
+  background:#696969;
+  color: wheat
+}
+.readonly:focus {
+  border-color: #ff0000;
+  box-shadow: none;
 }
 .btn-compact {
   width: 100%;
