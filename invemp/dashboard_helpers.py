@@ -139,8 +139,6 @@ def get_filters(table_name):
     return filters
 
 def filter_table(table_name, cursor, page=1, per_page=15, sort_column=None, sort_order=None):
-    if not is_valid_table(table_name):
-        abort(400)
 
     # Get the search term from the query string
     search_term = request.args.get('search', '').strip()
@@ -246,6 +244,8 @@ def filter_table(table_name, cursor, page=1, per_page=15, sort_column=None, sort
         if table_name == 'items':
             filters['status'] = status_filter
         return [], columns, filters, 0
+    finally:
+        cursor.close()
     
 def get_preserved_args():
     """Returns current filters and pagination as query string"""

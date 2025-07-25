@@ -177,6 +177,56 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2500);
 });
 
+// Clear button for filter input
+document.addEventListener('DOMContentLoaded', function () {
+    const filterInput = document.getElementById('filter-input');
+    const filterForm = document.getElementById('filter-form');
+    const clearBtn = document.getElementById('clear-filters-btn');
+    let debounceTimeout = null;
+    let fullReloadTimeout = null;
+
+    function toggleClearButton() {
+        if (filterInput.value.trim() !== '') {
+            clearBtn.classList.add('visible');
+        } else {
+            clearBtn.classList.remove('visible');
+        }
+    }
+
+    if (filterInput && filterForm) {
+        toggleClearButton(); // Show/hide on initial load
+
+        filterInput.addEventListener('input', function () {
+            toggleClearButton();
+
+            clearTimeout(debounceTimeout);
+            clearTimeout(fullReloadTimeout);
+
+            debounceTimeout = setTimeout(() => {
+                const formData = new FormData(filterForm);
+                formData.set('page', '1');
+                const params = new URLSearchParams(formData).toString();
+                const url = filterForm.action + '?' + params;
+
+                updateTableContent(url).then(() => {
+                    history.pushState({}, '', url);
+                    updateExportLinks();
+                    filterInput.focus();
+                });
+            }, 600);
+
+            fullReloadTimeout = setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        });
+
+        filterForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+        });
+    }
+});
+
+
 // Re-attach event listeners when back/forward buttons are used
 window.addEventListener('popstate', function() {
     updateTableContent(window.location.href);

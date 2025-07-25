@@ -16,7 +16,7 @@ from invemp.dashboard_helpers import (
     is_valid_table, get_dropdown_options, 
     get_entry, get_items_columns, get_preserved_args,
     get_item_assignment_history, preserve_current_entries,
-    get_tables,
+    get_tables, filter_table,
     load_options_from_file, normalize_column_name, bulk_insert_rows
 )
 from invemp.db import get_cursor
@@ -38,6 +38,7 @@ def create(table_name, id=None):
 
     c = get_cursor()
     preserved_args = get_preserved_args()
+
 
     c.execute(f"DESCRIBE `{table_name}`")
     describe_rows = c.fetchall()
@@ -195,7 +196,23 @@ def create(table_name, id=None):
                 )
                 c.connection.commit()
             c.close()
-            preserved_args = get_preserved_args()
+
+            try:
+                c = get_cursor()
+                _, _, filters, total_items = filter_table(
+                    table_name,
+                c,
+                page=1,
+                per_page=15,  # We only want count
+                sort_column = preserved_args.get('sort_column'),
+                sort_order = preserved_args.get('sort_order')
+        )
+            finally:
+                c.close()
+            per_page = 15
+            last_page = (total_items + per_page - 1) // per_page
+            preserved_args['page'] = last_page
+            
             flash(f"Successfully created new {table_name[:-1]}")
             if table_name == 'items_categories':
                 return redirect(url_for('dashboard_admin.settings_categories', **preserved_args))
@@ -710,7 +727,7 @@ def liabilities_pdf(employee_id):
         SELECT i.item_id, i.item_name, subcat.subcategory, i.specification, cat.category
         FROM items i
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
-        LEFT JOIN items_categories cat ON subcat.category_id = cat.id
+        LEFT JOIN items_categories cat ON subcat.category = cat.id
         WHERE i.employee = %s
     """
     c.execute(liabilities_query, (employee_id,))

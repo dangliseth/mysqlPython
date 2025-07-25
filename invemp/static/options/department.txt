@@ -1,14 +1,14 @@
 Library
-Senior HighSchool
+Senior High School
 Management Information System
 Registrar
-School of Architecture/School of Engineering
+School of Architecture
+School of Engineering
 General Services
 Human Resources
 Accounting
-CSAW
-SESO
-Cashier
+Center for Student Affairs and Wellbeing
+Student Engagement and Services Office
 Marketing
 Office of the President
 School of Criminal Justice
@@ -16,7 +16,6 @@ School of Law
 Clinic
 School of Graduate Studies
 School of Business
-QACRO
+Quality Assurance and Compliance Office
 Laboratory
-Sports Coordinator
 Admission
