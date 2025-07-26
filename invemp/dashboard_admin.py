@@ -438,6 +438,8 @@ def update(id, table_name):
                         )
             c.connection.commit()
             c.close()
+
+
             flash(f"Successfully updated {table_name} id: {entry[0]}")
             if table_name == 'user_accounts':
                 return redirect(url_for('dashboard_user.index', table_name=table_name, **preserved_args))
@@ -482,6 +484,7 @@ def duplicate(id, table_name='items'):
     describe_rows = c.fetchall()
     columns = [row[0] for row in describe_rows]
     c.close()
+
     preserved_args = get_preserved_args()
 
     if request.method == 'POST':
@@ -515,6 +518,25 @@ def duplicate(id, table_name='items'):
                     f'/{table_name}/create', method='POST', data=form_data
                 ):
                     response = create(table_name=table_name)
+
+
+            # After creating duplicates, go to last page to see new items.
+            try:
+                c = get_cursor()
+                _, _, filters, total_items = filter_table(
+                    table_name,
+                c,
+                page=1,
+                per_page=15,  # We only want count
+                sort_column = preserved_args.get('sort_column'),
+                sort_order = preserved_args.get('sort_order')
+        )
+            finally:
+                c.close()
+            per_page = 15
+            last_page = (total_items + per_page - 1) // per_page
+            preserved_args['page'] = last_page
+
             flash(f"Successfully duplicated {num_duplicates} time(s).", "success")
             return redirect(url_for('dashboard_user.index', table_name=table_name, **preserved_args))
         except Exception as e:
@@ -523,7 +545,7 @@ def duplicate(id, table_name='items'):
                            columns=columns, 
                            table_name=table_name, 
                            zip=zip,
-                           id=id, preserved_args=preserved_args)
+                           id=id)
 
 @bp.route('/<table_name>/<id>/archive_scrap', methods=('GET', 'POST'))
 @admin_required
@@ -586,6 +608,12 @@ def delete(id, table_name):
         delete_query = f"DELETE FROM `{table_name}` WHERE `{id_column}` = %s"
         c.execute(delete_query, (id,)) 
         c.connection.commit()
+        c.close()
+        # Ensure page is preserved
+        page = preserved_args.get('page', '1')
+        if not page:
+            page = '1'
+        preserved_args['page'] = page
         flash(f"{id_column}: {id} DELETED from {table_name}")
     return redirect(url_for('dashboard_user.index', table_name = table_name, **preserved_args))
 

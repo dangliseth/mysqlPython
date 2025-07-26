@@ -52,11 +52,12 @@ def index(table_name):
 
     # For items table, use the display-friendly column names
     display_columns = get_items_columns() if table_name == 'items' else columns
-    pagination_args = request.args.copy()
-    if 'page' in pagination_args:
-        del pagination_args['page']
-    merged_args = dict(pagination_args)
-    merged_args.update(filters)
+    pagination_args = get_preserved_args()
+
+    button_args = dict(pagination_args)
+    button_args.update(filters)
+    # Remove 'page' only for button URLs
+    button_args.pop('page', None)
 
     # AJAX partial rendering for table and pagination
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -66,7 +67,7 @@ def index(table_name):
                              table_name=table_name,
                              page=page,
                              total_pages=total_pages,
-                             merged_args=merged_args,
+                             button_args=button_args,
                              sort_column=sort_column, sort_order=sort_order,
                              zip=zip)
 
@@ -81,6 +82,7 @@ def index(table_name):
                          total_pages=total_pages,
                          sort_column=sort_column, sort_order=sort_order,
                          pagination_args=pagination_args,  # Pass filter args without page
+                         button_args=button_args,
                          total_items=total_items,
                          args=request.args.to_dict(),
                          is_index=True)

@@ -93,7 +93,7 @@ def login():
             c = get_cursor()
             error = None
             c.execute(
-                'SELECT * FROM user_accounts WHERE username = %s', (username,)
+                'SELECT * FROM user_accounts WHERE BINARY username = %s', (username,)
             )
             user = c.fetchone()
             c.close()

@@ -23,9 +23,9 @@
   {% if g.user[3] == 'admin'%}
   <ul class="tables-nav">
       {% if table_name == 'user_accounts' and g.user[3] == 'admin' and is_index %}
-      <a href = "{{ url_for ('auth.register', **request.args) }}" class="btn btn-create">Create User</a>
+      <a href = "{{ url_for ('auth.register', **merged_args if merged_args is defined else pagination_args) }}" class="btn btn-create">Create User</a>
       {% elif g.user[3] == 'admin' and is_index and table_name not in ['items_disposal', 'employees_archive', 'items_groups'] %}
-      <a href = "{{ url_for ('dashboard_admin.create', table_name = table_name, **request.args) }}" class="btn btn-create">Create Entry</a>
+      <a href = "{{ url_for ('dashboard_admin.create', table_name = table_name, **merged_args if merged_args is defined else pagination_args) }}" class="btn btn-create">Create Entry</a>
       {% endif %}
     {% for table in tables if table not in ['item_assignment_history', 'items_categories', 'subcategories'] %}
     <li class="nav-item">
@@ -292,21 +292,62 @@
   </div>
 </section>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  var btnBack = document.getElementById('btn-back');
+document.addEventListener('DOMContentLoaded', function () {
+  const btnBack = document.getElementById('btn-back');
+
   if (btnBack) {
-    var ref = document.referrer;
-    btnBack.onclick = function(e) {
-      // If no referrer or referrer is a create/update page, go to index
-      if (!ref || /\/(create|update)(\/|\?|$)/.test(ref)) {
-        e.preventDefault();
-        window.location = "{{ url_for('dashboard_user.index', table_name=table_name) }}";
-      } else {
-        // Otherwise, use browser history
-        e.preventDefault();
-        window.history.back();
+    btnBack.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      const historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
+      const allowedBackPaths = [
+        '/items/',
+        '/employees/',
+        '/categories',
+        'settings/categories',
+        '/settings/subcategories',
+        '/subcategories'
+        // Extend this list as needed
+      ];
+
+      // Start from the end and find the last acceptable page
+      for (let i = historyStack.length - 2; i >= 0; i--) {
+        for (let allowedPath of allowedBackPaths) {
+          if (historyStack[i].startsWith(allowedPath)) {
+            window.location.href = historyStack[i];
+            return;
+          }
+        }
       }
-    };
+
+      // If no allowed page found, go to fallback
+      window.location.href = "{{ url_for('dashboard_user.index', table_name=table_name, **request.args) }}";
+    });
   }
 });
+
+// This script runs on every page load
+  document.addEventListener('DOMContentLoaded', function () {
+    const allowedBackPaths = [
+      '/items',
+      '/items_groups',
+      '/employees',
+      // Add more allowed URLs or prefixes here
+    ];
+
+    const currentPath = window.location.pathname;
+    let historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
+
+    // Push to history if it's not a create/update or already last
+    if (!/(\/create|\/update)/.test(currentPath) && historyStack[historyStack.length - 1] !== currentPath) {
+      historyStack.push(currentPath);
+    }
+
+    // Limit the stack size
+    if (historyStack.length > 20) {
+      historyStack.shift();
+    }
+
+    sessionStorage.setItem('customBackStack', JSON.stringify(historyStack));
+  });
 </script>
