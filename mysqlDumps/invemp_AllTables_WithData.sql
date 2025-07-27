@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: inventory_database
 -- ------------------------------------------------------
--- Server version	9.3.0-commercial
+-- Server version	9.2.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,22 +16,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `audit_tree`
---
-
-DROP TABLE IF EXISTS `audit_tree`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `audit_tree` (
-  `id` int NOT NULL,
-  `item` int DEFAULT NULL,
-  `user` int DEFAULT NULL,
-  `date` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `audit_tree`
 --
 
@@ -39,29 +23,6 @@ LOCK TABLES `audit_tree` WRITE;
 /*!40000 ALTER TABLE `audit_tree` DISABLE KEYS */;
 /*!40000 ALTER TABLE `audit_tree` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `employees`
---
-
-DROP TABLE IF EXISTS `employees`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `employees` (
-  `employee_id` int NOT NULL,
-  `employee_number` varchar(45) DEFAULT NULL,
-  `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `department` varchar(45) NOT NULL,
-  `position` varchar(45) NOT NULL,
-  `user_account` int DEFAULT NULL,
-  PRIMARY KEY (`employee_id`),
-  UNIQUE KEY `user_account_UNIQUE` (`user_account`),
-  UNIQUE KEY `employee_number_UNIQUE` (`employee_number`),
-  KEY `user_account_idx` (`user_account`),
-  CONSTRAINT `user_account` FOREIGN KEY (`user_account`) REFERENCES `user_accounts` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `employees`
@@ -74,25 +35,6 @@ INSERT INTO `employees` VALUES (1,NULL,'Seth Owen','Dangli','Management Informat
 UNLOCK TABLES;
 
 --
--- Table structure for table `item_assignment_history`
---
-
-DROP TABLE IF EXISTS `item_assignment_history`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `item_assignment_history` (
-  `history_id` int NOT NULL AUTO_INCREMENT,
-  `item` varchar(32) NOT NULL,
-  `employee` int DEFAULT NULL,
-  `assigned_date` datetime NOT NULL,
-  `removed_date` datetime DEFAULT NULL,
-  PRIMARY KEY (`history_id`),
-  KEY `item_assignment_history_ibfk_2` (`employee`) /*!80000 INVISIBLE */,
-  CONSTRAINT `item_assignment_history_ibfk_2` FOREIGN KEY (`employee`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=388 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `item_assignment_history`
 --
 
@@ -103,56 +45,14 @@ INSERT INTO `item_assignment_history` VALUES (25,'MLQU-0000001',NULL,'2025-05-22
 UNLOCK TABLES;
 
 --
--- Table structure for table `items`
---
-
-DROP TABLE IF EXISTS `items`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `items` (
-  `item_id` varchar(12) NOT NULL,
-  `serial_number` varchar(70) DEFAULT NULL,
-  `item_name` varchar(75) NOT NULL,
-  `model_name` varchar(75) DEFAULT NULL,
-  `brand_name` varchar(45) NOT NULL,
-  `subcategory` int NOT NULL,
-  `description` mediumtext,
-  `specification` longtext NOT NULL,
-  `comment` varchar(75) DEFAULT NULL,
-  `employee` int DEFAULT NULL,
-  `status` varchar(45) NOT NULL,
-  PRIMARY KEY (`item_id`),
-  KEY `employee_idx` (`employee`),
-  KEY `subcategory_idx` (`subcategory`),
-  CONSTRAINT `employee` FOREIGN KEY (`employee`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
-  CONSTRAINT `subcategory` FOREIGN KEY (`subcategory`) REFERENCES `subcategories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `items`
 --
 
 LOCK TABLES `items` WRITE;
 /*!40000 ALTER TABLE `items` DISABLE KEYS */;
-INSERT INTO `items` VALUES ('MLQU-0000001',NULL,'Samsung LS24FB350FHEXXP','LS24FB350FHEXXP','Samsung',1,'LEDe','24\"',NULL,2,'assigned'),('MLQU-0000002',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i7; 10gb; RAM; 500gb HDD',NULL,2,'assigned'),('MLQU-0000003',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000004',NULL,'Samsung LS19PUYKF','LS19PUYKF','Samsung',1,NULL,'19\"',NULL,NULL,'active'),('MLQU-0000005',NULL,'Samsung LS19PUYKF','LS19PUYKF','Samsung',1,NULL,'19\"',NULL,NULL,'active'),('MLQU-0000006',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000007',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000008',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000009',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000010',NULL,'Clone',NULL,'Clone',5,NULL,'Intel i3; 4GB RAM; 500GB HDD; NVIDIA GT630',NULL,NULL,'active'),('MLQU-0000011',NULL,'Samsung LS19PUYKF','LS19PUYKF','Samsung',1,NULL,'19\"',NULL,NULL,'active'),('MLQU-0000012',NULL,'Acer P166HQL','P166HQL','Acer',1,NULL,'16\"',NULL,NULL,'active'),('MLQU-0000013',NULL,'Acer P166HQL','P166HQL','Acer',1,NULL,'16\"',NULL,NULL,'active'),('MLQU-0000014',NULL,'Epson L120','L120','Epson',3,NULL,'inkjet',NULL,2,'assigned'),('MLQU-0000015',NULL,'Epson L3210','L3210','Epson',3,NULL,'inkjet',NULL,NULL,'active'),('MLQU-0000016',NULL,'Samsung LS20B300BS','LS20B300BS','Samsung',1,NULL,'20\"',NULL,2,'assigned'),('MLQU-0000017',NULL,'Epson L210','L210','Epson',3,NULL,'inkjet',NULL,NULL,'active'),('MLQU-0000018',NULL,'BNP CX-D80HS','CX-D80HS','BNP',3,NULL,'card printer',NULL,NULL,'active'),('MLQU-0000019',NULL,'Clone',NULL,'Clone',5,'ID Computer','Intel i7; 16gb RAM',NULL,NULL,'active'),('MLQU-0000020',NULL,'Samsung LS20B300BS','LS20B300BS','Samsung',1,NULL,'20\"',NULL,NULL,'active'),('MLQU-0000021',NULL,'DTS',NULL,'DTS',4,NULL,'relay type',NULL,2,'assigned'),('MLQU-0000022',NULL,'Micropulse',NULL,'Micropulse',4,NULL,'relay type',NULL,NULL,'active'),('MLQU-0000023',NULL,'Micropulse',NULL,'Micropulse',4,NULL,'relay type',NULL,NULL,'active'),('MLQU-0000024',NULL,'Micropulse',NULL,'Micropulse',4,NULL,'relay type',NULL,NULL,'active'),('MLQU-0000025',NULL,'DTS',NULL,'DTS',4,NULL,'relay type',NULL,2,'assigned'),('MLQU-0000026',NULL,'DTS',NULL,'DTS',4,NULL,'relay type',NULL,NULL,'active');
+INSERT INTO `items` VALUES ('MLQU-0000001',NULL,'Samsung LS24FB350FHEXXP','LS24FB350FHEXXP','Samsung',1,'LEDe','24\"',NULL,2,'assigned'),('MLQU-0000002',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i7; 10gb; RAM; 500gb HDD',NULL,2,'assigned'),('MLQU-0000003',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,46,'assigned'),('MLQU-0000004',NULL,'Samsung LS19PUYKF','LS19PUYKF','Samsung',1,NULL,'19\"',NULL,10,'assigned'),('MLQU-0000005',NULL,'Samsung LS19PUYKF','LS19PUYKF','Samsung',1,NULL,'19\"',NULL,NULL,'active'),('MLQU-0000006',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,46,'assigned'),('MLQU-0000007',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000008',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000009',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD',NULL,NULL,'active'),('MLQU-0000010',NULL,'Clone',NULL,'Clone',2,NULL,'Intel i3; 4GB RAM; 500GB HDD; NVIDIA GT630',NULL,46,'assigned'),('MLQU-0000011',NULL,'Samsung LS19PUYKF','LS19PUYKF','Samsung',1,NULL,'19\"',NULL,NULL,'active'),('MLQU-0000012',NULL,'Acer P166HQL','P166HQL','Acer',1,NULL,'16\"',NULL,46,'assigned'),('MLQU-0000013',NULL,'Acer P166HQL','P166HQL','Acer',1,NULL,'16\"',NULL,46,'assigned'),('MLQU-0000014',NULL,'Epson L120','L120','Epson',3,NULL,'inkjet',NULL,2,'assigned'),('MLQU-0000015',NULL,'Epson L3210','L3210','Epson',3,NULL,'inkjet',NULL,10,'assigned'),('MLQU-0000016',NULL,'Samsung LS20B300BS','LS20B300BS','Samsung',1,NULL,'20\"',NULL,2,'assigned'),('MLQU-0000017',NULL,'Epson L210','L210','Epson',3,NULL,'inkjet',NULL,46,'assigned'),('MLQU-0000018',NULL,'BNP CX-D80HS','CX-D80HS','BNP',3,NULL,'card printer',NULL,10,'assigned'),('MLQU-0000019',NULL,'Clone',NULL,'Clone',2,'ID Computer','Intel i7; 16gb RAM',NULL,10,'assigned'),('MLQU-0000020',NULL,'Samsung LS20B300BS','LS20B300BS','Samsung',1,NULL,'20\"',NULL,46,'assigned'),('MLQU-0000021',NULL,'DTS',NULL,'DTS',4,NULL,'relay type',NULL,2,'assigned'),('MLQU-0000022',NULL,'Micropulse',NULL,'Micropulse',4,NULL,'relay type',NULL,46,'assigned'),('MLQU-0000023',NULL,'Micropulse',NULL,'Micropulse',4,NULL,'relay type',NULL,46,'assigned'),('MLQU-0000024',NULL,'Micropulse',NULL,'Micropulse',4,NULL,'relay type',NULL,10,'assigned'),('MLQU-0000025',NULL,'DTS',NULL,'DTS',4,NULL,'relay type',NULL,2,'assigned'),('MLQU-0000026',NULL,'DTS',NULL,'DTS',4,NULL,'relay type',NULL,46,'assigned');
 /*!40000 ALTER TABLE `items` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `items_categories`
---
-
-DROP TABLE IF EXISTS `items_categories`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `items_categories` (
-  `id` int NOT NULL,
-  `category` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `category_UNIQUE` (`category`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `items_categories`
@@ -165,39 +65,6 @@ INSERT INTO `items_categories` VALUES (1,'assets'),(2,'test');
 UNLOCK TABLES;
 
 --
--- Temporary view structure for view `items_groups`
---
-
-DROP TABLE IF EXISTS `items_groups`;
-/*!50001 DROP VIEW IF EXISTS `items_groups`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `items_groups` AS SELECT 
- 1 AS `group_name`,
- 1 AS `subcategory_id`,
- 1 AS `brand_name`,
- 1 AS `item_count`,
- 1 AS `assigned_count`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Table structure for table `subcategories`
---
-
-DROP TABLE IF EXISTS `subcategories`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `subcategories` (
-  `id` int NOT NULL,
-  `subcategory` varchar(45) NOT NULL,
-  `category` int NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `category_id_idx` (`category`),
-  CONSTRAINT `category_id` FOREIGN KEY (`category`) REFERENCES `items_categories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `subcategories`
 --
 
@@ -208,23 +75,6 @@ INSERT INTO `subcategories` VALUES (1,'monitor',1),(2,'system unit',1),(3,'print
 UNLOCK TABLES;
 
 --
--- Table structure for table `user_accounts`
---
-
-DROP TABLE IF EXISTS `user_accounts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user_accounts` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(45) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `account_type` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `username_UNIQUE` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Dumping data for table `user_accounts`
 --
 
@@ -233,24 +83,6 @@ LOCK TABLES `user_accounts` WRITE;
 INSERT INTO `user_accounts` VALUES (1,'admin','scrypt:32768:8:1$DnkE7P7s13Wt6dqb$f65c7ba1efab91b825f4d89b7aa9d64e444daa3ed53cf9ed3a23e77d63e21aba3a2f6f3d7a816e2116e4c2c2cae145835b34423ab47340aaf5cd78bd8d0205db','admin'),(2,'user','scrypt:32768:8:1$R5PVwfI4RywZCo3q$a8907a0bff5280df6a88aead39524bbe47a02dc3f0bbf53279486bcadf3901e5b201de6ec081f707bfa45271972126b5e256c977cb8d9c6805c31454f978d31e','user'),(3,'MIS','scrypt:32768:8:1$4PH5ApPCjAJ5IFjv$a6b7ab66a04dbbd4183cc4625dd4e177ca804530131f236b86825180de193ff358c387b35f108e0429bf15e1d7fa51baaaef4f1ff72d636664cefaa9ad193094','admin'),(5,'user1','scrypt:32768:8:1$1cp4IRQbYB89AIAL$ab1ed698b175e9fa8a18d65ea354ed51ff1bfb6255a8b498ea5d497c980e55416d7ae9cb13e6125776e1ef54e6f247f20e09805622ba99702af9b4d58325ab95','user');
 /*!40000 ALTER TABLE `user_accounts` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Final view structure for view `items_groups`
---
-
-/*!50001 DROP VIEW IF EXISTS `items_groups`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `items_groups` AS select concat(`subcategories`.`subcategory`,' | ',`items`.`brand_name`) AS `group_name`,`subcategories`.`id` AS `subcategory_id`,`items`.`brand_name` AS `brand_name`,count(`items`.`item_id`) AS `item_count`,sum((`items`.`status` = 'assigned')) AS `assigned_count` from (`items` join `subcategories` on((`items`.`subcategory` = `subcategories`.`id`))) group by `subcategories`.`id`,`items`.`brand_name` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -261,4 +93,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-07-26 11:59:19
+-- Dump completed on 2025-07-28  0:19:06
