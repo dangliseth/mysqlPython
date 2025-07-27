@@ -301,22 +301,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
       const allowedBackPaths = [
+        '/',
         '/items/',
         '/employees/',
+        '/categories/',
+        'settings/categories/',
+        '/settings/subcategories/',
+        '/subcategories/',
+        '/items',
+        '/employees',
         '/categories',
         'settings/categories',
         '/settings/subcategories',
         '/subcategories'
         // Extend this list as needed
       ];
+      const disallowedFragments = [
+        '/create',
+        '/update',
+        '/add_liabilities',
+        '/duplicate',
+        '/delete'
+      ];
 
       // Start from the end and find the last acceptable page
       for (let i = historyStack.length - 2; i >= 0; i--) {
-        for (let allowedPath of allowedBackPaths) {
-          if (historyStack[i].startsWith(allowedPath)) {
-            window.location.href = historyStack[i];
-            return;
-          }
+        const path = historyStack[i];
+
+        const isAllowed = allowedBackPaths.some(prefix => path.startsWith(prefix));
+        const isDisallowed = disallowedFragments.some(fragment => path.includes(fragment));
+
+        if (isAllowed && !isDisallowed) {
+          window.location.href = path;
+          return;
         }
       }
 
@@ -328,25 +345,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // This script runs on every page load
   document.addEventListener('DOMContentLoaded', function () {
-    const allowedBackPaths = [
-      '/items',
-      '/items_groups',
-      '/employees',
-      // Add more allowed URLs or prefixes here
-    ];
+    const disallowedFragments = [
+    '/create',
+    '/update',
+    '/add_liabilities'
+  ];
 
-    const currentPath = window.location.pathname;
-    let historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
+  const currentPath = window.location.pathname;
+  let historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
 
-    // Push to history if it's not a create/update or already last
-    if (!/(\/create|\/update)/.test(currentPath) && historyStack[historyStack.length - 1] !== currentPath) {
-      historyStack.push(currentPath);
-    }
+  const isDisallowed = disallowedFragments.some(fragment => currentPath.includes(fragment));
+  const isDuplicate = historyStack[historyStack.length - 1] === currentPath;
 
-    // Limit the stack size
-    if (historyStack.length > 20) {
-      historyStack.shift();
-    }
+  if (!isDisallowed && !isDuplicate) {
+    historyStack.push(currentPath);
+  }
+
+  // Limit to 20 entries
+  if (historyStack.length > 20) {
+    historyStack.shift();
+  }
 
     sessionStorage.setItem('customBackStack', JSON.stringify(historyStack));
   });

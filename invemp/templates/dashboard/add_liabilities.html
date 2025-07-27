@@ -17,7 +17,7 @@
   </div>
   {% if active_items and active_items|length > 0 %}
     <button type="button" id="clear-selections-btn" class="clear-btn-minimal" style="margin-bottom:1rem; margin-right:0.5rem;">Clear Selections</button>
-    <form method="post">
+    <form method="post" id="assign-form">
       <table class="liabilities-table">
         <thead>
           <tr>
@@ -84,6 +84,8 @@
 <script>
 // --- Persist checkbox selection across pagination using sessionStorage ---
 const STORAGE_KEY = 'add_liabilities_selected_items';
+const EMPLOYEE_KEY = 'add_liabilities_for_employee';
+const currentEmployeeId = '{{ id }}';
 
 function getSelectedItems() {
   try {
@@ -94,6 +96,12 @@ function getSelectedItems() {
 }
 function setSelectedItems(arr) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+// On page load
+if (sessionStorage.getItem(EMPLOYEE_KEY) !== currentEmployeeId) {
+  sessionStorage.removeItem(STORAGE_KEY);
+  sessionStorage.setItem(EMPLOYEE_KEY, currentEmployeeId);
 }
 
 // On page load, restore checked state
@@ -116,22 +124,22 @@ window.addEventListener('DOMContentLoaded', function() {
   });
 
   // On form submit, add hidden inputs for all selected items
-  const form = document.querySelector('form');
+  const form = document.getElementById('assign-form');
   if (form) {
     form.addEventListener('submit', function(e) {
       // Remove any previous hidden inputs
       form.querySelectorAll('input[type=hidden][name=selected_items]').forEach(el => el.remove());
       const sel = getSelectedItems();
       sel.forEach(val => {
-        // Only add hidden input if not already checked on this page
-        if (!form.querySelector('input[type=checkbox][name=selected_items][value="' + val + '"]:checked')) {
-          const hidden = document.createElement('input');
-          hidden.type = 'hidden';
-          hidden.name = 'selected_items';
-          hidden.value = val;
-          form.appendChild(hidden);
-        }
-      });
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'selected_items';
+      hidden.value = val;
+      form.appendChild(hidden);
+    });
+
+    sessionStorage.removeItem(STORAGE_KEY);
+
     });
   }
 
@@ -146,10 +154,11 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
 </script>
 <style>
 .liabilities-container {
-  max-width: 600px;
+  max-width: 1200px;
   margin: 2rem auto;
   background: #fff;
   border-radius: 1rem;
