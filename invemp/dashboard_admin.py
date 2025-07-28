@@ -689,6 +689,8 @@ def add_liabilities(id, table_name):
     active_items = c.fetchall()
     c.close()
     preserved_args = get_preserved_args()
+    button_args = dict(preserved_args)
+    button_args.pop('page', None)
 
     # --- POST logic for assigning liabilities ---
     if request.method == 'POST':
@@ -702,7 +704,7 @@ def add_liabilities(id, table_name):
                     c.execute(update_query, (id, item_id))
                 c.connection.commit()
                 c.close()
-                flash(f"Assigned {len(selected_item_ids)} item(s) as liabilities.", 'success')
+                flash(f"Assigned item(s) as liabilities.", 'success')
             except Exception as e:
                 flash(f"Error assigning liabilities: {e}", 'error')
         else:
@@ -712,6 +714,7 @@ def add_liabilities(id, table_name):
     return render_template('dashboard/add_liabilities.html',
                            table_name=table_name, id=id, 
                            id_column=id_column, active_items=active_items,
+                           button_args=button_args,
                            columns=columns, preserved_args=preserved_args, tables=get_tables(),
                            entry=get_entry(id, table_name), page=page, total_pages=total_pages,
                            filters=filters, sort_column=sort_column, sort_order=sort_order)
@@ -732,41 +735,66 @@ def remove_liability(employee_id, item_id):
     preserved_args = get_preserved_args()
     return redirect(url_for('dashboard_user.view_details', table_name='employees', id=employee_id, **preserved_args))
 
-@bp.route('/liabilities_pdf/<int:employee_id>')
+@bp.route('/liabilities_pdf/<employee_id>/<item_id>')
 @admin_required
-def liabilities_pdf(employee_id):
+def liabilities_pdf(employee_id, item_id):
     # Get employee info and liabilities
     c = get_cursor()
     c.execute("""
               SELECT first_name, last_name, department 
               FROM employees WHERE employee_id = %s
               """, (employee_id,))
+    
+    # Fetch employee details
     emp = c.fetchone()
     employee_name = f"{emp[1]}, {emp[0]}" if emp else "Unknown"
     employee_department = emp[2] if emp else "Unknown"
     head_lookup_query = """
     SELECT CONCAT(first_name, ', ', last_name) FROM employees 
-    WHERE department = %s AND position='Head'
+    WHERE department = %s AND position='Head' 
+    OR position LIKE '%Head%' OR position LIKE %OIC%
         """
     c.execute(head_lookup_query, (employee_department,))
     department_head = c.fetchone()
 
+    # Fetch item details to be a liability
     liabilities_query = """
-        SELECT i.item_id, i.item_name, subcat.subcategory, i.specification, cat.category
+        SELECT i.*, subcat.subcategory, cat.category
         FROM items i
         LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
         LEFT JOIN items_categories cat ON subcat.category = cat.id
-        WHERE i.employee = %s
+        WHERE i.item_id = %s AND i.employee = %s
     """
-    c.execute(liabilities_query, (employee_id,))
-    liabilities = c.fetchall()
+    c.execute(liabilities_query, (item_id, employee_id,))
+    liability = c.fetchone()
+
+    # Fetch previous department, if any
+    prev_department = None
+    c.execute("""
+        SELECT h.*, i.item_id, e.employee_id
+        FROM item_assignment_history h
+        JOIN items i ON h.item = i.item_id
+        JOIN employees e ON h.employee = e.employee_id
+        WHERE i.item_id = %s
+        ORDER BY h.removed_date DESC
+        LIMIT 1
+                             """), (item_id,)
+    latest_history = c.fetchone()
+    if latest_history:
+        c.execute("""
+            SELECT department FROM employees WHERE employee_id = %s
+        """, (latest_history['employee_id'],))
+        prev_department_row = c.fetchone()
+        prev_department = prev_department_row['department'] if prev_department_row else ""
+
     c.close()
     html = render_template(
         'dashboard/liabilities_pdf.html',
         employee_name=employee_name,
         employee_department=employee_department,
+        prev_department=prev_department,
         department_head=department_head[0] if department_head else "None",
-        liabilities=liabilities,
+        liability=liability,
         current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     )
     pdf = HTML(string=html, base_url=request.host_url).write_pdf()
@@ -817,17 +845,20 @@ def subcategories_alias(category_name):
 
 @bp.route('/<table_name>/<id>/history', methods=('GET', 'POST'))
 @admin_required
-def history(id, table_name):
-    c = get_cursor()
+def history(id, table_name, employee_id=None):
     preserved_args = get_preserved_args()
 
     history_data = get_item_assignment_history(id)
-    columns = ['item_id', 'employee_id', 'assigned_date', 'removed_date']
+    columns = ['item', 'employee', 'assigned_date', 'removed_date']
+
+    if employee_id:
+        # If employee_id is provided, filter history for that employee
+        history_data = [row for row in history_data if row['employee_id'] == employee_id]
     
-    c.close()
     
     return render_template('dashboard/history.html', table_name=table_name, 
-                           history_data=history_data, columns=columns, zip=zip, 
+                           history_data=history_data, columns=columns, zip=zip,
+                           id=id, employee_id=employee_id, 
                            preserved_args=preserved_args, tables=get_tables())
 
 @bp.route('/<table_name>/import', methods=['GET', 'POST'])

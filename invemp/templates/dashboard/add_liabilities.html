@@ -62,15 +62,15 @@
         <nav aria-label="Page navigation" class="page-navigation">
           <ul class="minimal-pagination">
             <li>
-              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page-1) }}" class="page-link prev {% if page <= 1 %}disabled{% endif %}" tabindex="{% if page <= 1 %}-1{% else %}0{% endif %}">&laquo; Prev</a>
+              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page-1, **button_args) }}" class="page-link prev {% if page <= 1 %}disabled{% endif %}" tabindex="{% if page <= 1 %}-1{% else %}0{% endif %}">&laquo; Prev</a>
             </li>
             {% for p in range(1, total_pages+1) %}
               <li>
-                <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=p) }}" class="page-link {% if p==page %}active{% endif %}">{{ p }}</a>
+                <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=p, **button_args) }}" class="page-link {% if p==page %}active{% endif %}">{{ p }}</a>
               </li>
             {% endfor %}
             <li>
-              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page+1) }}" class="page-link next {% if page >= total_pages %}disabled{% endif %}" tabindex="{% if page >= total_pages %}-1{% else %}0{% endif %}">Next &raquo;</a>
+              <a href="{{ url_for('dashboard_admin.add_liabilities', table_name=table_name, id=id, page=page+1, **button_args) }}" class="page-link next {% if page >= total_pages %}disabled{% endif %}" tabindex="{% if page >= total_pages %}-1{% else %}0{% endif %}">Next &raquo;</a>
             </li>
           </ul>
         </nav>

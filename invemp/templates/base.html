@@ -292,80 +292,74 @@
   </div>
 </section>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const btnBack = document.getElementById('btn-back');
-
-  if (btnBack) {
-    btnBack.addEventListener('click', function (e) {
-      e.preventDefault();
-
-      const historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
-      const allowedBackPaths = [
-        '/',
-        '/items/',
-        '/employees/',
-        '/categories/',
-        'settings/categories/',
-        '/settings/subcategories/',
-        '/subcategories/',
-        '/items',
-        '/employees',
-        '/categories',
-        'settings/categories',
-        '/settings/subcategories',
-        '/subcategories'
-        // Extend this list as needed
-      ];
-      const disallowedFragments = [
-        '/create',
-        '/update',
-        '/add_liabilities',
-        '/duplicate',
-        '/delete'
-      ];
-
-      // Start from the end and find the last acceptable page
-      for (let i = historyStack.length - 2; i >= 0; i--) {
-        const path = historyStack[i];
-
-        const isAllowed = allowedBackPaths.some(prefix => path.startsWith(prefix));
-        const isDisallowed = disallowedFragments.some(fragment => path.includes(fragment));
-
-        if (isAllowed && !isDisallowed) {
-          window.location.href = path;
-          return;
-        }
-      }
-
-      // If no allowed page found, go to fallback
-      window.location.href = "{{ url_for('dashboard_user.index', table_name=table_name, **request.args) }}";
-    });
-  }
-});
-
-// This script runs on every page load
+  // This script runs on every page load
   document.addEventListener('DOMContentLoaded', function () {
     const disallowedFragments = [
     '/create',
     '/update',
-    '/add_liabilities'
+    '/add_liabilities',
+    '/duplicate',
+    '/delete'
   ];
 
-  const currentPath = window.location.pathname;
+  const currentPath = window.location.pathname + window.location.search;
+  const currentBasePath = window.location.pathname;
+
   let historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
 
+  const lastPath = historyStack[historyStack.length - 1] || '';
+  const lastBasePath = lastPath.split('?')[0];
+
   const isDisallowed = disallowedFragments.some(fragment => currentPath.includes(fragment));
-  const isDuplicate = historyStack[historyStack.length - 1] === currentPath;
+  const isDuplicate = currentPath === lastPath;
+  const isSameBaseRepeated = currentBasePath === lastBasePath;
 
-  if (!isDisallowed && !isDuplicate) {
+  // Prevent excessive pushing of the same page over and over
+  if (!isDisallowed && !isDuplicate && !isSameBaseRepeated) {
     historyStack.push(currentPath);
-  }
 
-  // Limit to 20 entries
-  if (historyStack.length > 20) {
-    historyStack.shift();
-  }
+    // Limit to 20 entries
+    if (historyStack.length > 20) {
+      historyStack.shift();
+    }
 
     sessionStorage.setItem('customBackStack', JSON.stringify(historyStack));
+  }
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const btnBack = document.getElementById('btn-back');
+
+    if (btnBack) {
+      btnBack.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        let historyStack = JSON.parse(sessionStorage.getItem('customBackStack') || '[]');
+        
+        const disallowedFragments = [
+          '/create',
+          '/update',
+          '/add_liabilities',
+          '/duplicate',
+          '/delete'
+        ];
+
+        historyStack.pop();
+
+        while (historyStack.length > 0) {
+          const candidate = historyStack.pop();
+          const isDisallowed = disallowedFragments.some(fragment => candidate.includes(fragment));
+
+          if (!isDisallowed) {
+            sessionStorage.setItem('customBackStack', JSON.stringify(historyStack));
+            window.location.href = candidate;
+            return;
+          }
+        }
+
+        // If no allowed page found, go to fallback
+        window.location.href = "{{ url_for('dashboard_user.index', table_name=table_name, **request.args) }}";
+      });
+    }
   });
 </script>

@@ -965,47 +965,6 @@ table#main-table th {
 }
 /******************************************************/
 
-/*******Item History Page***********************/
-
-/* History Table Styling */
-#history-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  overflow: hidden;
-  margin: 2rem auto 1.5rem auto;
-  font-family: 'Bahnschrift', 'Cambria', serif;
-}
-#history-table th, #history-table td {
-  padding: 0.85em 1.2em;
-  text-align: left;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 1em;
-}
-#history-table th {
-  background: #f7f8fa;
-  font-weight: bold;
-  color: #333;
-  border-bottom: 2px solid #e0e0e0;
-  user-select: none;
-}
-#history-table tbody tr:nth-child(even) {
-  background: #f7f8fa;
-}
-#history-table tbody tr:hover {
-  background: #e6f0ff;
-  transition: background 0.2s;
-}
-#history-table td {
-  color: #222;
-}
-#history-table tr:last-child td {
-  border-bottom: none;
-}
-/******************************************************/
 
 /* Responsive Adjustments */
 @media (max-width: 767px) {

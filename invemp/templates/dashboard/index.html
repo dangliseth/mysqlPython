@@ -6,4 +6,23 @@
 <main id="tables-view">
   {% include 'dashboard/_table.html' %}
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Remove any previous click handlers to avoid conflicts
+  document.querySelectorAll('#main-table thead th[data-sort-column]').forEach(function(th) {
+    th.onclick = null;
+    th.addEventListener('click', function(e) {
+      e.preventDefault();
+      const col = th.getAttribute('data-sort-column');
+      const order = th.getAttribute('data-sort-order');
+      // Build new URL with sort params, reset to page 1
+      const url = new URL(window.location.href);
+      url.searchParams.set('sort_column', col);
+      url.searchParams.set('sort_order', order);
+      url.searchParams.set('page', '1');
+      window.location.href = url.toString();
+    });
+  });
+});
+</script>
 {% endblock %}

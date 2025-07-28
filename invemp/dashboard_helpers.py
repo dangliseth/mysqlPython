@@ -306,10 +306,10 @@ def get_item_assignment_history(item_id):
     c = get_cursor()
     c.execute(
         """
-        SELECT h.item_id, CONCAT(e.last_name, ', ', e.first_name) AS full_name, h.assigned_date, h.removed_date
+        SELECT h.item, CONCAT(e.last_name, ', ', e.first_name) AS full_name, h.assigned_date, h.removed_date
         FROM item_assignment_history h
-        LEFT JOIN employees e ON h.employee_id = e.employee_id
-        WHERE h.item_id = %s
+        LEFT JOIN employees e ON h.employee = e.employee_id
+        WHERE h.item = %s
         ORDER BY h.assigned_date DESC
         """,
         (item_id,)
