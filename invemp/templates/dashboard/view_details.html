@@ -19,22 +19,6 @@
         Employee {{ entry[3] }}, {{ entry[2] }}
         {% endif %}
     </h1>
-    <!-- Button to download liabilities PDF
-     {#
-    {% if table_name == 'employees' and liabilities and g.user[3] == 'admin' %}
-    <a href="{{ url_for('dashboard_admin.liabilities_pdf', employee_id=entry[0]) }}" class="icon-btn duplicate-btn" title="Download Liabilities Form" style="margin-left:1em;">
-      <span class="icon-btn-svg">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <rect x="4" y="3" width="16" height="18" rx="2" fill="#f3f4f6" stroke="#6366f1" stroke-width="2"/>
-          <path d="M8 7h8M8 11h8M8 15h4" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
-          <path d="M16 3v4a2 2 0 0 0 2 2h4" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </span>
-      <span class="icon-btn-text">Liabilities Form (PDF)</span>
-    </a>
-    {% endif %}
-    #}
-    -->
     {% if table_name == 'items' %}
     <a href="{{ url_for('dashboard_admin.duplicate', table_name=table_name, id=id) }}" class="icon-btn duplicate-btn" title="Duplicate this item">
       <span class="icon-btn-svg">
@@ -110,7 +94,17 @@
             <td>{{ item[1] }}</td>
             <td>{{ item[2] }}</td>
             <td>{{ item[3] }}</td>
-            <td></td>
+            <td><a href="{{ url_for('dashboard_admin.liabilities_pdf', employee_id=entry[0], item_id=item[0]) }}" class="icon-btn duplicate-btn" title="Download Liabilities Form" style="margin-left:1em;">
+                <span class="icon-btn-svg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="3" width="16" height="18" rx="2" fill="#f3f4f6" stroke="#6366f1" stroke-width="2"/>
+                    <path d="M8 7h8M8 11h8M8 15h4" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M16 3v4a2 2 0 0 0 2 2h4" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <span class="icon-btn-text">Liabilities Form (PDF)</span>
+              </a>
+            </td>
             <td style="text-align:center;" onclick="event.stopPropagation();">
               <form method="post" action="{{ url_for('dashboard_admin.remove_liability', employee_id=entry[0], item_id=item[0]) }}" style="display:inline;">
                 <button type="submit" class="remove-liability-btn" title="Remove Liability">

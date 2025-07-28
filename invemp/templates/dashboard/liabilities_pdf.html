@@ -1,90 +1,276 @@
-<!-- Accountability Form PDF Template -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Accountability Form</title>
+    <title>IT Asset Assignment Form</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 11pt; margin: 2em; }
-        .header { text-align: center; margin-bottom: 1em; }
+        body { font-family: Arial, sans-serif; font-size: 11pt; margin: 0 auto;}
+        .header { text-align: center; margin-bottom: 2.5em; }
         .header-logo { float: left; margin-right: 1em; }
-        .header-title { font-size: 1.3em; font-weight: bold; color: maroon; }
-        .header-sub { font-size: 1em; margin-bottom: 0.5em; }
-        .form-table, .items-table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-        .form-table th, .form-table td, .items-table th, .items-table td { border: 1px solid #222; padding: 6px; text-align: left; }
-        .form-table th { background: #f3f4f6; font-weight: bold; }
-        .items-table th { background: #f3f4f6; font-weight: bold; }
-        .acknowledgment { margin-top: 1.5em; font-size: 0.8em; border: 1px solid #222; padding: 1em; background: #f9f9f9; }
-        .signature-table { width: 100%; margin-top: 2em; }
-        .signature-table td { padding: 0 2em; }
-        .remarks-row td { height: 2.5em; }
+        .header-title { font-size: 1.3em; font-weight: bold; }
+        .form-table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+        .form-table td { padding: 8px; vertical-align: top; }
+        .form-header { text-align: center; font-weight: bold; font-size: 1.2em; margin-bottom: 2.5em; }
+        .checkbox { width: 20px; height: 20px; border: 1px solid #000; display: inline-block; margin-right: 5px; }
+        .footer { font-size: 0.8em; text-align: center; margin-top: 30px; }
+        .section-title { font-weight: bold; margin-top: 7px; }
+        .empty-space { height: 10px; }
+        .item-description-container {
+            border: 1px solid #000;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 8px 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            min-width: 0; /* Allows text truncation */
+            break-inside: avoid; /* Prevents splitting across pages when printing */
+        }
+
+        .detail-label {
+            font-weight: bold;
+            min-width: 120px;
+            flex-shrink: 0;
+            margin-right: 8px;
+            color: #333;
+        }
+
+        .detail-value {
+            flex: 1;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .no-items {
+            color: #888;
+            text-align: center;
+            padding: 20px 0;
+            font-style: italic;
+            grid-column: 1 / -1;
+        }
+
+        @media print {
+            .item-description-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .detail-item {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .item-description-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .signature-table {
+            width: 100%;
+            margin-top: 40px;
+            border-collapse: collapse;
+        }
+
+        .signature-block {
+            width: 50%;
+            padding: 0 20px;
+            vertical-align: top;
+        }
+
+        .mis-personnel {
+            padding-top: 40px;
+            text-align: center;
+        }
+
+        .signature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .signature-line-container {
+            height: 40px;
+            position: relative;
+            margin: 5px 0;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #000;
+            width: 100%;
+            position: relative;
+            height: 20px;
+            margin: 5px auto;
+        }
+
+        .signature-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            background: white;
+            padding: 0 10px;
+            display: inline-block;
+            max-width: 80%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background-color: transparent;
+        }
+
+        .signature-caption {
+            font-size: 0.8em;
+            color: #555;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        /* Responsive adjustment */
+        @media print {
+            .detail-item {
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="header-logo" style="display:inline-block;vertical-align:middle;">
-            <img src="{{ url_for('static', filename='images/MLQU-logo-1.png') }}" alt="Logo" style="height: 50px; width: auto;">
         </div>
         <div style="display:inline-block;vertical-align:middle;">
             <div class="header-title">MANUEL L. QUEZON UNIVERSITY</div>
-            <div class="header-sub">790 Epifanio de los Santos Ave, 
-                Diliman, Quezon City, 1103 Metro Manila
-            </div>
         </div>
     </div>
-    <table class="form-table">
-        <tr><th colspan="4" style="text-align:center;">ACCOUNTABILITY FORM<br><span style="font-weight:normal; font-size:0.98em;">(For Company Property / Equipment)</span></th></tr>
-        <tr><td>Employee</td><td>{{ employee_name }}</td><td>Employee No.</td><td></td></tr>
-        <tr><td>Department</td><td>{{ employee_department }}</td><td>Department Head</td><td>{{ department_head }}</td></tr>
+
+    <div class="form-header">IT ASSET ASSIGNMENT FORM</div>
+
+    <table style="float: right; margin-top: -40px;">
+        <tr>
+            <td>Control No.:</td>
+            <td style="border-bottom: 1px solid #000; width: 150px;"></td>
+        </tr>
+        <tr>
+            <td>Date:</td>
+            <td style="border-bottom: 1px solid #000;">{{ current_time }}</td>
+        </tr>
     </table>
-    <table class="items-table">
-        <thead>
-            <tr>
-                <th>Property/Equipment Description</th>
-                <th>Specification</th>
-                <th>Item ID</th>
-                <th>Category</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in liabilities %}
-            <tr>
-                <td>{{ item[1] }}</td>
-                <td>{{ item[3] }}</td>
-                <td>{{ item[0] }}</td>
-                <td>
-                    <div>{{ item[-3] }}</div>
-                    <div style="font-size:0.85em; color:#242424; font-style:italic; margin-top:2px;">
-                        {{ item[-1] }}
+
+    <div style="clear: both;"></div>
+
+    <table class="form-table">
+        <tr>
+            <td colspan="3">
+                <span class="checkbox">{% if assignment_type == 'NEW' %}✓{% endif %}</span> NEW
+                <span class="checkbox" style="margin-left: 20px;">{% if assignment_type == 'RETURN' %}✓{% endif %}</span> RETURN
+                <span class="checkbox" style="margin-left: 20px;">{% if assignment_type == 'TRANSFER' %}✓{% endif %}</span> TRANSFER
+                <span style="font-size: 0.9em; margin-left: 10px;">(Please check appropriate box)</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">From:</div>
+    <table class="form-table">
+        <tr>
+            <td style="width: 50%;">
+                <div>Transferring Department:</div>
+                <div style="border-bottom: 1px solid #000; min-height: 25px; font-style: italic;">{{ prev_department }}</div>
+            </td>
+            <td style="width: 50%;">
+                <div>To:</div>
+                <div style="border-bottom: 1px solid #000; min-height: 25px; font-style: italic;">{{ receiving_department or employee_department }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="form-table">
+        <tr>
+            <td style="width: 50%;">
+                <div>Asset Code:</div>
+                <div style="border-bottom: 1px solid #000; min-height: 25px;">{{ liability[0] }}</div>
+            </td>
+            <td style="width: 50%;">
+                <div>Serial No.:</div>
+                <div style="border-bottom: 1px solid #000; min-height: 25px;">{{ liability[1] or '' }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">Item Description:</div>
+    <div class="item-description-container">
+        {% if liability %}
+            {# First handle the main item columns #}
+            {% for i in range(columns|length) %}
+                {% set column = columns[i] %}
+                {% if column not in ['status', 'item_id', 'employee', 'serial_number', 'subcategory'] %}
+                    <div class="detail-item">
+                        <span class="detail-label">{{ column.replace('_', ' ').title() }}:</span>
+                        <span class="detail-value">{{ liability[i] }}</span>
                     </div>
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="3" style="text-align:center; color:#888;">No liabilities found.</td></tr>
+                {% endif %}
             {% endfor %}
-        </tbody>
-    </table>
-    <table class="form-table">
-        <tr class="remarks-row"><td colspan="4">Other Remarks</td></tr>
-    </table>
-    <div class="acknowledgment">
-        <strong>ACKNOWLEDGMENT</strong><br>
-        I hereby acknowledge that I have received the above-described company property/equipment in good and serviceable condition specifically for use at the job site, and that the same is in my personal custody. I accept full responsibility over the company property/equipment, with the specific undertaking that 
-        I shall keep the said property/equipment in a safe and proper place while same is in my custody. I am fully aware that should said company property/equipment be stolen, damaged or otherwise rendered unserviceable, I am mandated, under duty, to provide a direct written report to my immediate department head and/or supervisor, and failure on my 
-        part to do so shall be taken as an infraction of company rules and regulations against me. I likewise acknowledge and accept that any such damage/loss of said company property/equipment resulting from misuse/neglect/carelessness, while the same remains in my custody, shall be charged against me.
-        <br><br>
-        I hereby declare that upon the end of my employment, I shall return all company property/equipment in as good and serviceable condition as when I received the same. Failing which, the company is authorized to withhold my final payment and clearance of dues. I likewise hereby authorize the company to deduct any such item of damage/loss from my final pay.<br><br>
-        By signing below, I hereby acknowledge having received the Accountability Form and accept its terms and conditions.
+            
+            {# Then handle the joined fields #}
+            <div class="detail-item">
+                <span class="detail-label">Category:</span>
+                <span class="detail-value">{{ liability[-1] }}</span>  {# Last item is category #}
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Subcategory:</span>
+                <span class="detail-value">{{ liability[-2] }}</span>  {# Second last is subcategory #}
+            </div>
+        {% else %}
+            <div class="no-items">No items listed</div>
+        {% endif %}
     </div>
+
+    <div class="section-title">Reason:</div>
+    <div style="border: 1px solid #000; min-height: 80px; padding: 5px;">{{ reason or '' }}</div>
+
     <table class="signature-table">
         <tr>
-            <td style="height:2.5em;">{{ employee_name }}</td>
-            <td>{{ current_time }}</td>
+            <!-- Transferring Employee -->
+            <td class="signature-block">
+                <div class="signature-title">Transferring Employee</div>
+                <div class="signature-line-container">
+                    <div class="signature-line">
+                        <span class="signature-name">{{ prev_employee or '\n' }}</span>
+                    </div>
+                </div>
+                <div class="signature-caption">(Signature over Printed name)</div>
+            </td>
+            
+            <!-- Receiving Employee -->
+            <td class="signature-block">
+                <div class="signature-title">Receiving Employee</div>
+                <div class="signature-line-container">
+                    <div class="signature-line">
+                        <span class="signature-name">{{ employee_name }}</span>
+                    </div>
+                </div>
+                <div class="signature-caption">(Signature over Printed name)</div>
+            </td>
         </tr>
+        
+        <!-- MIS Personnel (full width below) -->
         <tr>
-            <td>{{ employee_department }}</td>
-            <td>Date</td>
+            <td colspan="2" class="mis-personnel">
+                <div class="signature-title">MIS Personnel</div>
+                <div class="signature-line-container">
+                    <div class="signature-line">
+                        <span class="signature-name"></span>
+                    </div>
+                </div>
+                <div class="signature-caption">(Signature over Printed name)</div>
+            </td>
         </tr>
     </table>
+
+    <div class="footer">
+        Property of MLQU – Management Information Systems Department<br>
+        MIS-FORM-ITAAF-2025-001 | Rev. 01
+    </div>
 </body>
 </html>

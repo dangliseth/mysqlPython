@@ -704,6 +704,19 @@ def add_liabilities(id, table_name):
                     c.execute(update_query, (id, item_id))
                 c.connection.commit()
                 c.close()
+
+                # --- Item Assignment History Logic ---
+                current_datetime = datetime.datetime.now()
+                c = get_cursor()
+                c.execute(
+                        """
+                        INSERT INTO item_assignment_history (item, employee, assigned_date)
+                        VALUES (%s, %s, %s)
+                        """,
+                        (item_id, id, current_datetime)
+                    )
+                c.connection.commit()
+                c.close()
                 flash(f"Assigned item(s) as liabilities.", 'success')
             except Exception as e:
                 flash(f"Error assigning liabilities: {e}", 'error')
@@ -724,9 +737,29 @@ def add_liabilities(id, table_name):
 def remove_liability(employee_id, item_id):
     c = get_cursor()
     try:
+        # --- Item Assignment History Logic ---
+        c_prev = get_cursor()
+        c_prev.execute("SELECT employee FROM items WHERE item_id = %s", (item_id,))
+        prev_row = c_prev.fetchone()
+        if prev_row:
+            prev_assigned_to_value = prev_row[0]
+        c_prev.close()
+
+        current_datetime = datetime.datetime.now()
+        c = get_cursor()
+        c.execute(
+                """
+                UPDATE item_assignment_history
+                SET removed_date = %s
+                WHERE item = %s AND employee = %s AND removed_date IS NULL
+                """,
+                (current_datetime, item_id, employee_id)
+            )
+
         c.execute("UPDATE items SET employee = NULL, status = 'active' WHERE item_id = %s AND employee = %s", (item_id, employee_id))
         c.connection.commit()
         flash('Liability removed successfully.', 'success')
+
     except Exception as e:
         c.connection.rollback()
         flash(f'Error removing liability: {e}', 'error')
@@ -751,12 +784,13 @@ def liabilities_pdf(employee_id, item_id):
     employee_department = emp[2] if emp else "Unknown"
     head_lookup_query = """
     SELECT CONCAT(first_name, ', ', last_name) FROM employees 
-    WHERE department = %s AND position='Head' 
-    OR position LIKE '%Head%' OR position LIKE %OIC%
+    WHERE department = %s AND position='Head'
         """
     c.execute(head_lookup_query, (employee_department,))
     department_head = c.fetchone()
+    c.close()
 
+    c = get_cursor()
     # Fetch item details to be a liability
     liabilities_query = """
         SELECT i.*, subcat.subcategory, cat.category
@@ -767,34 +801,51 @@ def liabilities_pdf(employee_id, item_id):
     """
     c.execute(liabilities_query, (item_id, employee_id,))
     liability = c.fetchone()
+    c.close()
+    c = get_cursor()
+    c.execute(f'DESCRIBE `items`')
+    description = c.fetchall()
+    columns = [row[0] for row in description]
+    c.close()
 
+
+    c = get_cursor()
     # Fetch previous department, if any
     prev_department = None
     c.execute("""
-        SELECT h.*, i.item_id, e.employee_id
+        SELECT h.*
         FROM item_assignment_history h
-        JOIN items i ON h.item = i.item_id
-        JOIN employees e ON h.employee = e.employee_id
-        WHERE i.item_id = %s
+        WHERE h.item = %s
         ORDER BY h.removed_date DESC
-        LIMIT 1
-                             """), (item_id,)
+        LIMIT 1;
+                             """, (item_id,))
     latest_history = c.fetchone()
     if latest_history:
         c.execute("""
             SELECT department FROM employees WHERE employee_id = %s
-        """, (latest_history['employee_id'],))
+        """, (latest_history[2],))
         prev_department_row = c.fetchone()
-        prev_department = prev_department_row['department'] if prev_department_row else ""
+        prev_department = prev_department_row[0] if prev_department_row else ""
+        c.close()
 
-    c.close()
+        c_prev_employee = get_cursor()
+        c_prev_employee.execute("""
+            SELECT CONCAT(first_name, ', ', last_name)
+            FROM employees WHERE employee_id = %s
+        """, (latest_history[2],))
+        prev_employee_row = c_prev_employee.fetchone()
+        prev_employee = prev_employee_row[0] if prev_employee_row else ""
+        c_prev_employee.close()
+
     html = render_template(
         'dashboard/liabilities_pdf.html',
         employee_name=employee_name,
         employee_department=employee_department,
         prev_department=prev_department,
+        prev_employee=prev_employee,
         department_head=department_head[0] if department_head else "None",
         liability=liability,
+        columns=columns,
         current_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     )
     pdf = HTML(string=html, base_url=request.host_url).write_pdf()
