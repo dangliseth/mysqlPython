@@ -310,6 +310,22 @@ def update(id, table_name):
                 entry[user_account_idx] = username  # Replace ID with username
             finally:
                 c.close()
+    elif 'subcategory' in columns:
+        # Get the index of the subcategory column in the original data
+        subcategory_idx = [i for i, col in enumerate(columns) if col == 'subcategory'][0]
+        
+        # Get the subcategory ID from the entry
+        subcategory_id = entry[subcategory_idx]
+        
+        if subcategory_id:
+            c = get_cursor()
+            try:
+                c.execute("SELECT subcategory FROM subcategories WHERE id = %s", (subcategory_id,))
+                result = c.fetchone()
+                subcategory = result[0] if result else None
+                entry[subcategory_idx] = subcategory  # Replace ID with subcategory
+            finally:
+                c.close()
 
     preserved_args = get_preserved_args()
 
@@ -811,7 +827,7 @@ def liabilities_pdf(employee_id, item_id):
 
     c = get_cursor()
     # Fetch previous department, if any
-    prev_department = None
+    prev_department = ""
     c.execute("""
         SELECT h.*
         FROM item_assignment_history h
@@ -820,6 +836,7 @@ def liabilities_pdf(employee_id, item_id):
         LIMIT 1;
                              """, (item_id,))
     latest_history = c.fetchone()
+    prev_employee = ""
     if latest_history:
         c.execute("""
             SELECT department FROM employees WHERE employee_id = %s
@@ -830,7 +847,7 @@ def liabilities_pdf(employee_id, item_id):
 
         c_prev_employee = get_cursor()
         c_prev_employee.execute("""
-            SELECT CONCAT(first_name, ', ', last_name)
+            SELECT CONCAT(last_name, ', ', first_name)
             FROM employees WHERE employee_id = %s
         """, (latest_history[2],))
         prev_employee_row = c_prev_employee.fetchone()
