@@ -66,6 +66,7 @@ def index(table_name):
                              columns=display_columns,
                              table_name=table_name,
                              page=page,
+                             filters=filters,
                              total_pages=total_pages,
                              button_args=button_args,
                              sort_column=sort_column, sort_order=sort_order,

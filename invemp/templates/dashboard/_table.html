@@ -93,20 +93,50 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<!-- Pagination controls -->
+{% set max_display = 5 %}
+{% set half_range = max_display // 2 %}
+{% set start_page = page - half_range %}
+{% if start_page < 1 %}
+    {% set start_page = 1 %}
+{% endif %}
+{% set end_page = start_page + max_display - 1 %}
+{% if end_page > total_pages %}
+    {% set end_page = total_pages %}
+    {% set start_page = end_page - max_display + 1 %}
+    {% if start_page < 1 %}
+        {% set start_page = 1 %}
+    {% endif %}
+{% endif %}
+
 {% if total_pages > 1 %}
 <div class="pagination">
     {% if page > 1 %}
         <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=page-1, **button_args if button_args is defined else pagination_args) }}">&laquo; Prev</a>
     {% endif %}
-    
-    {% for p in range(1, total_pages+1) %}
+
+    {% if start_page > 1 %}
+        <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=1, **button_args if button_args is defined else pagination_args) }}">1</a>
+        {% if start_page > 2 %}
+            <span>...</span>
+        {% endif %}
+    {% endif %}
+
+    {% for p in range(start_page, end_page + 1) %}
         {% if p == page %}
             <a href="#" class="active">{{ p }}</a>
         {% else %}
             <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=p, **button_args if button_args is defined else pagination_args) }}">{{ p }}</a>
         {% endif %}
     {% endfor %}
-    
+
+    {% if end_page < total_pages %}
+        {% if end_page < total_pages - 1 %}
+            <span>...</span>
+        {% endif %}
+        <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=total_pages, **button_args if button_args is defined else pagination_args) }}">{{ total_pages }}</a>
+    {% endif %}
+
     {% if page < total_pages %}
         <a href="{{ url_for('dashboard_user.index', table_name=table_name, page=page+1, **button_args if button_args is defined else pagination_args) }}">Next &raquo;</a>
     {% endif %}
