@@ -1,0 +1,18 @@
+
+
+cd /d "C:\Users\seth.dangli\Documents\mysqlPython"
+
+echo Pulling latest code from GitHub...
+git pull origin main
+
+echo Activating virtual environment...
+call .venv\Scripts\activate
+
+echo Installing any new dependencies...
+pip install -r requirements.txt
+
+echo Restarting app...
+taskkill /F /IM python.exe
+start "" waitress-serve --host=127.0.0.1 --port=5000 wsgi:app
+
+exit

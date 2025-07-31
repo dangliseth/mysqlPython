@@ -1,0 +1,5 @@
+cd /d "C:\Users\seth.dangli\Documents\mysqlPython"
+
+call .venv\Scripts\activate
+waitress-serve --host=127.0.0.1 --port=5000 wsgi:app
+pause
