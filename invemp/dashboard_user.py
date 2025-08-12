@@ -283,25 +283,46 @@ def convert_pdf(table_name):
     return response
 
 @bp.route('/<table_name>/convert_pdf_qr')
+@bp.route('/<table_name>/<id>/convert_pdf_qr')
 @login_required
-def convert_pdf_qr(table_name):
+def convert_pdf_qr(table_name, id=None):
     if not is_valid_table(table_name):
         abort(400)
-    # Always export all entries, not just current page
-    try:
-        page = 1
-    except ValueError:
-        page = 1
-    per_page = 1000000  # Large number to get all entries
-    sort_column = request.args.get('sort_column')
-    sort_order = request.args.get('sort_order')
-    c = get_cursor()
-    try:
-        filtered_items, columns, filters, total_items = filter_table(
-            table_name, c, page=page, per_page=per_page, sort_column=sort_column, sort_order=sort_order
-        )
-    finally:
-        c.close()
+
+    # Check for id input i.e., if this is fetching details of liabilities of a certain employee
+    if id is not None:
+        # Fetch liabilities for the employee
+        c = get_cursor()
+        try:
+            c.execute("""
+                SELECT i.item_id, i.item_name, subcat.subcategory, i.brand_name, i.specification
+                FROM items i
+                LEFT JOIN subcategories subcat ON i.subcategory = subcat.id
+                WHERE i.employee = %s
+                """, (id,))
+            filtered_items = c.fetchall()
+            columns = ['item_id', 'item_name', 'subcategory', 'brand_name', 'specification']
+        except Exception as e:
+            flash(f"Error fetching liabilities: {e}", 'error')
+            return redirect(url_for('dashboard_user.index', table_name=table_name))
+        finally:
+            c.close()
+    else:
+        # Always export all entries, not just current page
+        try:
+            page = 1
+        except ValueError:
+            page = 1
+        per_page = 1000000  # Large number to get all entries
+        sort_column = request.args.get('sort_column')
+        sort_order = request.args.get('sort_order')
+        c = get_cursor()
+        try:
+            filtered_items, columns, filters, total_items = filter_table(
+                table_name, c, page=page, per_page=per_page, sort_column=sort_column, sort_order=sort_order
+            )
+        finally:
+            c.close()
 
     if table_name == 'items':
         qr_columns = ['item id', 'item name', 'brand name', 'subcategory', 'specification']  # Match actual column names
