@@ -74,6 +74,16 @@
           <line x1="8" y1="12" x2="16" y2="12" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </a>
+      <div class="pdf-actions">
+        <a href="{{ url_for('dashboard_user.convert_pdf_qr', table_name='employees', id=entry[0]) }}" class="icon-btn pdf-qr-btn" title="Download Employee QR Code">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="3" width="16" height="18" rx="2" fill="#f3f4f6" stroke="#6366f1" stroke-width="2"/>
+            <path d="M8 7h8M8 11h8M8 15h4" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 3v4a2 2 0 0 0 2 2h4" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          QR Code (PDF)
+        </a>
+      </div>
     {% endif %}
       {% if liabilities %}
       <table class="liabilities-table">
@@ -121,6 +131,10 @@
     {% endif %}
 
 <style>
+.pdf-actions {
+    display: inline-flex;
+    margin-left: 50%;
+  }
 .icon-btn {
   display: inline-flex;
   align-items: center;
