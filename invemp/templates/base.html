@@ -10,7 +10,7 @@
     <img src="{{ url_for('static', filename='icons/arrow_back_2.svg') }}" class="btn-back-icon2">
   </button>
   {% endif %}
-  {% if is_index %}
+  {% if is_index and table_name != 'employees' %}
   <div id="download-btns">
     <a href="{{ url_for('dashboard_user.convert_pdf', table_name = table_name, **request.args) }}" id="btn-pdf" class="btn-download">
       <img src="{{ url_for('static', filename='icons/pdf_icon.svg') }}" alt="PDF" id="pdf-icon-img">

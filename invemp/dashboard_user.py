@@ -383,8 +383,24 @@ def convert_pdf_qr(table_name, id=None):
             pass
 
     pdf_bytes = pdf.output(dest='S').encode('latin1')
+    
+
 
     response = make_response(pdf_bytes)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'attachment; filename={table_name}_qr_report.pdf'
+    if id is not None:
+        # Fetch employee name for filename
+        c = get_cursor()
+        c.execute("SELECT CONCAT(last_name, ', ', first_name) FROM employees WHERE employee_id = %s", (id,))
+        employee = c.fetchone()
+        employee_name = employee[0] if employee else 'Unknown Employee'
+        # Sanitize employee_name for use in HTTP headers (remove/replace unsafe characters)
+        import re
+        safe_employee_name = re.sub(r'[^A-Za-z0-9_\-]', '_', employee_name)
+        c.close()
+        month_year = datetime.datetime.now().strftime('%B_%Y')
+        filename = f"{safe_employee_name}_liabilities_{month_year}.pdf"
+    else:
+        filename = f"{table_name}_QRreport_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     return response
